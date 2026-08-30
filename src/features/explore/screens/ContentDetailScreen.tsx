@@ -1,21 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
+import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useContentDetail } from '../../../hooks/useContent';
-import type { PostType } from '../../../repositories/contentRepository';
+import type { ContentMedia, PostType } from '../../../repositories/contentRepository';
 
-const labels: Record<PostType, string> = {
-  video: 'فيديو تعليمي',
-  article: 'مقال',
-  teacher_tip: 'نصيحة للأستاذ',
-  problem: 'مشكلة وحل',
-  question: 'سؤال',
-  poll: 'استطلاع',
-  exam: 'اختبار',
-  test: 'فرض',
-  resource: 'مورد مجاني',
-  announcement: 'مستجد'
+const labels: Record<'ar' | 'en', Record<PostType, string>> = {
+  ar: { video: 'فيديو تعليمي', article: 'مقال', teacher_tip: 'نصيحة للأستاذ', problem: 'مشكلة وحل', question: 'سؤال', poll: 'استطلاع', exam: 'اختبار', test: 'فرض', resource: 'مورد مجاني', announcement: 'مستجد' },
+  en: { video: 'Educational video', article: 'Article', teacher_tip: 'Teacher tip', problem: 'Problem & solution', question: 'Question', poll: 'Poll', exam: 'Exam', test: 'Test', resource: 'Free resource', announcement: 'Update' }
 };
 
 const icons: Record<PostType, keyof typeof Ionicons.glyphMap> = {
@@ -31,13 +24,16 @@ const icons: Record<PostType, keyof typeof Ionicons.glyphMap> = {
   announcement: 'megaphone-outline'
 };
 
-function firstExternalUrl(media: Record<string, unknown>) {
-  const candidates = [media.youtube_url, media.video_url, media.file_url, media.url];
+function firstExternalUrl(media: ContentMedia) {
+  const candidates = [media.youtube_url, media.video_url, media.file_url];
   return candidates.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value));
 }
 
 export function ContentDetailScreen({ route }: any) {
   const { colors } = useTheme();
+  const { language, isRTL } = useLanguage();
+  const align = isRTL ? ('right' as const) : ('left' as const);
+  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
   const postId = String(route.params?.postId ?? '');
   const detail = useContentDetail(postId);
 
@@ -45,7 +41,7 @@ export function ContentDetailScreen({ route }: any) {
     return (
       <Screen style={styles.center}>
         <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.muted }}>جاري فتح المحتوى...</Text>
+        <Text style={{ color: colors.muted }}>{language === 'ar' ? 'جاري فتح المحتوى...' : 'Opening content...'}</Text>
       </Screen>
     );
   }
@@ -53,14 +49,14 @@ export function ContentDetailScreen({ route }: any) {
   if (detail.isError || !detail.data) {
     return (
       <Screen style={styles.center}>
-        <View style={[styles.errorIcon, { backgroundColor: `${colors.primary}18` }]}> 
+        <View style={[styles.errorIcon, { backgroundColor: `${colors.primary}18` }]}>
           <Ionicons name="alert-circle-outline" size={34} color={colors.primary} />
         </View>
-        <Text style={[styles.errorTitle, { color: colors.text }]}>تعذر فتح المحتوى</Text>
-        <Text style={[styles.errorBody, { color: colors.muted }]}>قد يكون المحتوى غير متاح أو لم يعد منشورًا.</Text>
-        <Pressable onPress={() => detail.refetch()} style={[styles.button, { backgroundColor: colors.primary }]}> 
+        <Text style={[styles.errorTitle, { color: colors.text }]}>{language === 'ar' ? 'تعذر فتح المحتوى' : 'Could not open content'}</Text>
+        <Text style={[styles.errorBody, { color: colors.muted }]}>{language === 'ar' ? 'قد يكون المحتوى غير متاح أو لم يعد منشورًا.' : 'This content may be unavailable or no longer published.'}</Text>
+        <Pressable onPress={() => detail.refetch()} style={[styles.button, { backgroundColor: colors.primary }]}>
           <Ionicons name="refresh-outline" size={18} color="#17130C" />
-          <Text style={styles.buttonText}>إعادة المحاولة</Text>
+          <Text style={styles.buttonText}>{language === 'ar' ? 'إعادة المحاولة' : 'Try again'}</Text>
         </Pressable>
       </Screen>
     );
@@ -68,60 +64,63 @@ export function ContentDetailScreen({ route }: any) {
 
   const post = detail.data;
   const externalUrl = firstExternalUrl(post.media ?? {});
+  const title = (language === 'en' && post.title_en) || post.title;
+  const body = (language === 'en' && post.body_en) || post.body;
   const meta = [post.subject, post.level, post.term, post.sequence].filter(Boolean).join('  •  ');
 
   return (
     <Screen scroll style={styles.page}>
-      <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-        <View style={styles.badgesRow}>
+      <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        {!!post.media?.cover_url && <Image source={{ uri: post.media.cover_url }} style={styles.cover} resizeMode="cover" />}
+        <View style={[styles.badgesRow, { flexDirection: row }]}>
           {post.is_official && (
-            <View style={[styles.officialBadge, { borderColor: colors.primary }]}> 
+            <View style={[styles.officialBadge, { borderColor: colors.primary }]}>
               <Ionicons name="shield-checkmark-outline" size={14} color={colors.primary} />
-              <Text style={[styles.officialText, { color: colors.primary }]}>محتوى رسمي من المعراج</Text>
+              <Text style={[styles.officialText, { color: colors.primary }]}>{language === 'ar' ? 'محتوى رسمي من المعراج' : 'Official Al Miraj content'}</Text>
             </View>
           )}
-          <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18` }]}> 
+          <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row }]}>
             <Ionicons name={icons[post.post_type]} size={16} color={colors.primary} />
-            <Text style={[styles.type, { color: colors.primary }]}>{labels[post.post_type]}</Text>
+            <Text style={[styles.type, { color: colors.primary }]}>{labels[language][post.post_type]}</Text>
           </View>
         </View>
 
-        <Text style={[styles.title, { color: colors.text }]}>{post.title}</Text>
+        <Text style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{title}</Text>
         {!!meta && <Text style={[styles.meta, { color: colors.muted }]}>{meta}</Text>}
       </View>
 
-      {!!post.body && (
-        <View style={[styles.bodyCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-          <View style={styles.cardHeadingRow}>
+      {!!body && (
+        <View style={[styles.bodyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={[styles.cardHeadingRow, { flexDirection: row, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
             <Ionicons name="reader-outline" size={20} color={colors.primary} />
-            <Text style={[styles.cardHeading, { color: colors.text }]}>التفاصيل</Text>
+            <Text style={[styles.cardHeading, { color: colors.text }]}>{language === 'ar' ? 'التفاصيل' : 'Details'}</Text>
           </View>
-          <Text style={[styles.body, { color: colors.text }]}>{post.body}</Text>
+          <Text style={[styles.body, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{body}</Text>
         </View>
       )}
 
       {externalUrl && (
         <Pressable
           onPress={() => Linking.openURL(externalUrl)}
-          style={({ pressed }) => [styles.button, { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1 }]}
+          style={({ pressed }) => [styles.button, { backgroundColor: colors.primary, opacity: pressed ? 0.9 : 1, flexDirection: row }]}
         >
           <Ionicons name={post.post_type === 'video' ? 'play' : 'open-outline'} size={19} color="#17130C" />
-          <Text style={styles.buttonText}>{post.post_type === 'video' ? 'مشاهدة الفيديو' : 'فتح المورد'}</Text>
+          <Text style={styles.buttonText}>{post.post_type === 'video' ? (language === 'ar' ? 'مشاهدة الفيديو' : 'Watch video') : (language === 'ar' ? 'فتح المورد' : 'Open resource')}</Text>
         </Pressable>
       )}
 
       {post.helpful_count > 0 && (
-        <View style={[styles.helpfulCard, { backgroundColor: `${colors.primary}0D`, borderColor: colors.border }]}> 
+        <View style={[styles.helpfulCard, { backgroundColor: `${colors.primary}0D`, borderColor: colors.border, flexDirection: row }]}>
           <Ionicons name="thumbs-up-outline" size={21} color={colors.primary} />
-          <Text style={[styles.helpfulText, { color: colors.muted }]}>{post.helpful_count} أستاذ وجدوا هذا المحتوى مفيدًا</Text>
+          <Text style={[styles.helpfulText, { color: colors.muted, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{language === 'ar' ? `${post.helpful_count} أستاذ وجدوا هذا المحتوى مفيدًا` : `${post.helpful_count} teachers found this helpful`}</Text>
         </View>
       )}
 
-      <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
+      <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
         <Ionicons name="lock-closed-outline" size={21} color={colors.primary} />
         <View style={styles.infoCopy}>
-          <Text style={[styles.infoTitle, { color: colors.text }]}>عن هذا المحتوى</Text>
-          <Text style={[styles.infoBody, { color: colors.muted }]}>هذا القسم مخصص للمحتوى التعليمي المجاني والمساند للأستاذ. محتوى منتجات المعراج المدفوعة لا يتم عرضه كاملًا داخل التطبيق.</Text>
+          <Text style={[styles.infoTitle, { color: colors.text, textAlign: align }]}>{language === 'ar' ? 'عن هذا المحتوى' : 'About this content'}</Text>
+          <Text style={[styles.infoBody, { color: colors.muted, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{language === 'ar' ? 'هذا القسم مخصص للمحتوى التعليمي المجاني والمساند للأستاذ. محتوى منتجات المعراج المدفوعة لا يتم عرضه كاملًا داخل التطبيق.' : 'This section is for free educational content that supports teachers. Full paid Al Miraj product content is not exposed in the app.'}</Text>
         </View>
       </View>
     </Screen>
@@ -132,6 +131,7 @@ const styles = StyleSheet.create({
   page: { gap: 16 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 14 },
   hero: { borderWidth: 1, borderRadius: 26, padding: 20, gap: 13 },
+  cover: { width: '100%', height: 190, borderRadius: 18, marginBottom: 2 },
   badgesRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', alignItems: 'center', gap: 8 },
   typeBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
   type: { fontWeight: '900', fontSize: 12 },

@@ -20,6 +20,8 @@
     "@supabase/supabase-js": "^2.112.3",
     "@tanstack/react-query": "^5.87.1",
     "expo": "~57.0.18",
+    "expo-document-picker": "~57.0.1",
+    "expo-image-picker": "~57.0.14",
     "expo-status-bar": "~57.0.0",
     "react": "19.2.3",
     "react-native": "0.86.2",
