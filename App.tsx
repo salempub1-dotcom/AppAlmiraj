@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider } from './src/context/AuthProvider';
+import { CartProvider } from './src/context/CartProvider';
 import { ThemeProvider, useTheme } from './src/context/ThemeProvider';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ensureRTL } from './src/utils/rtl';
@@ -28,15 +29,15 @@ export default function App() {
     ensureRTL().finally(() => setReady(true));
   }, []);
 
-  if (!ready) {
-    return <ActivityIndicator style={{ flex: 1 }} />;
-  }
+  if (!ready) return <ActivityIndicator style={{ flex: 1 }} />;
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <AppShell />
+          <CartProvider>
+            <AppShell />
+          </CartProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
