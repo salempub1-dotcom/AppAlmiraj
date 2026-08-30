@@ -18,22 +18,22 @@ const labels: Record<ContentPost['post_type'], string> = {
 };
 
 const icons: Record<ContentPost['post_type'], keyof typeof Ionicons.glyphMap> = {
-  video: 'play-circle-outline',
-  article: 'document-text-outline',
-  teacher_tip: 'bulb-outline',
-  problem: 'help-buoy-outline',
-  question: 'help-circle-outline',
-  poll: 'stats-chart-outline',
-  exam: 'school-outline',
-  test: 'clipboard-outline',
-  resource: 'folder-open-outline',
-  announcement: 'megaphone-outline'
+  video: 'play',
+  article: 'document-text',
+  teacher_tip: 'bulb',
+  problem: 'sparkles',
+  question: 'help-circle',
+  poll: 'stats-chart',
+  exam: 'school',
+  test: 'clipboard',
+  resource: 'folder-open',
+  announcement: 'megaphone'
 };
 
 export function ContentCard({ post }: { post: ContentPost }) {
   const { colors } = useTheme();
   const navigation = useNavigation<any>();
-  const meta = [post.subject, post.level, post.term, post.sequence].filter(Boolean).join('  •  ');
+  const meta = [post.subject, post.level, post.term, post.sequence].filter(Boolean) as string[];
 
   return (
     <Pressable
@@ -43,23 +43,23 @@ export function ContentCard({ post }: { post: ContentPost }) {
         {
           backgroundColor: colors.card,
           borderColor: colors.border,
-          transform: [{ scale: pressed ? 0.992 : 1 }]
+          opacity: pressed ? 0.94 : 1
         }
       ]}
     >
       <View style={styles.topRow}>
-        {post.is_official ? (
-          <View style={[styles.officialBadge, { borderColor: colors.primary }]}> 
-            <Ionicons name="shield-checkmark-outline" size={13} color={colors.primary} />
-            <Text style={[styles.official, { color: colors.primary }]}>المعراج</Text>
-          </View>
-        ) : (
-          <View />
-        )}
+        <View style={[styles.typeIcon, { backgroundColor: `${colors.primary}18` }]}>
+          <Ionicons name={icons[post.post_type]} size={18} color={colors.primary} />
+        </View>
 
-        <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18` }]}> 
-          <Ionicons name={icons[post.post_type]} size={15} color={colors.primary} />
-          <Text style={[styles.badge, { color: colors.primary }]}>{labels[post.post_type]}</Text>
+        <View style={styles.badgesRow}>
+          {post.is_official && (
+            <View style={[styles.officialBadge, { backgroundColor: `${colors.primary}12` }]}>
+              <Ionicons name="shield-checkmark" size={12} color={colors.primary} />
+              <Text style={[styles.official, { color: colors.primary }]}>المعراج</Text>
+            </View>
+          )}
+          <Text style={[styles.typeLabel, { color: colors.primary }]}>{labels[post.post_type]}</Text>
         </View>
       </View>
 
@@ -71,20 +71,26 @@ export function ContentCard({ post }: { post: ContentPost }) {
         </Text>
       )}
 
-      {!!meta && <Text style={[styles.meta, { color: colors.muted }]}>{meta}</Text>}
+      {meta.length > 0 && (
+        <View style={styles.metaWrap}>
+          {meta.map((item) => (
+            <View key={item} style={[styles.metaChip, { backgroundColor: `${colors.muted}10`, borderColor: colors.border }]}> 
+              <Text style={[styles.metaText, { color: colors.muted }]}>{item}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
       <View style={styles.footer}>
         <View style={styles.helpfulRow}>
-          {post.helpful_count > 0 && <Ionicons name="thumbs-up-outline" size={14} color={colors.muted} />}
-          {post.helpful_count > 0 && (
-            <Text style={[styles.helpful, { color: colors.muted }]}>{post.helpful_count} وجدوه مفيدًا</Text>
-          )}
+          <Ionicons name="thumbs-up-outline" size={14} color={colors.muted} />
+          <Text style={[styles.helpful, { color: colors.muted }]}>مفيد لـ {post.helpful_count || 0}</Text>
         </View>
         <View style={styles.openRow}>
-          <Ionicons name="chevron-back" size={15} color={colors.primary} />
           <Text style={[styles.open, { color: colors.primary }]}>عرض التفاصيل</Text>
+          <Ionicons name="arrow-back" size={15} color={colors.primary} />
         </View>
       </View>
     </Pressable>
@@ -92,19 +98,22 @@ export function ContentCard({ post }: { post: ContentPost }) {
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 22, padding: 17, gap: 10 },
+  card: { borderWidth: 1, borderRadius: 24, padding: 17, gap: 11 },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  officialBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
-  official: { fontWeight: '900', fontSize: 11 },
-  typeBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  badge: { fontWeight: '800', fontSize: 12 },
+  typeIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  badgesRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
+  officialBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 5 },
+  official: { fontWeight: '900', fontSize: 10.5 },
+  typeLabel: { fontWeight: '900', fontSize: 12.5 },
   title: { fontWeight: '900', textAlign: 'right', writingDirection: 'rtl', fontSize: 19, lineHeight: 30 },
   body: { textAlign: 'right', writingDirection: 'rtl', lineHeight: 25, fontSize: 14.5 },
-  meta: { textAlign: 'right', writingDirection: 'ltr', fontSize: 12.5, marginTop: 1 },
+  metaWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 6 },
+  metaChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  metaText: { fontSize: 11.5, fontWeight: '700' },
   divider: { height: StyleSheet.hairlineWidth, marginTop: 2 },
   footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  helpfulRow: { flexDirection: 'row', gap: 5, alignItems: 'center', flex: 1 },
-  helpful: { fontSize: 11.5 },
-  openRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  open: { fontWeight: '900', fontSize: 12 }
+  helpfulRow: { flexDirection: 'row', gap: 5, alignItems: 'center' },
+  helpful: { fontSize: 11.5, fontWeight: '700' },
+  openRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  open: { fontWeight: '900', fontSize: 12.5 }
 });
