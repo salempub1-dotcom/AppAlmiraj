@@ -3,10 +3,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExploreScreen } from '../features/explore/screens/ExploreScreen';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
-import { StoreScreen } from '../features/store/screens/StoreScreen';
 import { ToolsScreen } from '../features/teacher-tools/screens/ToolsScreen';
 import { useTheme } from '../context/ThemeProvider';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
+import { StoreStackNavigator } from './StoreStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
@@ -30,12 +30,7 @@ export function BottomTabs() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarHideOnKeyboard: true,
-        tabBarLabelStyle: {
-          fontSize: 10.5,
-          fontWeight: '800',
-          marginTop: 2,
-          marginBottom: 2
-        },
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '800', marginTop: 2, marginBottom: 2 },
         tabBarIcon: ({ color, focused }) => {
           const config = icons[route.name];
           return (
@@ -59,15 +54,13 @@ export function BottomTabs() {
           shadowRadius: 16,
           shadowOffset: { width: 0, height: -5 }
         },
-        tabBarItemStyle: {
-          paddingTop: 1
-        }
+        tabBarItemStyle: { paddingTop: 1 }
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'الرئيسية' }} />
       <Tab.Screen name="Explore" component={ExploreScreen} options={{ tabBarLabel: 'استكشف' }} />
       <Tab.Screen name="Tools" component={ToolsScreen} options={{ tabBarLabel: 'الأدوات' }} />
-      <Tab.Screen name="Store" component={StoreScreen} options={{ tabBarLabel: 'المتجر' }} />
+      <Tab.Screen name="Store" component={StoreStackNavigator} options={{ tabBarLabel: 'المتجر' }} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarLabel: 'حسابي' }} />
     </Tab.Navigator>
   );
