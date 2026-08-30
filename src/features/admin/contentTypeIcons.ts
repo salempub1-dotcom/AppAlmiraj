@@ -15,13 +15,13 @@ export const contentTypeIcons: Record<PostType, keyof typeof Ionicons.glyphMap> 
 };
 
 export const statusColors: Record<PostStatus, { bg: string; fg: string }> = {
-  draft: { bg: '#F2E4B70D', fg: '#B08900' },
-  published: { bg: '#1B7F4D14', fg: '#1B7F4D' },
-  hidden: { bg: '#B4231814', fg: '#B42318' }
+  pending: { bg: '#F2E4B70D', fg: '#B08900' },
+  approved: { bg: '#1B7F4D14', fg: '#1B7F4D' },
+  rejected: { bg: '#B4231814', fg: '#B42318' }
 };
 
 export const statusIcons: Record<PostStatus, keyof typeof Ionicons.glyphMap> = {
-  draft: 'create-outline',
-  published: 'checkmark-circle-outline',
-  hidden: 'eye-off-outline'
+  pending: 'create-outline',
+  approved: 'checkmark-circle-outline',
+  rejected: 'eye-off-outline'
 };

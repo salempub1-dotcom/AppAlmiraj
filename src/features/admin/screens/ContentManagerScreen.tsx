@@ -57,9 +57,9 @@ export function ContentManagerScreen({ navigation }: any) {
 
   const handleTogglePublish = (id: string, current: PostStatus) => {
     setContentStatus.mutate(
-      { id, status: current === 'published' ? 'hidden' : 'published' },
+      { id, status: current === 'approved' ? 'rejected' : 'approved' },
       {
-        onSuccess: () => Alert.alert(current === 'published' ? copy.confirm.hidden : copy.confirm.published)
+        onSuccess: () => Alert.alert(current === 'approved' ? copy.confirm.hidden : copy.confirm.published)
       }
     );
   };
@@ -126,22 +126,22 @@ export function ContentManagerScreen({ navigation }: any) {
         <StatTile
           label={copy.dashboard.published}
           value={counts.data?.published}
-          active={status === 'published'}
-          onPress={() => setStatus('published')}
+          active={status === 'approved'}
+          onPress={() => setStatus('approved')}
           icon="checkmark-circle-outline"
         />
         <StatTile
           label={copy.dashboard.drafts}
           value={counts.data?.draft}
-          active={status === 'draft'}
-          onPress={() => setStatus('draft')}
+          active={status === 'pending'}
+          onPress={() => setStatus('pending')}
           icon="create-outline"
         />
         <StatTile
           label={copy.dashboard.hidden}
           value={counts.data?.hidden}
-          active={status === 'hidden'}
-          onPress={() => setStatus('hidden')}
+          active={status === 'rejected'}
+          onPress={() => setStatus('rejected')}
           icon="eye-off-outline"
         />
       </View>

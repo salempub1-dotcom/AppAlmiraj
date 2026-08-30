@@ -29,14 +29,18 @@ export const ADMIN_POST_TYPES: PostType[] = [
 export type EducationalLevel = '3PS' | '4PS' | '5PS' | '1MS' | '2MS' | '3MS' | '4MS';
 export const EDUCATIONAL_LEVELS: EducationalLevel[] = ['3PS', '4PS', '5PS', '1MS', '2MS', '3MS', '4MS'];
 
-export type PostStatus = 'draft' | 'published' | 'hidden';
-export const POST_STATUSES: PostStatus[] = ['draft', 'published', 'hidden'];
+// Keep the database's original status vocabulary for backward compatibility.
+// The admin UI presents these as Draft / Published / Hidden.
+export type PostStatus = 'pending' | 'approved' | 'rejected';
+export const POST_STATUSES: PostStatus[] = ['pending', 'approved', 'rejected'];
 
 export type ContentMedia = {
   cover_url?: string;
+  cover_path?: string;
   youtube_url?: string;
   video_url?: string;
   file_url?: string;
+  file_path?: string;
   file_name?: string;
 };
 
@@ -94,15 +98,15 @@ const selectFields =
   'id,post_type,title,title_en,body,body_en,subject,level,term,sequence,media,is_official,status,helpful_count,published_at,created_at,updated_at';
 
 // ---------------------------------------------------------------------------
-// Public (teacher-facing) reads - unchanged shape, now reading `published`
-// instead of the legacy `approved` status value.
+// Public (teacher-facing) reads keep the legacy `approved` value so older
+// installed app builds and existing server code continue to work.
 // ---------------------------------------------------------------------------
 export const contentRepository = {
   async getLatest(limit = 8) {
     return supabase
       .from('posts')
       .select(selectFields)
-      .eq('status', 'published')
+      .eq('status', 'approved')
       .order('published_at', { ascending: false, nullsFirst: false })
       .limit(limit);
   },
@@ -111,7 +115,7 @@ export const contentRepository = {
     return supabase
       .from('posts')
       .select(selectFields)
-      .eq('status', 'published')
+      .eq('status', 'approved')
       .eq('post_type', postType)
       .order('published_at', { ascending: false, nullsFirst: false })
       .limit(limit);
@@ -121,7 +125,7 @@ export const contentRepository = {
     return supabase
       .from('posts')
       .select(selectFields)
-      .eq('status', 'published')
+      .eq('status', 'approved')
       .eq('id', id)
       .single();
   },
@@ -130,7 +134,7 @@ export const contentRepository = {
     let query = supabase
       .from('posts')
       .select(selectFields)
-      .eq('status', 'published')
+      .eq('status', 'approved')
       .order('published_at', { ascending: false, nullsFirst: false });
 
     if (filters.postType) query = query.eq('post_type', filters.postType);
@@ -172,9 +176,9 @@ export const adminContentRepository = {
   async getCounts() {
     const [total, published, draft, hidden] = await Promise.all([
       supabase.from('posts').select('id', { count: 'exact', head: true }),
-      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'draft'),
-      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'hidden')
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('status', 'rejected')
     ]);
     const firstError = total.error ?? published.error ?? draft.error ?? hidden.error;
     if (firstError) return { data: null, error: firstError };
@@ -200,7 +204,7 @@ export const adminContentRepository = {
       .insert({
         ...input,
         media: input.media ?? {},
-        status: input.status ?? 'draft',
+        status: input.status ?? 'pending',
         is_official: input.is_official ?? false,
         author_id: auth.user?.id ?? null,
         updated_by: auth.user?.id ?? null
@@ -222,7 +226,7 @@ export const adminContentRepository = {
   async setStatus(id: string, status: PostStatus, publishedAt?: string | null) {
     const patch: Partial<ContentInput> = { status };
     if (publishedAt !== undefined) patch.published_at = publishedAt;
-    else if (status === 'published') patch.published_at = new Date().toISOString();
+    else if (status === 'approved') patch.published_at = new Date().toISOString();
     return adminContentRepository.update(id, patch);
   },
 
@@ -241,7 +245,7 @@ export const adminContentRepository = {
       sequence: source.sequence,
       media: source.media,
       is_official: source.is_official,
-      status: 'draft',
+      status: 'pending',
       published_at: null
     });
   },

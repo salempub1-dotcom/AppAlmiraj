@@ -75,7 +75,7 @@ export function AdminContentRow({ post, onEdit, onPreview, onTogglePublish, onDu
           <ActionIcon icon="create-outline" onPress={onEdit} disabled={busy} />
           <ActionIcon icon="copy-outline" onPress={onDuplicate} disabled={busy} />
           <ActionIcon
-            icon={post.status === 'published' ? 'eye-off-outline' : 'cloud-upload-outline'}
+            icon={post.status === 'approved' ? 'eye-off-outline' : 'cloud-upload-outline'}
             onPress={onTogglePublish}
             disabled={busy}
             highlight

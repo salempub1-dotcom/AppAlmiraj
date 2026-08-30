@@ -1,35 +1,12 @@
 -- Content Management System for non-store content (posts table).
 -- This migration does NOT touch products, orders, deliveries or any store/checkout logic.
+-- IMPORTANT: keep the existing DB status values (pending/approved/rejected) for
+-- backward compatibility with already-installed app builds and existing server code.
 
 -- 1. Bilingual optional fields for admin-authored content -------------------
 alter table public.posts add column if not exists title_en text;
 alter table public.posts add column if not exists body_en text;
 alter table public.posts add column if not exists updated_by uuid references public.profiles(id) on delete set null;
-
--- 2. Publication status model: draft / published / hidden -------------------
--- Existing values (pending/approved/rejected) are remapped 1:1 so no content
--- is lost or reinterpreted:
---   pending  -> draft      (not yet visible to teachers)
---   approved -> published  (was publicly visible, stays publicly visible)
---   rejected -> hidden     (was not publicly visible, stays not visible)
-alter table public.posts drop constraint if exists posts_status_check;
-
-update public.posts
-set status = case status
-  when 'pending' then 'draft'
-  when 'approved' then 'published'
-  when 'rejected' then 'hidden'
-  else status
-end
-where status in ('pending', 'approved', 'rejected');
-
-alter table public.posts alter column status set default 'draft';
-
-alter table public.posts
-  add constraint posts_status_check
-  check (status in ('draft', 'published', 'hidden'));
-
-comment on column public.posts.status is 'draft: admin-only. published: publicly visible. hidden: unpublished, admin-only.';
 
 -- posts.updated_at existed but had no trigger keeping it fresh - add it,
 -- reusing the same set_updated_at() helper used by public.profiles.
@@ -38,14 +15,13 @@ create trigger posts_set_updated_at
 before update on public.posts
 for each row execute function public.set_updated_at();
 
--- 3. Admin role helper --------------------------------------------------
--- Central, reusable check so RLS policies (table + storage) stay in sync.
+-- 2. Admin role helper -------------------------------------------------------
 create or replace function public.is_admin()
 returns boolean
 language sql
 stable
 security definer
-set search_path = public
+set search_path = pg_catalog, public
 as $$
   select exists (
     select 1 from public.profiles
@@ -56,30 +32,35 @@ $$;
 revoke all on function public.is_admin() from public, anon;
 grant execute on function public.is_admin() to authenticated;
 
--- 4. posts RLS: public read of published content + full admin management ---
+-- 3. posts RLS: preserve legacy public-read semantics + admin management ----
+-- Recreate policies defensively so this migration is safe to re-run.
+drop policy if exists "posts_public_read_published" on public.posts;
 drop policy if exists "posts_public_read_approved" on public.posts;
-
-create policy "posts_public_read_published"
+create policy "posts_public_read_approved"
 on public.posts for select
 to anon, authenticated
-using (status = 'published');
+using (status = 'approved');
 
+drop policy if exists "posts_admin_select_all" on public.posts;
 create policy "posts_admin_select_all"
 on public.posts for select
 to authenticated
 using (public.is_admin());
 
+drop policy if exists "posts_admin_insert" on public.posts;
 create policy "posts_admin_insert"
 on public.posts for insert
 to authenticated
 with check (public.is_admin());
 
+drop policy if exists "posts_admin_update" on public.posts;
 create policy "posts_admin_update"
 on public.posts for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+drop policy if exists "posts_admin_delete" on public.posts;
 create policy "posts_admin_delete"
 on public.posts for delete
 to authenticated
@@ -87,13 +68,13 @@ using (public.is_admin());
 
 grant insert, update, delete on public.posts to authenticated;
 
--- 5. Storage bucket for cover images / PDFs / resource files ---------------
--- Single public bucket, folders: covers/<postId>/..., files/<postId>/...
--- Binary content never touches the database - only the resulting public
--- URL/path is stored in posts.media (jsonb).
+-- 4. Storage bucket for cover images / PDFs / resource files ---------------
+-- The content in this CMS is intentionally free/public teacher content.
+-- Paths are randomised; draft/hidden means "not listed in the app", not a
+-- confidential file vault. Binary content never touches Postgres.
 insert into storage.buckets (id, name, public)
 values ('content-media', 'content-media', true)
-on conflict (id) do nothing;
+on conflict (id) do update set public = excluded.public;
 
 drop policy if exists "content_media_public_read" on storage.objects;
 create policy "content_media_public_read"

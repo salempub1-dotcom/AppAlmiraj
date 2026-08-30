@@ -36,6 +36,8 @@ export function ContentPreviewScreen({ route }: any) {
     );
   }
 
+  const displayTitle = (language === 'en' && post.title_en) || post.title;
+  const displayBody = (language === 'en' && post.body_en) || post.body;
   const meta = [post.subject, post.level, post.term, post.sequence].filter(Boolean).join('  •  ');
   const externalUrl = post.media?.youtube_url || post.media?.video_url;
 
@@ -59,10 +61,10 @@ export function ContentPreviewScreen({ route }: any) {
             <Text style={[styles.typeLabel, { color: colors.primary }]}>{copy.types[post.post_type]}</Text>
           </View>
         </View>
-        <Text style={[styles.cardTitle, { color: colors.text, textAlign: align }]}>{post.title}</Text>
-        {!!post.body && (
+        <Text style={[styles.cardTitle, { color: colors.text, textAlign: align }]}>{displayTitle}</Text>
+        {!!displayBody && (
           <Text numberOfLines={3} style={[styles.cardBody, { color: colors.muted, textAlign: align }]}>
-            {post.body}
+            {displayBody}
           </Text>
         )}
         {!!meta && <Text style={[styles.cardMeta, { color: colors.muted, textAlign: align }]}>{meta}</Text>}
@@ -70,9 +72,9 @@ export function ContentPreviewScreen({ route }: any) {
 
       <Text style={[styles.subLabel, { color: colors.muted, textAlign: align, marginTop: 6 }]}>{copy.preview.detailView}</Text>
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.detailTitle, { color: colors.text, textAlign: align }]}>{post.title}</Text>
+        <Text style={[styles.detailTitle, { color: colors.text, textAlign: align }]}>{displayTitle}</Text>
         {!!meta && <Text style={[styles.cardMeta, { color: colors.muted, textAlign: align }]}>{meta}</Text>}
-        {!!post.body && <Text style={[styles.detailBody, { color: colors.text, textAlign: align }]}>{post.body}</Text>}
+        {!!displayBody && <Text style={[styles.detailBody, { color: colors.text, textAlign: align }]}>{displayBody}</Text>}
         {!!externalUrl && (
           <Pressable
             onPress={() => Linking.openURL(externalUrl)}

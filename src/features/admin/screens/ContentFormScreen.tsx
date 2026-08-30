@@ -55,11 +55,13 @@ export function ContentFormScreen({ route, navigation }: any) {
   const [term, setTerm] = useState('');
   const [sequence, setSequence] = useState('');
   const [coverUrl, setCoverUrl] = useState('');
+  const [coverPath, setCoverPath] = useState('');
   const [fileUrl, setFileUrl] = useState('');
+  const [filePath, setFilePath] = useState('');
   const [fileName, setFileName] = useState('');
   const [videoUrl, setVideoUrl] = useState('');
   const [isOfficial, setIsOfficial] = useState(false);
-  const [status, setStatus] = useState<PostStatus>('draft');
+  const [status, setStatus] = useState<PostStatus>('pending');
   const [publishDate, setPublishDate] = useState('');
   const [loaded, setLoaded] = useState(!isEditing);
 
@@ -76,7 +78,9 @@ export function ContentFormScreen({ route, navigation }: any) {
     setTerm(post.term ?? '');
     setSequence(post.sequence ?? '');
     setCoverUrl(post.media?.cover_url ?? '');
+    setCoverPath(post.media?.cover_path ?? '');
     setFileUrl(post.media?.file_url ?? '');
+    setFilePath(post.media?.file_path ?? '');
     setFileName(post.media?.file_name ?? '');
     setVideoUrl(post.media?.youtube_url ?? post.media?.video_url ?? '');
     setIsOfficial(post.is_official);
@@ -93,9 +97,11 @@ export function ContentFormScreen({ route, navigation }: any) {
   const buildMedia = (): ContentMedia => {
     const media: ContentMedia = {};
     if (coverUrl) media.cover_url = coverUrl;
+    if (coverPath) media.cover_path = coverPath;
     if (showVideoField && videoUrl) media.youtube_url = videoUrl.trim();
     if (showFileField && fileUrl) {
       media.file_url = fileUrl;
+      if (filePath) media.file_path = filePath;
       media.file_name = fileName;
     }
     return media;
@@ -106,7 +112,7 @@ export function ContentFormScreen({ route, navigation }: any) {
       const parsed = new Date(`${publishDate.trim()}T00:00:00`);
       if (!Number.isNaN(parsed.getTime())) return parsed.toISOString();
     }
-    if (nextStatus === 'published') return new Date().toISOString();
+    if (nextStatus === 'approved') return new Date().toISOString();
     return null;
   };
 
@@ -122,7 +128,7 @@ export function ContentFormScreen({ route, navigation }: any) {
     uploadCover.mutate(
       { uri: asset.uri, name: asset.fileName ?? `cover-${Date.now()}.jpg`, mimeType: asset.mimeType ?? 'image/jpeg' },
       {
-        onSuccess: (uploaded) => setCoverUrl(uploaded.url),
+        onSuccess: (uploaded) => { setCoverUrl(uploaded.url); setCoverPath(uploaded.path); },
         onError: () => Alert.alert(copy.form.uploadError)
       }
     );
@@ -137,6 +143,7 @@ export function ContentFormScreen({ route, navigation }: any) {
       {
         onSuccess: (uploaded) => {
           setFileUrl(uploaded.url);
+          setFilePath(uploaded.path);
           setFileName(uploaded.name);
         },
         onError: () => Alert.alert(copy.form.uploadError)
@@ -263,7 +270,7 @@ export function ContentFormScreen({ route, navigation }: any) {
               <Image source={{ uri: coverUrl }} style={styles.coverPreview} resizeMode="cover" />
               <View style={[styles.mediaButtonsRow, { flexDirection: row }]}>
                 <MediaButton label={copy.form.changeCover} icon="image-outline" onPress={pickCover} />
-                <MediaButton label={copy.form.removeCover} icon="trash-outline" onPress={() => setCoverUrl('')} danger />
+                <MediaButton label={copy.form.removeCover} icon="trash-outline" onPress={() => { setCoverUrl(''); setCoverPath(''); }} danger />
               </View>
             </View>
           ) : (
@@ -279,7 +286,7 @@ export function ContentFormScreen({ route, navigation }: any) {
                 <Text numberOfLines={1} style={[styles.fileName, { color: colors.text, textAlign: align }]}>
                   {fileName || fileUrl}
                 </Text>
-                <Pressable onPress={() => { setFileUrl(''); setFileName(''); }} hitSlop={8}>
+                <Pressable onPress={() => { setFileUrl(''); setFilePath(''); setFileName(''); }} hitSlop={8}>
                   <Ionicons name="close-circle" size={18} color={colors.muted} />
                 </Pressable>
               </View>
@@ -337,14 +344,14 @@ export function ContentFormScreen({ route, navigation }: any) {
 
       <View style={[styles.saveRow, { flexDirection: row }]}>
         <Pressable
-          onPress={() => handleSave('draft')}
+          onPress={() => handleSave('pending')}
           disabled={saving || uploading}
           style={[styles.secondarySave, { borderColor: colors.border, opacity: saving || uploading ? 0.6 : 1 }]}
         >
           <Text style={[styles.secondarySaveText, { color: colors.text }]}>{copy.form.saveDraft}</Text>
         </Pressable>
         <Pressable
-          onPress={() => handleSave('published')}
+          onPress={() => handleSave('approved')}
           disabled={saving || uploading}
           style={[styles.primarySave, { backgroundColor: colors.primary, opacity: saving || uploading ? 0.6 : 1, flexDirection: row }]}
         >

@@ -127,9 +127,9 @@ export const adminCopy = {
       poll: 'استطلاع'
     } satisfies Record<PostType, string>,
     statuses: {
-      draft: 'مسودة',
-      published: 'منشور',
-      hidden: 'مخفي'
+      pending: 'مسودة',
+      approved: 'منشور',
+      rejected: 'مخفي'
     } satisfies Record<PostStatus, string>
   },
   en: {
@@ -257,9 +257,9 @@ export const adminCopy = {
       poll: 'Poll'
     } satisfies Record<PostType, string>,
     statuses: {
-      draft: 'Draft',
-      published: 'Published',
-      hidden: 'Hidden'
+      pending: 'Draft',
+      approved: 'Published',
+      rejected: 'Hidden'
     } satisfies Record<PostStatus, string>
   }
 } satisfies Record<AppLanguage, any>;
