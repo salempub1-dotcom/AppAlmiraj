@@ -18,9 +18,13 @@ export function CheckoutScreen({ navigation }: any) {
   const [wilayas, setWilayas] = useState<WilayaOption[]>([]);
   const [selectedWilaya, setSelectedWilaya] = useState<WilayaOption | null>(null);
   const [wilayaSearch, setWilayaSearch] = useState('');
+  const [wilayaOpen, setWilayaOpen] = useState(false);
+  const [wilayaError, setWilayaError] = useState<string | null>(null);
   const [communes, setCommunes] = useState<CommuneOption[]>([]);
   const [selectedCommune, setSelectedCommune] = useState('');
   const [communeSearch, setCommuneSearch] = useState('');
+  const [communeOpen, setCommuneOpen] = useState(false);
+  const [communeError, setCommuneError] = useState<string | null>(null);
   const [deliveryType, setDeliveryType] = useState<'home' | 'office'>('home');
   const [quote, setQuote] = useState<ShippingQuote | null>(null);
   const [hubs, setHubs] = useState<PickupHub[]>([]);
@@ -29,24 +33,34 @@ export function CheckoutScreen({ navigation }: any) {
   const [loadingDestination, setLoadingDestination] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const loadWilayas = async () => {
+    setLoadingWilayas(true);
+    setWilayaError(null);
+    const { data, error } = await deliveryRepository.getWilayas();
+    setWilayas(data);
+    setWilayaError(error?.message ?? (data.length === 0 ? 'لم يتم العثور على ولايات.' : null));
+    setLoadingWilayas(false);
+  };
+
   useEffect(() => {
-    deliveryRepository.getWilayas().then(({ data }) => {
-      setWilayas(data);
-      setLoadingWilayas(false);
-    });
+    loadWilayas();
   }, []);
 
   useEffect(() => {
     setSelectedCommune('');
     setCommuneSearch('');
+    setCommuneOpen(false);
     setCommunes([]);
+    setCommuneError(null);
     setQuote(null);
     setHubs([]);
     setSelectedHub(null);
     if (!selectedWilaya) return;
+
     setLoadingDestination(true);
-    deliveryRepository.getCommunes(selectedWilaya.id).then(({ data }) => {
+    deliveryRepository.getCommunes(selectedWilaya.id).then(({ data, error }) => {
       setCommunes(data);
+      setCommuneError(error?.message ?? (data.length === 0 ? 'لم يتم العثور على بلديات لهذه الولاية.' : null));
       setLoadingDestination(false);
     });
   }, [selectedWilaya]);
@@ -69,19 +83,20 @@ export function CheckoutScreen({ navigation }: any) {
 
   const filteredWilayas = useMemo(() => {
     const q = wilayaSearch.trim().toLowerCase();
-    if (!q) return wilayas.slice(0, 10);
-    return wilayas.filter((w) => `${w.id} ${w.name}`.toLowerCase().includes(q)).slice(0, 12);
+    if (!q) return wilayas;
+    return wilayas.filter((w) => `${w.id} ${w.name}`.toLowerCase().includes(q));
   }, [wilayas, wilayaSearch]);
 
   const filteredCommunes = useMemo(() => {
     const q = communeSearch.trim().toLowerCase();
-    if (!q) return communes.slice(0, 10);
-    return communes.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 12);
+    if (!q) return communes;
+    return communes.filter((c) => c.name.toLowerCase().includes(q));
   }, [communes, communeSearch]);
 
   const shipping = deliveryType === 'office' ? quote?.office : quote?.home;
   const finalTotal = cart.subtotal + (Number.isFinite(Number(shipping)) ? Number(shipping) : 0);
   const deliveryUnavailable = selectedCommune && quote && !Number.isFinite(Number(shipping));
+  const phoneIsValid = /^(05|06|07)\d{8}$/.test(phone);
 
   const submit = async () => {
     if (!session) {
@@ -90,6 +105,10 @@ export function CheckoutScreen({ navigation }: any) {
     }
     if (!customer.trim() || !phone.trim() || !selectedWilaya || !selectedCommune || !address.trim()) {
       Alert.alert('معلومات ناقصة', 'يرجى إكمال الاسم، الهاتف، الولاية، البلدية والعنوان.');
+      return;
+    }
+    if (!phoneIsValid) {
+      Alert.alert('رقم الهاتف غير صحيح', 'يجب أن يتكون رقم الهاتف من 10 أرقام ويبدأ بـ 05 أو 06 أو 07.');
       return;
     }
     if (!Number.isFinite(Number(shipping))) {
@@ -104,7 +123,7 @@ export function CheckoutScreen({ navigation }: any) {
     setSubmitting(true);
     const { data, error } = await orderRepository.create({
       customer: customer.trim(),
-      phone: phone.trim(),
+      phone,
       wilaya: selectedWilaya.name,
       wilayaId: selectedWilaya.id,
       commune: selectedCommune,
@@ -126,10 +145,10 @@ export function CheckoutScreen({ navigation }: any) {
     navigation.navigate('MyOrders');
   };
 
-  const field = (label: string, value: string, setter: (v: string) => void, placeholder: string, keyboardType?: 'phone-pad') => (
+  const field = (label: string, value: string, setter: (v: string) => void, placeholder: string) => (
     <View style={styles.fieldWrap}>
       <Text style={[styles.label, { color: colors.text }]}>{label}</Text>
-      <TextInput value={value} onChangeText={setter} placeholder={placeholder} placeholderTextColor={colors.muted} keyboardType={keyboardType} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.border }]} textAlign="right" />
+      <TextInput value={value} onChangeText={setter} placeholder={placeholder} placeholderTextColor={colors.muted} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.border }]} textAlign="right" />
     </View>
   );
 
@@ -146,18 +165,83 @@ export function CheckoutScreen({ navigation }: any) {
       {!session && <View style={[styles.notice, { backgroundColor: colors.surface, borderColor: colors.border }]}><Ionicons name="person-circle-outline" size={22} color={colors.primary} /><Text style={[styles.noticeText, { color: colors.text }]}>يلزم تسجيل الدخول قبل تأكيد الطلب.</Text></View>}
 
       {field('الاسم الكامل', customer, setCustomer, 'اسم المستلم')}
-      {field('رقم الهاتف', phone, setPhone, '05 / 06 / 07...', 'phone-pad')}
+
+      <View style={styles.fieldWrap}>
+        <Text style={[styles.label, { color: colors.text }]}>رقم الهاتف</Text>
+        <TextInput
+          value={phone}
+          onChangeText={(value) => setPhone(value.replace(/\D/g, '').slice(0, 10))}
+          placeholder="05 / 06 / 07..."
+          placeholderTextColor={colors.muted}
+          keyboardType="phone-pad"
+          maxLength={10}
+          style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: phone.length > 0 && !phoneIsValid ? colors.danger : colors.border }]}
+          textAlign="right"
+        />
+        {phone.length > 0 && !phoneIsValid ? <Text style={[styles.helperError, { color: colors.danger }]}>10 أرقام ويبدأ بـ 05 أو 06 أو 07.</Text> : null}
+      </View>
 
       <View style={styles.fieldWrap}>
         <Text style={[styles.label, { color: colors.text }]}>الولاية</Text>
-        <TextInput value={wilayaSearch} onChangeText={(value) => { setWilayaSearch(value); if (selectedWilaya && value !== selectedWilaya.name) setSelectedWilaya(null); }} placeholder={loadingWilayas ? 'جاري تحميل الولايات...' : 'ابحث باسم أو رقم الولاية'} placeholderTextColor={colors.muted} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.border }]} textAlign="right" />
-        {!selectedWilaya && !loadingWilayas && wilayaSearch.length > 0 && <View style={styles.optionList}>{filteredWilayas.map((item) => <Pressable key={item.id} onPress={() => { setSelectedWilaya(item); setWilayaSearch(item.name); }} style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}><Text style={[styles.optionMeta, { color: colors.primary }]}>{item.id}</Text><Text style={[styles.optionText, { color: colors.text }]}>{item.name}</Text></Pressable>)}</View>}
+        <Pressable onPress={() => setWilayaOpen((open) => !open)} style={[styles.selector, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <Ionicons name={wilayaOpen ? 'chevron-up' : 'chevron-down'} size={20} color={colors.muted} />
+          <Text style={[styles.selectorText, { color: selectedWilaya ? colors.text : colors.muted }]}>{selectedWilaya?.name ?? (loadingWilayas ? 'جاري تحميل الولايات...' : 'اختر الولاية')}</Text>
+        </Pressable>
+
+        {wilayaOpen && !loadingWilayas ? (
+          <View style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <TextInput
+              value={wilayaSearch}
+              onChangeText={setWilayaSearch}
+              placeholder="ابحث باسم أو رقم الولاية"
+              placeholderTextColor={colors.muted}
+              style={[styles.searchInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+              textAlign="right"
+            />
+            {wilayaError ? (
+              <View style={styles.dropdownMessage}>
+                <Text style={[styles.helperError, { color: colors.danger }]}>{wilayaError}</Text>
+                <Pressable onPress={loadWilayas}><Text style={[styles.retryText, { color: colors.primary }]}>إعادة المحاولة</Text></Pressable>
+              </View>
+            ) : filteredWilayas.length === 0 ? (
+              <Text style={[styles.emptyText, { color: colors.muted }]}>لا توجد نتيجة.</Text>
+            ) : (
+              <View style={styles.optionList}>
+                {filteredWilayas.map((item) => <Pressable key={item.id} onPress={() => { setSelectedWilaya(item); setWilayaSearch(''); setWilayaOpen(false); }} style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}><Text style={[styles.optionMeta, { color: colors.primary }]}>{item.id}</Text><Text style={[styles.optionText, { color: colors.text }]}>{item.name}</Text></Pressable>)}
+              </View>
+            )}
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.fieldWrap}>
         <Text style={[styles.label, { color: colors.text }]}>البلدية</Text>
-        <TextInput editable={!!selectedWilaya && !loadingDestination} value={communeSearch} onChangeText={(value) => { setCommuneSearch(value); if (selectedCommune && value !== selectedCommune) setSelectedCommune(''); }} placeholder={!selectedWilaya ? 'اختر الولاية أولًا' : loadingDestination ? 'جاري تحميل البلديات...' : 'ابحث عن البلدية'} placeholderTextColor={colors.muted} style={[styles.input, { color: colors.text, backgroundColor: colors.card, borderColor: colors.border, opacity: selectedWilaya ? 1 : 0.6 }]} textAlign="right" />
-        {!selectedCommune && selectedWilaya && communeSearch.length > 0 && <View style={styles.optionList}>{filteredCommunes.map((item) => <Pressable key={item.name} onPress={() => { setSelectedCommune(item.name); setCommuneSearch(item.name); }} style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}><Ionicons name="location-outline" size={16} color={colors.primary} /><Text style={[styles.optionText, { color: colors.text }]}>{item.name}</Text></Pressable>)}</View>}
+        <Pressable disabled={!selectedWilaya || loadingDestination} onPress={() => setCommuneOpen((open) => !open)} style={[styles.selector, { backgroundColor: colors.card, borderColor: colors.border, opacity: selectedWilaya ? 1 : 0.6 }]}>
+          <Ionicons name={communeOpen ? 'chevron-up' : 'chevron-down'} size={20} color={colors.muted} />
+          <Text style={[styles.selectorText, { color: selectedCommune ? colors.text : colors.muted }]}>{!selectedWilaya ? 'اختر الولاية أولًا' : loadingDestination && !selectedCommune ? 'جاري تحميل البلديات...' : selectedCommune || 'اختر البلدية'}</Text>
+        </Pressable>
+
+        {communeOpen && selectedWilaya && !loadingDestination ? (
+          <View style={[styles.dropdown, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <TextInput
+              value={communeSearch}
+              onChangeText={setCommuneSearch}
+              placeholder="ابحث عن البلدية"
+              placeholderTextColor={colors.muted}
+              style={[styles.searchInput, { color: colors.text, backgroundColor: colors.surface, borderColor: colors.border }]}
+              textAlign="right"
+            />
+            {communeError ? (
+              <Text style={[styles.helperError, { color: colors.danger }]}>{communeError}</Text>
+            ) : filteredCommunes.length === 0 ? (
+              <Text style={[styles.emptyText, { color: colors.muted }]}>لا توجد نتيجة.</Text>
+            ) : (
+              <View style={styles.optionList}>
+                {filteredCommunes.map((item) => <Pressable key={item.name} onPress={() => { setSelectedCommune(item.name); setCommuneSearch(''); setCommuneOpen(false); }} style={[styles.option, { backgroundColor: colors.card, borderColor: colors.border }]}><Ionicons name="location-outline" size={16} color={colors.primary} /><Text style={[styles.optionText, { color: colors.text }]}>{item.name}</Text></Pressable>)}
+              </View>
+            )}
+          </View>
+        ) : null}
       </View>
 
       {field('العنوان', address, setAddress, 'الحي، الشارع أو نقطة دالة')}
@@ -206,10 +290,18 @@ const styles = StyleSheet.create({
   fieldWrap: { gap: 7 },
   label: { textAlign: 'right', fontWeight: '900', fontSize: 14 },
   input: { minHeight: 54, borderWidth: 1, borderRadius: 16, paddingHorizontal: 15, fontSize: 15, writingDirection: 'rtl' },
+  selector: { minHeight: 54, borderWidth: 1, borderRadius: 16, paddingHorizontal: 15, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  selectorText: { flex: 1, textAlign: 'right', writingDirection: 'rtl', fontSize: 15 },
+  dropdown: { borderWidth: 1, borderRadius: 16, padding: 10, gap: 8 },
+  searchInput: { minHeight: 46, borderWidth: 1, borderRadius: 13, paddingHorizontal: 12, fontSize: 14, writingDirection: 'rtl' },
   optionList: { gap: 7 },
   option: { minHeight: 48, borderWidth: 1, borderRadius: 14, paddingHorizontal: 13, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   optionText: { flex: 1, textAlign: 'right', writingDirection: 'rtl', fontWeight: '800' },
   optionMeta: { fontSize: 12, fontWeight: '900' },
+  dropdownMessage: { gap: 8, alignItems: 'flex-end' },
+  retryText: { fontWeight: '900' },
+  emptyText: { textAlign: 'right', paddingVertical: 8 },
+  helperError: { textAlign: 'right', writingDirection: 'rtl', fontSize: 12, lineHeight: 18 },
   deliveryRow: { flexDirection: 'row-reverse', gap: 10 },
   deliveryCard: { flex: 1, minHeight: 108, borderWidth: 1, borderRadius: 18, alignItems: 'center', justifyContent: 'center', gap: 7 },
   deliveryText: { fontWeight: '900' },
