@@ -1,5 +1,6 @@
 const DELIVERY_API = 'https://www.elm3raj.com/api/noest';
 const TRACKING_API = 'https://www.elm3raj.com/api/track-order';
+const FALLBACK_LOCATIONS_API = 'https://raw.githubusercontent.com/islam-re/Algeria-wilayas/main/json/wilaya-commune/wilaya-commune.json';
 
 async function post(body: Record<string, unknown>) {
   const response = await fetch(DELIVERY_API, {
@@ -17,6 +18,44 @@ function normalizeArray(value: unknown) {
   return [];
 }
 
+type FallbackCommune = { arabic?: string; ascii?: string };
+type FallbackWilaya = { code?: number; arabic?: string; ascii?: string; communes?: FallbackCommune[] };
+
+let fallbackLocationsCache: FallbackWilaya[] | null = null;
+let fallbackLocationsPromise: Promise<FallbackWilaya[]> | null = null;
+
+async function getFallbackLocations(): Promise<FallbackWilaya[]> {
+  if (fallbackLocationsCache) return fallbackLocationsCache;
+  if (fallbackLocationsPromise) return fallbackLocationsPromise;
+
+  fallbackLocationsPromise = fetch(FALLBACK_LOCATIONS_API, {
+    headers: { Accept: 'application/json' }
+  })
+    .then(async (response) => {
+      if (!response.ok) throw new Error(`Fallback locations HTTP ${response.status}`);
+      const json = await response.json();
+      const data = normalizeArray(json) as FallbackWilaya[];
+      fallbackLocationsCache = data;
+      return data;
+    })
+    .finally(() => {
+      fallbackLocationsPromise = null;
+    });
+
+  return fallbackLocationsPromise;
+}
+
+function fallbackWilayaName(item: FallbackWilaya) {
+  return String(item.arabic || item.ascii || '').trim();
+}
+
+function fallbackCommuneName(item: FallbackCommune) {
+  // Use the latin provider-compatible name first. ZR matching is tolerant and
+  // also accepts Arabic, but keeping the stored commune close to courier data
+  // reduces mismatches when requesting live delivery prices and pickup hubs.
+  return String(item.ascii || item.arabic || '').trim();
+}
+
 export type WilayaOption = { id: number; name: string };
 export type CommuneOption = { name: string };
 export type PickupHub = { id: string; name: string; cityName?: string; communeName?: string; address?: string };
@@ -31,9 +70,24 @@ export const deliveryRepository = {
         id: Number(item?.id ?? item?.wilaya_id ?? item?.code ?? 0),
         name: String(item?.name ?? item?.wilaya_name ?? item?.nom ?? item?.name_ar ?? '').trim()
       })).filter((item) => item.id > 0 && item.name);
-      return { data, error: null };
-    } catch (error) {
-      return { data: [], error: error instanceof Error ? error : new Error('تعذر تحميل الولايات.') };
+      if (data.length > 0) return { data, error: null };
+      throw new Error('لم يتم العثور على ولايات من شركة التوصيل.');
+    } catch (primaryError) {
+      try {
+        const fallback = await getFallbackLocations();
+        const data = fallback
+          .map((item) => ({ id: Number(item.code || 0), name: fallbackWilayaName(item) }))
+          .filter((item) => item.id > 0 && item.name)
+          .sort((a, b) => a.id - b.id);
+        if (data.length > 0) return { data, error: null };
+      } catch {
+        // Preserve the original delivery API error below because it is the
+        // operational source the checkout ultimately depends on.
+      }
+      return {
+        data: [],
+        error: primaryError instanceof Error ? primaryError : new Error('تعذر تحميل الولايات.')
+      };
     }
   },
 
@@ -44,9 +98,23 @@ export const deliveryRepository = {
       const data = normalizeArray(result.data).map((item: any) => ({
         name: String(item?.name ?? item?.commune_name ?? item?.nom ?? item?.name_ar ?? '').trim()
       })).filter((item) => item.name);
-      return { data, error: null };
-    } catch (error) {
-      return { data: [], error: error instanceof Error ? error : new Error('تعذر تحميل البلديات.') };
+      if (data.length > 0) return { data, error: null };
+      throw new Error('لم يتم العثور على بلديات من شركة التوصيل.');
+    } catch (primaryError) {
+      try {
+        const fallback = await getFallbackLocations();
+        const wilaya = fallback.find((item) => Number(item.code || 0) === Number(wilayaId));
+        const data = normalizeArray(wilaya?.communes)
+          .map((item: any) => ({ name: fallbackCommuneName(item) }))
+          .filter((item) => item.name);
+        if (data.length > 0) return { data, error: null };
+      } catch {
+        // Fall through to the original provider error.
+      }
+      return {
+        data: [],
+        error: primaryError instanceof Error ? primaryError : new Error('تعذر تحميل البلديات.')
+      };
     }
   },
 
