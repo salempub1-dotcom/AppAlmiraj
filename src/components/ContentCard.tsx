@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeProvider';
 import type { ContentPost } from '../repositories/contentRepository';
 
@@ -17,10 +18,17 @@ const labels: Record<ContentPost['post_type'], string> = {
 
 export function ContentCard({ post }: { post: ContentPost }) {
   const { colors } = useTheme();
+  const navigation = useNavigation<any>();
   const meta = [post.subject, post.level, post.term, post.sequence].filter(Boolean).join(' • ');
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+    <Pressable
+      onPress={() => navigation.navigate('ContentDetail', { postId: post.id })}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.82 : 1 }
+      ]}
+    >
       <View style={styles.topRow}>
         {post.is_official ? (
           <Text style={[styles.official, { color: colors.primary }]}>المعراج</Text>
@@ -40,12 +48,17 @@ export function ContentCard({ post }: { post: ContentPost }) {
 
       {!!meta && <Text style={[styles.meta, { color: colors.muted }]}>{meta}</Text>}
 
-      {post.helpful_count > 0 && (
-        <Text style={[styles.helpful, { color: colors.muted }]}>
-          {post.helpful_count} أستاذ وجدوا هذا المحتوى مفيدًا
-        </Text>
-      )}
-    </View>
+      <View style={styles.footer}>
+        {post.helpful_count > 0 ? (
+          <Text style={[styles.helpful, { color: colors.muted }]}>
+            {post.helpful_count} أستاذ وجدوا هذا المحتوى مفيدًا
+          </Text>
+        ) : (
+          <View />
+        )}
+        <Text style={[styles.open, { color: colors.primary }]}>عرض التفاصيل</Text>
+      </View>
+    </Pressable>
   );
 }
 
@@ -57,5 +70,7 @@ const styles = StyleSheet.create({
   title: { fontWeight: '800', textAlign: 'right', fontSize: 18 },
   body: { textAlign: 'right', lineHeight: 22 },
   meta: { textAlign: 'right', fontSize: 12, marginTop: 4 },
-  helpful: { textAlign: 'right', fontSize: 12, marginTop: 2 }
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
+  helpful: { textAlign: 'right', fontSize: 12, flex: 1 },
+  open: { fontWeight: '900', fontSize: 12 }
 });
