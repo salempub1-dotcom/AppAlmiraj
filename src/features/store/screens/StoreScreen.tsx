@@ -23,16 +23,25 @@ export function StoreScreen({ navigation }: any) {
     <Screen scroll style={styles.page}>
       <View style={styles.hero}>
         <View style={styles.topRow}>
-          <Pressable onPress={() => navigation.navigate('Cart')} style={styles.cartButton}>
-            <Ionicons name="bag-handle-outline" size={21} color="#0B1833" />
-            {cart.count > 0 && <Text style={styles.cartCount}>{cart.count}</Text>}
-          </Pressable>
+          <View style={styles.actions}>
+            <Pressable onPress={() => navigation.navigate('Cart')} style={styles.cartButton}>
+              <Ionicons name="bag-handle-outline" size={21} color="#0B1833" />
+              {cart.count > 0 && <Text style={styles.cartCount}>{cart.count}</Text>}
+            </Pressable>
+            <Pressable onPress={() => navigation.navigate('MyOrders')} style={styles.ordersButton}>
+              <Ionicons name="cube-outline" size={20} color="#D4AF37" />
+            </Pressable>
+          </View>
           <View style={styles.heroCopy}>
             <Text style={styles.eyebrow}>AL MIRAJ STORE</Text>
             <Text style={styles.heroTitle}>متجر المعراج</Text>
           </View>
         </View>
         <Text style={styles.heroBody}>منتجات تعليمية مختارة للأستاذ، بنفس قاعدة بيانات متجر المعراج.</Text>
+        <Pressable onPress={() => navigation.navigate('MyOrders')} style={styles.ordersLink}>
+          <Ionicons name="arrow-back-outline" size={16} color="#D4AF37" />
+          <Text style={styles.ordersLinkText}>متابعة طلباتي</Text>
+        </Pressable>
       </View>
 
       <View style={[styles.searchBox, { backgroundColor: colors.card, borderColor: colors.border }]}> 
@@ -50,22 +59,15 @@ export function StoreScreen({ navigation }: any) {
         <View style={[styles.stateCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
           <Ionicons name="cloud-offline-outline" size={30} color={colors.primary} />
           <Text style={[styles.stateTitle, { color: colors.text }]}>تعذر تحميل المنتجات</Text>
-          <Pressable onPress={() => products.refetch()} style={[styles.retry, { backgroundColor: colors.primary }]}> 
-            <Text style={styles.retryText}>إعادة المحاولة</Text>
-          </Pressable>
+          <Pressable onPress={() => products.refetch()} style={[styles.retry, { backgroundColor: colors.primary }]}><Text style={styles.retryText}>إعادة المحاولة</Text></Pressable>
         </View>
       )}
 
       {!products.isLoading && !products.isError && filtered.length === 0 && (
-        <View style={[styles.stateCard, { backgroundColor: colors.card, borderColor: colors.border }]}> 
-          <Ionicons name="search-outline" size={30} color={colors.primary} />
-          <Text style={[styles.stateTitle, { color: colors.text }]}>لا يوجد منتج مطابق</Text>
-        </View>
+        <View style={[styles.stateCard, { backgroundColor: colors.card, borderColor: colors.border }]}><Ionicons name="search-outline" size={30} color={colors.primary} /><Text style={[styles.stateTitle, { color: colors.text }]}>لا يوجد منتج مطابق</Text></View>
       )}
 
-      <View style={styles.grid}>
-        {filtered.map((product) => <ProductCard key={product.id} product={product} onPress={() => navigation.navigate('ProductDetail', { productId: product.id })} />)}
-      </View>
+      <View style={styles.grid}>{filtered.map((product) => <ProductCard key={product.id} product={product} onPress={() => navigation.navigate('ProductDetail', { productId: product.id })} />)}</View>
     </Screen>
   );
 }
@@ -78,8 +80,12 @@ const styles = StyleSheet.create({
   eyebrow: { color: '#D4AF37', fontSize: 11.5, fontWeight: '900', letterSpacing: 1 },
   heroTitle: { color: '#FFFFFF', fontSize: 31, fontWeight: '900', textAlign: 'right' },
   heroBody: { color: '#C6D0DE', textAlign: 'right', writingDirection: 'rtl', lineHeight: 23 },
+  actions: { flexDirection: 'row', gap: 8 },
   cartButton: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  ordersButton: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(212,175,55,0.35)', alignItems: 'center', justifyContent: 'center' },
   cartCount: { position: 'absolute', top: -5, left: -5, minWidth: 21, height: 21, borderRadius: 99, backgroundColor: '#FFFFFF', color: '#0B1833', textAlign: 'center', fontWeight: '900', fontSize: 11, lineHeight: 21 },
+  ordersLink: { alignSelf: 'flex-end', flexDirection: 'row', gap: 5, alignItems: 'center', paddingVertical: 3 },
+  ordersLinkText: { color: '#D4AF37', fontWeight: '900', fontSize: 12 },
   searchBox: { borderWidth: 1, borderRadius: 18, minHeight: 54, paddingHorizontal: 14, flexDirection: 'row-reverse', alignItems: 'center', gap: 9 },
   searchInput: { flex: 1, fontSize: 15.5, writingDirection: 'rtl' },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
