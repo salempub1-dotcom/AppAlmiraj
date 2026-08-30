@@ -17,7 +17,7 @@ export function ContentPreviewScreen({ route }: any) {
   const draft: ContentPost | undefined = route.params?.draft;
   const id: string | undefined = route.params?.id;
   const detail = useAdminContentDetail(draft ? '' : id ?? '');
-  const post = draft ?? detail.data;
+  const post = (draft ?? detail.data) as ContentPost | undefined;
 
   if (!draft && detail.isLoading) {
     return (

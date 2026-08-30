@@ -174,7 +174,7 @@ export function ContentManagerScreen({ navigation }: any) {
         <Text style={[styles.filterTitle, { color: colors.text }]}>{copy.dashboard.filters}</Text>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} inverted={isRTL}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={[styles.chipsInline, { flexDirection: row }]}>
           <AdminChip label={copy.dashboard.allTypes} active={postType === 'all'} onPress={() => setPostType('all')} icon="apps-outline" />
           {ADMIN_POST_TYPES.map((type) => (
@@ -189,7 +189,7 @@ export function ContentManagerScreen({ navigation }: any) {
         </View>
       </ScrollView>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} inverted={isRTL}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={[styles.chipsInline, { flexDirection: row }]}>
           <AdminChip label={copy.dashboard.allLevels} active={level === 'all'} onPress={() => setLevel('all')} />
           {EDUCATIONAL_LEVELS.map((item) => (
