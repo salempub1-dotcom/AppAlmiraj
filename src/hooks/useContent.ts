@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { contentRepository, PostType } from '../repositories/contentRepository';
+import {
+  contentRepository,
+  type ContentFilters,
+  type PostType
+} from '../repositories/contentRepository';
 
 export function useLatestContent(limit = 8) {
   return useQuery({
@@ -17,6 +21,26 @@ export function useContentByType(type: PostType) {
     queryKey: ['content', type],
     queryFn: async () => {
       const { data, error } = await contentRepository.getByType(type);
+      if (error) throw error;
+      return data ?? [];
+    }
+  });
+}
+
+export function useExploreContent(filters: ContentFilters) {
+  const { postType, search, subject, level, term, limit = 40 } = filters;
+
+  return useQuery({
+    queryKey: ['content', 'explore', postType ?? 'all', search ?? '', subject ?? '', level ?? '', term ?? '', limit],
+    queryFn: async () => {
+      const { data, error } = await contentRepository.explore({
+        postType,
+        search,
+        subject,
+        level,
+        term,
+        limit
+      });
       if (error) throw error;
       return data ?? [];
     }
