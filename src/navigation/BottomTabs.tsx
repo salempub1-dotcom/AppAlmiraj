@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ExploreScreen } from '../features/explore/screens/ExploreScreen';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
 import { StoreScreen } from '../features/store/screens/StoreScreen';
@@ -19,6 +20,8 @@ const icons: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: 
 
 export function BottomTabs() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 8);
 
   return (
     <Tab.Navigator
@@ -31,7 +34,7 @@ export function BottomTabs() {
           fontSize: 10.5,
           fontWeight: '800',
           marginTop: 2,
-          marginBottom: 5
+          marginBottom: 2
         },
         tabBarIcon: ({ color, focused }) => {
           const config = icons[route.name];
@@ -48,8 +51,9 @@ export function BottomTabs() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 72,
+          height: 64 + bottomInset,
           paddingTop: 7,
+          paddingBottom: bottomInset,
           elevation: 14,
           shadowOpacity: 0.1,
           shadowRadius: 16,
