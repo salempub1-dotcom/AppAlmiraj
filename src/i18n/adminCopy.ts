@@ -36,7 +36,9 @@ export const adminCopy = {
       retry: 'إعادة المحاولة',
       emptyTitle: 'لا يوجد محتوى مطابق',
       emptyText: 'جرّب تغيير الفلاتر أو أضف محتوى جديدًا.',
-      loading: 'جاري تحميل المحتوى الإداري...'
+      loading: 'جاري تحميل المحتوى الإداري...',
+      accessDeniedTitle: 'هذا القسم مخصص للمشرفين',
+      accessDeniedText: 'لا تملك صلاحية الوصول إلى إدارة المحتوى.'
     },
     card: {
       edit: 'تعديل',
@@ -164,7 +166,9 @@ export const adminCopy = {
       retry: 'Retry',
       emptyTitle: 'No matching content',
       emptyText: 'Try changing the filters or add new content.',
-      loading: 'Loading content...'
+      loading: 'Loading content...',
+      accessDeniedTitle: 'Admins only',
+      accessDeniedText: 'You do not have access to the Content Manager.'
     },
     card: {
       edit: 'Edit',
