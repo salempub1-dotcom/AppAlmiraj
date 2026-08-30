@@ -4,7 +4,7 @@ import { Screen } from '../../../components/Screen';
 import { useCart } from '../../../context/CartProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 
-export function CartScreen() {
+export function CartScreen({ navigation }: any) {
   const { colors } = useTheme();
   const cart = useCart();
 
@@ -46,12 +46,17 @@ export function CartScreen() {
 
           <View style={[styles.summary, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <View style={styles.summaryRow}><Text style={[styles.summaryLabel, { color: colors.muted }]}>المجموع المؤقت</Text><Text style={[styles.summaryValue, { color: colors.text }]}>{cart.subtotal.toLocaleString('fr-DZ')} دج</Text></View>
-            <Text style={[styles.note, { color: colors.muted }]}>سعر التوصيل يُحسب لاحقًا حسب الولاية ونوع التوصيل.</Text>
+            <Text style={[styles.note, { color: colors.muted }]}>سعر التوصيل يؤكد لاحقًا داخل نفس سير العمل الحالي للطلبات حتى لا نكرر منطق شركات التوصيل.</Text>
           </View>
 
-          <Pressable style={[styles.checkout, { backgroundColor: colors.primary }]}>
+          <Pressable onPress={() => navigation.navigate('Checkout')} style={[styles.checkout, { backgroundColor: colors.primary }]}>
             <Ionicons name="arrow-back" size={20} color={colors.onPrimary} />
             <Text style={[styles.checkoutText, { color: colors.onPrimary }]}>متابعة الطلب</Text>
+          </Pressable>
+
+          <Pressable onPress={() => navigation.navigate('MyOrders')} style={[styles.ordersButton, { borderColor: colors.border, backgroundColor: colors.card }]}>
+            <Ionicons name="cube-outline" size={19} color={colors.primary} />
+            <Text style={[styles.ordersText, { color: colors.text }]}>عرض طلباتي</Text>
           </Pressable>
         </>
       )}
@@ -85,5 +90,7 @@ const styles = StyleSheet.create({
   summaryValue: { fontWeight: '900', fontSize: 18 },
   note: { textAlign: 'right', writingDirection: 'rtl', fontSize: 12, lineHeight: 20 },
   checkout: { minHeight: 58, borderRadius: 18, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 9 },
-  checkoutText: { fontWeight: '900', fontSize: 16 }
+  checkoutText: { fontWeight: '900', fontSize: 16 },
+  ordersButton: { minHeight: 52, borderRadius: 17, borderWidth: 1, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  ordersText: { fontWeight: '900' }
 });
