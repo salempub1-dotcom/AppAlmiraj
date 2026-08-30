@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View } from 'react-native';
 import { AuthProvider } from './src/context/AuthProvider';
 import { CartProvider } from './src/context/CartProvider';
+import { LanguageProvider } from './src/context/LanguageProvider';
 import { ThemeProvider, useTheme } from './src/context/ThemeProvider';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { ensureRTL } from './src/utils/rtl';
@@ -34,11 +35,13 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <CartProvider>
-            <AppShell />
-          </CartProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <CartProvider>
+              <AppShell />
+            </CartProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
