@@ -3,7 +3,7 @@ import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from 'r
 import { Screen } from '../../../components/Screen';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useContentDetail } from '../../../hooks/useContent';
-import type { PostType } from '../../../repositories/contentRepository';
+import type { ContentMedia, PostType } from '../../../repositories/contentRepository';
 
 const labels: Record<PostType, string> = {
   video: 'فيديو تعليمي',
@@ -31,8 +31,8 @@ const icons: Record<PostType, keyof typeof Ionicons.glyphMap> = {
   announcement: 'megaphone-outline'
 };
 
-function firstExternalUrl(media: Record<string, unknown>) {
-  const candidates = [media.youtube_url, media.video_url, media.file_url, media.url];
+function firstExternalUrl(media: ContentMedia) {
+  const candidates = [media.youtube_url, media.video_url, media.file_url];
   return candidates.find((value): value is string => typeof value === 'string' && /^https?:\/\//i.test(value));
 }
 
