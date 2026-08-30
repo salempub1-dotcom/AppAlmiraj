@@ -14,7 +14,7 @@ const icons: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: 
   Explore: { active: 'compass', inactive: 'compass-outline' },
   Tools: { active: 'construct', inactive: 'construct-outline' },
   Store: { active: 'bag-handle', inactive: 'bag-handle-outline' },
-  Profile: { active: 'person-circle', inactive: 'person-circle-outline' }
+  Profile: { active: 'person', inactive: 'person-outline' }
 };
 
 export function BottomTabs() {
@@ -28,25 +28,35 @@ export function BottomTabs() {
         tabBarInactiveTintColor: colors.muted,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '700',
+          fontSize: 10.5,
+          fontWeight: '800',
           marginTop: 2,
           marginBottom: 5
         },
-        tabBarIcon: ({ color, size, focused }) => {
+        tabBarIcon: ({ color, focused }) => {
           const config = icons[route.name];
-          return <Ionicons name={focused ? config.active : config.inactive} color={color} size={size + 2} />;
+          return (
+            <Ionicons
+              name={focused ? config.active : config.inactive}
+              color={focused ? '#0B1833' : color}
+              size={19}
+              style={focused ? { backgroundColor: colors.primary, padding: 7, borderRadius: 12, overflow: 'hidden' } : undefined}
+            />
+          );
         },
         tabBarStyle: {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          height: 68,
+          height: 72,
           paddingTop: 7,
-          elevation: 10,
-          shadowOpacity: 0.08,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: -4 }
+          elevation: 14,
+          shadowOpacity: 0.1,
+          shadowRadius: 16,
+          shadowOffset: { width: 0, height: -5 }
+        },
+        tabBarItemStyle: {
+          paddingTop: 1
         }
       })}
     >
