@@ -27,6 +27,18 @@ export function useContentByType(type: PostType) {
   });
 }
 
+export function useContentDetail(id: string) {
+  return useQuery({
+    queryKey: ['content', 'detail', id],
+    enabled: Boolean(id),
+    queryFn: async () => {
+      const { data, error } = await contentRepository.getById(id);
+      if (error) throw error;
+      return data;
+    }
+  });
+}
+
 export function useExploreContent(filters: ContentFilters) {
   const { postType, search, subject, level, term, limit = 40 } = filters;
 
