@@ -21,9 +21,9 @@ const translations: Record<AppLanguage, TranslationTree> = {
     tools: {
       heroTitle: 'أدوات الأستاذ', heroBody: 'أدوات صغيرة وسريعة تساعدك أثناء الحصة، وتعمل دون الحاجة إلى اتصال مستمر بالإنترنت.', ready: 'جاهزة للتجربة',
       sectionTitle: 'أدوات البداية', sectionCaption: 'ثلاث أدوات عملية للاستخدام المباشر داخل القسم',
-      timerTitle: 'مؤقت القسم', timerText: 'مؤقت واضح للأنشطة، التحديات والعمل الجماعي.',
-      randomTitle: 'اختيار تلميذ عشوائي', randomText: 'اختيار سريع وعادل أثناء المشاركة داخل القسم.',
-      groupsTitle: 'تقسيم المجموعات', groupsText: 'إنشاء مجموعات عشوائية بسرعة وبدون تعقيد.',
+      timerTitle: 'مؤقت القسم', timerText: 'مؤقت واضح للأنشطة، التحديات والعمل الجماعي.', timerDone: 'انتهى الوقت', timerRunning: 'المؤقت يعمل الآن', timerReady: 'جاهز للبدء', timerMinute: 'د', timerPause: 'إيقاف مؤقت', timerStart: 'ابدأ', timerReset: 'إعادة الضبط',
+      randomTitle: 'اختيار تلميذ عشوائي', randomText: 'اختيار سريع وعادل أثناء المشاركة داخل القسم.', randomCaption: 'أدخل الأسماء كل اسم في سطر، ثم اضغط اختيار.', randomPlaceholder: 'مثال:\nأحمد\nسارة\nيوسف', studentCount: 'عدد التلاميذ', selected: 'تم الاختيار', pickNow: 'اختيار الآن',
+      groupsTitle: 'تقسيم المجموعات', groupsText: 'إنشاء مجموعات عشوائية بسرعة وبدون تعقيد.', groupsCaption: 'ألصق قائمة التلاميذ وسيتم توزيعهم عشوائيًا وبشكل متوازن.', groupsPlaceholder: 'أدخل الأسماء، كل اسم في سطر', groupCount: 'عدد المجموعات', splitNow: 'قسّم الآن', group: 'المجموعة',
       offlineTitle: 'مناسبة للاستخدام داخل القسم', offlineText: 'الأدوات الثلاث تعمل محليًا داخل التطبيق ولا تحتاج إلى قاعدة البيانات أثناء الاستخدام.'
     }
   },
@@ -40,9 +40,9 @@ const translations: Record<AppLanguage, TranslationTree> = {
     tools: {
       heroTitle: 'Teacher Tools', heroBody: 'Small, fast tools that help during class and work without a constant internet connection.', ready: 'Ready to try',
       sectionTitle: 'Starter tools', sectionCaption: 'Three practical tools for direct classroom use',
-      timerTitle: 'Class Timer', timerText: 'A clear timer for activities, challenges and group work.',
-      randomTitle: 'Random Student Picker', randomText: 'A quick and fair way to choose students during participation.',
-      groupsTitle: 'Group Maker', groupsText: 'Create balanced random groups quickly and easily.',
+      timerTitle: 'Class Timer', timerText: 'A clear timer for activities, challenges and group work.', timerDone: 'Time is up', timerRunning: 'Timer is running', timerReady: 'Ready to start', timerMinute: 'min', timerPause: 'Pause', timerStart: 'Start', timerReset: 'Reset',
+      randomTitle: 'Random Student Picker', randomText: 'A quick and fair way to choose students during participation.', randomCaption: 'Enter one student name per line, then tap Pick.', randomPlaceholder: 'Example:\nAhmed\nSara\nYoucef', studentCount: 'Students', selected: 'Selected', pickNow: 'Pick now',
+      groupsTitle: 'Group Maker', groupsText: 'Create balanced random groups quickly and easily.', groupsCaption: 'Paste the student list and they will be distributed randomly and evenly.', groupsPlaceholder: 'Enter one name per line', groupCount: 'Number of groups', splitNow: 'Create groups', group: 'Group',
       offlineTitle: 'Built for classroom use', offlineText: 'All three tools run locally in the app and do not need the database while in use.'
     }
   }
