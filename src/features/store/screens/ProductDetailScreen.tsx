@@ -20,6 +20,15 @@ export function ProductDetailScreen({ route, navigation }: any) {
   const product = productQuery.data;
   const images = product.images ?? [];
 
+  const addToCart = () => {
+    cart.add(product);
+  };
+
+  const buyNow = () => {
+    cart.add(product);
+    navigation.navigate('Checkout');
+  };
+
   return (
     <Screen scroll style={styles.page}>
       <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} style={styles.gallery} contentContainerStyle={styles.galleryContent}>
@@ -49,10 +58,19 @@ export function ProductDetailScreen({ route, navigation }: any) {
         </View>
       )}
 
-      <Pressable onPress={() => { cart.add(product); navigation.navigate('Cart'); }} style={[styles.cta, { backgroundColor: colors.primary }]}> 
-        <Ionicons name="bag-add-outline" size={21} color={colors.onPrimary} />
-        <Text style={[styles.ctaText, { color: colors.onPrimary }]}>أضف إلى السلة</Text>
-      </Pressable>
+      <View style={styles.actions}>
+        <Pressable onPress={buyNow} style={[styles.buyNow, { backgroundColor: colors.primary }]}> 
+          <Ionicons name="flash-outline" size={21} color={colors.onPrimary} />
+          <Text style={[styles.actionText, { color: colors.onPrimary }]}>اطلب الآن</Text>
+        </Pressable>
+
+        <Pressable onPress={addToCart} style={[styles.addToCart, { backgroundColor: colors.card, borderColor: colors.primary }]}> 
+          <Ionicons name="bag-add-outline" size={21} color={colors.primary} />
+          <Text style={[styles.actionText, { color: colors.primary }]}>أضف إلى السلة</Text>
+        </Pressable>
+      </View>
+
+      <Text style={[styles.actionHint, { color: colors.muted }]}>يمكنك الطلب مباشرة أو إضافة المنتج للسلة ومتابعة التسوق.</Text>
     </Screen>
   );
 }
@@ -75,6 +93,9 @@ const styles = StyleSheet.create({
   sectionTitle: { textAlign: 'right', fontSize: 20, fontWeight: '900' },
   pointRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 8 },
   point: { flex: 1, textAlign: 'right', writingDirection: 'rtl', lineHeight: 22 },
-  cta: { minHeight: 58, borderRadius: 18, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 9 },
-  ctaText: { fontWeight: '900', fontSize: 16 }
+  actions: { flexDirection: 'row-reverse', gap: 10 },
+  buyNow: { flex: 1.08, minHeight: 58, borderRadius: 18, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  addToCart: { flex: 1, minHeight: 58, borderRadius: 18, borderWidth: 1.5, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  actionText: { fontWeight: '900', fontSize: 15 },
+  actionHint: { textAlign: 'center', writingDirection: 'rtl', fontSize: 12, lineHeight: 19, marginTop: -5 }
 });
