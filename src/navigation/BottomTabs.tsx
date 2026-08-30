@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../context/LanguageProvider';
+import { useTheme } from '../context/ThemeProvider';
 import { ExploreScreen } from '../features/explore/screens/ExploreScreen';
 import { HomeScreen } from '../features/home/screens/HomeScreen';
 import { ToolsScreen } from '../features/teacher-tools/screens/ToolsScreen';
-import { useTheme } from '../context/ThemeProvider';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { StoreStackNavigator } from './StoreStackNavigator';
 
@@ -20,6 +21,7 @@ const icons: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: 
 
 export function BottomTabs() {
   const { colors } = useTheme();
+  const { t } = useLanguage();
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 8);
 
@@ -57,11 +59,11 @@ export function BottomTabs() {
         tabBarItemStyle: { paddingTop: 1 }
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'الرئيسية' }} />
-      <Tab.Screen name="Explore" component={ExploreScreen} options={{ tabBarLabel: 'استكشف' }} />
-      <Tab.Screen name="Tools" component={ToolsScreen} options={{ tabBarLabel: 'الأدوات' }} />
-      <Tab.Screen name="Store" component={StoreStackNavigator} options={{ tabBarLabel: 'المتجر' }} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarLabel: 'حسابي' }} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('nav.home') }} />
+      <Tab.Screen name="Explore" component={ExploreScreen} options={{ tabBarLabel: t('nav.explore') }} />
+      <Tab.Screen name="Tools" component={ToolsScreen} options={{ tabBarLabel: t('nav.tools') }} />
+      <Tab.Screen name="Store" component={StoreStackNavigator} options={{ tabBarLabel: t('nav.store') }} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarLabel: t('nav.profile') }} />
     </Tab.Navigator>
   );
 }
