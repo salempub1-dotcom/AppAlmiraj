@@ -60,6 +60,15 @@ export const contentRepository = {
       .limit(limit);
   },
 
+  async getById(id: string) {
+    return supabase
+      .from('posts')
+      .select(selectFields)
+      .eq('status', 'approved')
+      .eq('id', id)
+      .single();
+  },
+
   async explore(filters: ContentFilters = {}) {
     let query = supabase
       .from('posts')
