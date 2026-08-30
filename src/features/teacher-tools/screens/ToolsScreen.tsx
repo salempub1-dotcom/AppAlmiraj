@@ -1,15 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { useTheme } from '../../../context/ThemeProvider';
 
 const tools = [
-  { icon: 'timer-outline' as const, title: 'مؤقت القسم', text: 'مؤقت واضح للأنشطة، التحديات والعمل الجماعي.' },
-  { icon: 'shuffle-outline' as const, title: 'اختيار تلميذ عشوائي', text: 'اختيار سريع وعادل أثناء المشاركة داخل القسم.' },
-  { icon: 'people-outline' as const, title: 'تقسيم المجموعات', text: 'إنشاء مجموعات عشوائية بسرعة وبدون تعقيد.' }
+  { route: 'ClassTimer', icon: 'timer-outline' as const, title: 'مؤقت القسم', text: 'مؤقت واضح للأنشطة، التحديات والعمل الجماعي.' },
+  { route: 'RandomStudent', icon: 'shuffle-outline' as const, title: 'اختيار تلميذ عشوائي', text: 'اختيار سريع وعادل أثناء المشاركة داخل القسم.' },
+  { route: 'GroupMaker', icon: 'people-outline' as const, title: 'تقسيم المجموعات', text: 'إنشاء مجموعات عشوائية بسرعة وبدون تعقيد.' }
 ];
 
-export function ToolsScreen() {
+export function ToolsScreen({ navigation }: any) {
   const { colors } = useTheme();
 
   return (
@@ -19,21 +19,21 @@ export function ToolsScreen() {
           <Ionicons name="construct" size={21} color="#0B1833" />
         </View>
         <Text style={styles.heroTitle}>أدوات الأستاذ</Text>
-        <Text style={styles.heroBody}>أدوات صغيرة وسريعة تساعدك أثناء الحصة، وتعمل بأقل اعتماد ممكن على الإنترنت.</Text>
+        <Text style={styles.heroBody}>أدوات صغيرة وسريعة تساعدك أثناء الحصة، وتعمل دون الحاجة إلى اتصال مستمر بالإنترنت.</Text>
         <View style={styles.comingBadge}>
           <View style={styles.dot} />
-          <Text style={styles.comingText}>المرحلة الرابعة</Text>
+          <Text style={styles.comingText}>جاهزة للتجربة</Text>
         </View>
       </View>
 
       <View>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>أدوات البداية</Text>
-        <Text style={[styles.sectionCaption, { color: colors.muted }]}>نبدأ بثلاث أدوات عملية بدل إضافة ميزات كثيرة غير ضرورية</Text>
+        <Text style={[styles.sectionCaption, { color: colors.muted }]}>ثلاث أدوات عملية للاستخدام المباشر داخل القسم</Text>
       </View>
 
       <View style={styles.list}>
         {tools.map((tool, index) => (
-          <View key={tool.title} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}> 
+          <Pressable key={tool.title} onPress={() => navigation.navigate(tool.route)} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}> 
             <View style={[styles.numberBadge, { backgroundColor: `${colors.primary}14` }]}> 
               <Text style={[styles.number, { color: colors.primary }]}>{index + 1}</Text>
             </View>
@@ -45,8 +45,12 @@ export function ToolsScreen() {
                 </View>
               </View>
               <Text style={[styles.cardText, { color: colors.muted }]}>{tool.text}</Text>
+              <View style={styles.openRow}>
+                <Ionicons name="arrow-back" size={15} color={colors.primary} />
+                <Text style={[styles.openText, { color: colors.primary }]}>فتح الأداة</Text>
+              </View>
             </View>
-          </View>
+          </Pressable>
         ))}
       </View>
 
@@ -56,7 +60,7 @@ export function ToolsScreen() {
         </View>
         <View style={styles.copy}>
           <Text style={[styles.offlineTitle, { color: colors.text }]}>مناسبة للاستخدام داخل القسم</Text>
-          <Text style={[styles.offlineText, { color: colors.muted }]}>سيتم تصميم الأدوات الأساسية لتكون سريعة وبسيطة ويمكن استخدامها حتى مع اتصال ضعيف.</Text>
+          <Text style={[styles.offlineText, { color: colors.muted }]}>الأدوات الثلاث تعمل محليًا داخل التطبيق ولا تحتاج إلى قاعدة البيانات أثناء الاستخدام.</Text>
         </View>
       </View>
     </Screen>
@@ -83,6 +87,8 @@ const styles = StyleSheet.create({
   icon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   cardTitle: { flex: 1, fontSize: 16, fontWeight: '900', textAlign: 'right' },
   cardText: { fontSize: 12.5, lineHeight: 20, textAlign: 'right', writingDirection: 'rtl' },
+  openRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, marginTop: 2 },
+  openText: { fontSize: 12, fontWeight: '900' },
   offlineCard: { borderWidth: 1, borderRadius: 22, padding: 16, flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 12 },
   offlineIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   offlineTitle: { textAlign: 'right', fontWeight: '900' },
