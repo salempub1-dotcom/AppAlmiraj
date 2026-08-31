@@ -20,15 +20,10 @@ import {
 } from '../../../repositories/communityMediaRepository';
 import { COMMUNITY_POST_TYPES, type CommunityMedia, type CommunityPostType } from '../../../repositories/communityRepository';
 import { CommunityChip } from '../components/CommunityChip';
-import { communityTypeIcons } from '../contentTypeIcons';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
+import { communityTypeIcons } from '../contentTypeIcons';
+import { getCommunityTheme } from '../communityTheme';
 
-// Owner-only post editing (Phase F). A separate screen from
-// CreateCommunityPostScreen on purpose - that screen's exact
-// publish/compression flow was already reviewed and approved (Phase C.1)
-// and stays untouched here; this screen duplicates only the small
-// presentational pieces it needs (Section/TextField/MediaButton below) and
-// wires them to useUpdateCommunityPost instead of useCreateCommunityPost.
 export function EditCommunityPostScreen({ route, navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -41,6 +36,7 @@ type PendingAttachment = { kind: 'image' | 'pdf'; file: PickedCommunityFile; pre
 
 function EditCommunityPostContent({ route, navigation }: any) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { session } = useAuth();
   const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
@@ -62,8 +58,6 @@ function EditCommunityPostContent({ route, navigation }: any) {
   const [newAttachment, setNewAttachment] = useState<PendingAttachment | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  // Seed local form state from the loaded post exactly once (not on every
-  // background refetch, which would otherwise stomp on in-progress edits).
   useEffect(() => {
     if (initialized || !detail.data) return;
     const post = detail.data;
@@ -86,6 +80,7 @@ function EditCommunityPostContent({ route, navigation }: any) {
       Alert.alert(copy.form.permissionError);
       return;
     }
+
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
@@ -95,9 +90,7 @@ function EditCommunityPostContent({ route, navigation }: any) {
       Alert.alert(copy.form.validationMimeImage);
       return;
     }
-    // Same as Create: no size gate here - the picked image is compressed
-    // automatically before upload (communityMediaRepository.uploadImage),
-    // which still enforces MAX_IMAGE_BYTES as a defense-in-depth check.
+
     setNewAttachment({
       kind: 'image',
       file: { uri: asset.uri, name: asset.fileName ?? `image-${Date.now()}.jpg`, mimeType },
@@ -116,6 +109,7 @@ function EditCommunityPostContent({ route, navigation }: any) {
       Alert.alert(copy.form.validationMimePdf);
       return;
     }
+
     if (asset.size && asset.size > MAX_PDF_BYTES) {
       Alert.alert(copy.form.validationSizePdf);
       return;
@@ -132,35 +126,36 @@ function EditCommunityPostContent({ route, navigation }: any) {
 
   if (detail.isLoading) {
     return (
-      <Screen style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.muted }}>{copy.owner.loadError}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <ActivityIndicator color={community.primary} size="large" />
+        <Text style={{ color: community.textMuted }}>{copy.owner.loadError}</Text>
       </Screen>
     );
   }
 
   if (detail.isError || !detail.data) {
     return (
-      <Screen style={styles.center}>
-        <Ionicons name="alert-circle-outline" size={34} color={colors.primary} />
-        <Text style={[styles.errorTitle, { color: colors.text }]}>{copy.owner.loadError}</Text>
-        <Text style={[styles.errorBody, { color: colors.muted }]}>{copy.owner.loadErrorText}</Text>
-        <Pressable onPress={() => detail.refetch()} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
-          <Ionicons name="refresh-outline" size={18} color="#0B1833" />
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="alert-circle-outline" size={30} color={community.primary} />
+        </View>
+        <Text style={[styles.errorTitle, { color: community.text }]}>{copy.owner.loadError}</Text>
+        <Text style={[styles.errorBody, { color: community.textSecondary }]}>{copy.owner.loadErrorText}</Text>
+        <Pressable onPress={() => detail.refetch()} style={[styles.retryButton, { backgroundColor: community.primary }]}>
+          <Ionicons name="refresh-outline" size={18} color="#FFFFFF" />
           <Text style={styles.retryButtonText}>{copy.owner.retry}</Text>
         </Pressable>
       </Screen>
     );
   }
 
-  // Defense in depth: RLS is the real boundary (community_posts_own_update
-  // only ever lets author_id = auth.uid() succeed), but this screen should
-  // never even render the form for anyone but the post's own author.
   if (!viewerId || detail.data.author_id !== viewerId) {
     return (
-      <Screen style={styles.center}>
-        <Ionicons name="lock-closed-outline" size={34} color={colors.primary} />
-        <Text style={[styles.errorTitle, { color: colors.text }]}>{copy.owner.notAuthorized}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="lock-closed-outline" size={28} color={community.primary} />
+        </View>
+        <Text style={[styles.errorTitle, { color: community.text }]}>{copy.owner.notAuthorized}</Text>
       </Screen>
     );
   }
@@ -208,6 +203,7 @@ function EditCommunityPostContent({ route, navigation }: any) {
             Alert.alert(error.kind === 'image' ? copy.form.validationSizeImage : copy.form.validationSizePdf);
             return;
           }
+
           Alert.alert(copy.owner.updateError);
         }
       }
@@ -217,21 +213,54 @@ function EditCommunityPostContent({ route, navigation }: any) {
   const busy = updatePost.isPending;
 
   return (
-    <Screen scroll style={styles.page}>
+    <Screen scroll style={{ ...styles.page, backgroundColor: community.background }}>
+      <View
+        style={[
+          styles.composerCard,
+          {
+            backgroundColor: community.surface,
+            borderColor: community.border,
+            shadowColor: community.shadow
+          }
+        ]}
+      >
+        <View style={[styles.composerHeader, { flexDirection: row }]}>
+          <View style={[styles.avatar, { backgroundColor: community.primarySoft }]}>
+            <Ionicons name="create-outline" size={21} color={community.primary} />
+          </View>
+          <View style={styles.composerHeaderText}>
+            <Text style={[styles.composerTitle, { color: community.text, textAlign: align }]}>{copy.owner.edit}</Text>
+            <Text style={[styles.composerSubtitle, { color: community.textMuted, textAlign: align }]}>{copy.form.bodyPlaceholder}</Text>
+          </View>
+        </View>
+
+        <TextField
+          value={body}
+          onChangeText={setBody}
+          placeholder={copy.form.bodyPlaceholder}
+          align={align}
+          multiline
+          numberOfLines={7}
+          large
+        />
+      </View>
+
       <Section title={copy.form.postType} align={align}>
         <View style={styles.chipsRow}>
           {COMMUNITY_POST_TYPES.map((item) => (
-            <CommunityChip key={item} label={copy.types[item]} active={type === item} onPress={() => setType(item)} icon={communityTypeIcons[item]} />
+            <CommunityChip
+              key={item}
+              label={copy.types[item]}
+              active={type === item}
+              onPress={() => setType(item)}
+              icon={communityTypeIcons[item]}
+            />
           ))}
         </View>
       </Section>
 
       <Section title={copy.form.titleField} align={align}>
         <TextField value={title} onChangeText={setTitle} placeholder={copy.form.titleOptional} align={align} />
-      </Section>
-
-      <Section title={copy.form.body} align={align}>
-        <TextField value={body} onChangeText={setBody} placeholder={copy.form.bodyPlaceholder} align={align} multiline numberOfLines={6} />
       </Section>
 
       <Section title={copy.form.subject} align={align}>
@@ -250,19 +279,17 @@ function EditCommunityPostContent({ route, navigation }: any) {
         {newAttachment ? (
           <View style={styles.attachmentPreviewWrap}>
             {newAttachment.kind === 'image' ? (
-              <Image source={{ uri: newAttachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
-            ) : (
-              <View style={[styles.pdfRow, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
-                <Ionicons name="document-attach-outline" size={18} color={colors.primary} />
-                <Text numberOfLines={1} style={[styles.pdfName, { color: colors.text, textAlign: align }]}>
-                  {newAttachment.file.name}
-                </Text>
+              <View style={[styles.imagePreviewShell, { backgroundColor: community.imageBackdrop }]}>
+                <Image source={{ uri: newAttachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
               </View>
+            ) : (
+              <PdfPreview name={newAttachment.file.name} align={align} />
             )}
+
             <View style={[styles.attachmentButtonsRow, { flexDirection: row }]}>
               <MediaButton
                 label={copy.form.changeAttachment}
-                icon={newAttachment.kind === 'image' ? 'image-outline' : 'document-attach-outline'}
+                icon={newAttachment.kind === 'image' ? 'image-outline' : 'document-text-outline'}
                 onPress={newAttachment.kind === 'image' ? pickImage : pickPdf}
               />
               <MediaButton label={copy.form.removeAttachment} icon="trash-outline" onPress={handleRemoveAttachment} danger />
@@ -271,19 +298,17 @@ function EditCommunityPostContent({ route, navigation }: any) {
         ) : hasExistingAttachment ? (
           <View style={styles.attachmentPreviewWrap}>
             {existingMedia.type === 'image' ? (
-              <Image source={{ uri: existingMedia.url }} style={styles.imagePreview} resizeMode="cover" />
-            ) : (
-              <View style={[styles.pdfRow, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
-                <Ionicons name="document-attach-outline" size={18} color={colors.primary} />
-                <Text numberOfLines={1} style={[styles.pdfName, { color: colors.text, textAlign: align }]}>
-                  {existingMedia.name || copy.card.openPdf}
-                </Text>
+              <View style={[styles.imagePreviewShell, { backgroundColor: community.imageBackdrop }]}>
+                <Image source={{ uri: existingMedia.url }} style={styles.imagePreview} resizeMode="cover" />
               </View>
+            ) : (
+              <PdfPreview name={existingMedia.name || copy.card.openPdf} align={align} />
             )}
+
             <View style={[styles.attachmentButtonsRow, { flexDirection: row }]}>
               <MediaButton
                 label={copy.form.changeAttachment}
-                icon={existingMedia.type === 'image' ? 'image-outline' : 'document-attach-outline'}
+                icon={existingMedia.type === 'image' ? 'image-outline' : 'document-text-outline'}
                 onPress={existingMedia.type === 'image' ? pickImage : pickPdf}
               />
               <MediaButton label={copy.form.removeAttachment} icon="trash-outline" onPress={handleRemoveAttachment} danger />
@@ -291,8 +316,8 @@ function EditCommunityPostContent({ route, navigation }: any) {
           </View>
         ) : (
           <View style={[styles.attachmentButtonsRow, { flexDirection: row }]}>
-            <MediaButton label={copy.form.addImage} icon="image-outline" onPress={pickImage} />
-            <MediaButton label={copy.form.addPdf} icon="document-attach-outline" onPress={pickPdf} />
+            <MediaButton label={copy.form.addImage} icon="image-outline" onPress={pickImage} emphasized />
+            <MediaButton label={copy.form.addPdf} icon="document-text-outline" onPress={pickPdf} emphasized />
           </View>
         )}
       </Section>
@@ -300,9 +325,16 @@ function EditCommunityPostContent({ route, navigation }: any) {
       <Pressable
         onPress={handleSave}
         disabled={busy}
-        style={[styles.publishButton, { backgroundColor: colors.primary, opacity: busy ? 0.6 : 1, flexDirection: row }]}
+        style={({ pressed }) => [
+          styles.publishButton,
+          {
+            backgroundColor: community.primary,
+            opacity: busy ? 0.55 : pressed ? 0.88 : 1,
+            flexDirection: row
+          }
+        ]}
       >
-        {busy ? <ActivityIndicator color="#0B1833" /> : <Ionicons name="checkmark-circle-outline" size={19} color="#0B1833" />}
+        {busy ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="checkmark-circle-outline" size={19} color="#FFFFFF" />}
         <Text style={styles.publishButtonText}>{busy ? copy.owner.saving : copy.owner.save}</Text>
       </Pressable>
     </Screen>
@@ -311,9 +343,20 @@ function EditCommunityPostContent({ route, navigation }: any) {
 
 function Section({ title, align, children }: { title: string; align: 'right' | 'left'; children: React.ReactNode }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
   return (
-    <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{title}</Text>
+    <View
+      style={[
+        styles.section,
+        {
+          backgroundColor: community.surface,
+          borderColor: community.border,
+          shadowColor: community.shadow
+        }
+      ]}
+    >
+      <Text style={[styles.sectionTitle, { color: community.text, textAlign: align }]}>{title}</Text>
       {children}
     </View>
   );
@@ -325,7 +368,8 @@ function TextField({
   placeholder,
   align,
   multiline,
-  numberOfLines
+  numberOfLines,
+  large
 }: {
   value: string;
   onChangeText: (value: string) => void;
@@ -333,26 +377,65 @@ function TextField({
   align: 'right' | 'left';
   multiline?: boolean;
   numberOfLines?: number;
+  large?: boolean;
 }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
   return (
     <View
       style={[
         styles.input,
-        { borderColor: colors.border, backgroundColor: colors.background },
-        multiline ? styles.inputMultiline : null
+        {
+          borderColor: community.border,
+          backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC'
+        },
+        multiline ? styles.inputMultiline : null,
+        large ? styles.inputLarge : null
       ]}
     >
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.muted}
+        placeholderTextColor={community.textMuted}
         textAlign={align}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        style={[styles.textInputInner, { color: colors.text }, multiline ? styles.textInputMultiline : null]}
+        style={[
+          styles.textInputInner,
+          { color: community.text },
+          multiline ? styles.textInputMultiline : null,
+          large ? styles.textInputLarge : null
+        ]}
       />
+    </View>
+  );
+}
+
+function PdfPreview({ name, align }: { name: string; align: 'right' | 'left' }) {
+  const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
+  return (
+    <View
+      style={[
+        styles.pdfRow,
+        {
+          backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC',
+          borderColor: community.border
+        }
+      ]}
+    >
+      <View style={[styles.pdfIcon, { backgroundColor: community.primarySoft }]}>
+        <Ionicons name="document-text-outline" size={21} color={community.primary} />
+      </View>
+      <View style={styles.pdfCopy}>
+        <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>
+          {name}
+        </Text>
+        <Text style={[styles.pdfMeta, { color: community.textMuted, textAlign: align }]}>PDF</Text>
+      </View>
     </View>
   );
 }
@@ -361,44 +444,230 @@ function MediaButton({
   label,
   icon,
   onPress,
-  danger
+  danger,
+  emphasized
 }: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   danger?: boolean;
+  emphasized?: boolean;
 }) {
   const { colors } = useTheme();
-  const color = danger ? colors.danger : colors.text;
+  const community = getCommunityTheme(colors);
+  const color = danger ? community.danger : community.primary;
+
   return (
-    <Pressable onPress={onPress} style={[styles.mediaButton, { borderColor: colors.border }]}>
-      <Ionicons name={icon} size={16} color={color} />
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.mediaButton,
+        {
+          borderColor: danger ? `${community.danger}55` : community.border,
+          backgroundColor: emphasized ? community.primarySoft : community.surface,
+          opacity: pressed ? 0.72 : 1
+        }
+      ]}
+    >
+      <Ionicons name={icon} size={18} color={color} />
       <Text style={[styles.mediaButtonText, { color }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 16 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 },
-  section: { borderWidth: 1, borderRadius: 22, padding: 17, gap: 12 },
-  sectionTitle: { fontSize: 14.5, fontWeight: '900' },
-  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  input: { borderWidth: 1, borderRadius: 14, minHeight: 52, justifyContent: 'center', paddingHorizontal: 14 },
-  inputMultiline: { minHeight: 130, paddingVertical: 12 },
-  textInputInner: { fontSize: 15, paddingVertical: 4 },
-  textInputMultiline: { minHeight: 110, textAlignVertical: 'top' },
-  attachmentPreviewWrap: { gap: 10 },
-  imagePreview: { width: '100%', height: 160, borderRadius: 16 },
-  pdfRow: { borderWidth: 1, borderRadius: 14, minHeight: 52, paddingHorizontal: 14, alignItems: 'center', gap: 9 },
-  pdfName: { flex: 1, fontWeight: '700', fontSize: 13.5 },
-  attachmentButtonsRow: { gap: 8 },
-  mediaButton: { flex: 1, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 14, minHeight: 52, paddingHorizontal: 12 },
-  mediaButtonText: { fontWeight: '800', fontSize: 13 },
-  publishButton: { minHeight: 56, borderRadius: 17, gap: 8, alignItems: 'center', justifyContent: 'center' },
-  publishButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 16 },
-  errorTitle: { textAlign: 'center', fontSize: 18, fontWeight: '900' },
-  errorBody: { textAlign: 'center', lineHeight: 21 },
-  retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 20, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' },
-  retryButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 15 }
+  page: {
+    gap: 14,
+    paddingBottom: 30
+  },
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    paddingHorizontal: 24
+  },
+  stateIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 15,
+    gap: 13,
+    shadowOpacity: 0.05,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2
+  },
+  composerHeader: {
+    alignItems: 'center',
+    gap: 10
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerHeaderText: {
+    flex: 1
+  },
+  composerTitle: {
+    fontSize: 15,
+    fontWeight: '900'
+  },
+  composerSubtitle: {
+    marginTop: 2,
+    fontSize: 11.5,
+    fontWeight: '600'
+  },
+  section: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 15,
+    gap: 11,
+    shadowOpacity: 0.035,
+    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '900'
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 15,
+    minHeight: 50,
+    justifyContent: 'center',
+    paddingHorizontal: 13
+  },
+  inputMultiline: {
+    minHeight: 120,
+    paddingVertical: 11
+  },
+  inputLarge: {
+    minHeight: 150,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent'
+  },
+  textInputInner: {
+    fontSize: 14.5,
+    paddingVertical: 4
+  },
+  textInputMultiline: {
+    minHeight: 100,
+    textAlignVertical: 'top'
+  },
+  textInputLarge: {
+    minHeight: 135,
+    fontSize: 16,
+    lineHeight: 25
+  },
+  attachmentPreviewWrap: {
+    gap: 10
+  },
+  imagePreviewShell: {
+    borderRadius: 16,
+    overflow: 'hidden'
+  },
+  imagePreview: {
+    width: '100%',
+    height: 210
+  },
+  pdfRow: {
+    borderWidth: 1,
+    borderRadius: 15,
+    minHeight: 64,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  pdfIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  pdfCopy: {
+    flex: 1,
+    minWidth: 0
+  },
+  pdfName: {
+    fontWeight: '800',
+    fontSize: 13.5
+  },
+  pdfMeta: {
+    marginTop: 2,
+    fontSize: 10.5,
+    fontWeight: '700'
+  },
+  attachmentButtonsRow: {
+    gap: 8
+  },
+  mediaButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 14,
+    minHeight: 50,
+    paddingHorizontal: 10
+  },
+  mediaButtonText: {
+    fontWeight: '800',
+    fontSize: 12.5
+  },
+  publishButton: {
+    minHeight: 56,
+    borderRadius: 17,
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  publishButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 15.5
+  },
+  errorTitle: {
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '900'
+  },
+  errorBody: {
+    textAlign: 'center',
+    lineHeight: 21
+  },
+  retryButton: {
+    minHeight: 46,
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  retryButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 14
+  }
 });

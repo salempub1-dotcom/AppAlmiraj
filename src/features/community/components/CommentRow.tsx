@@ -5,11 +5,9 @@ import { useTheme } from '../../../context/ThemeProvider';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityComment, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { formatRelativeTime } from '../../../utils/formatRelativeTime';
+import { getCommunityTheme } from '../communityTheme';
 
-// Single flat comment row (Phase D). No nested replies, no reactions, no
-// editing - matches the V1 scope exactly. Own comments get a delete
-// button (with a confirm step); other teachers' comments get a report
-// button instead - never both on the same row.
+// Flat comments remain V1: no nested replies, no comment reactions.
 export function CommentRow({
   comment,
   author,
@@ -24,6 +22,7 @@ export function CommentRow({
   onReport: () => void;
 }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
@@ -44,40 +43,108 @@ export function CommentRow({
   };
 
   return (
-    <View style={[styles.row, { flexDirection: row, borderColor: colors.border }]}>
-      <View style={[styles.avatar, { backgroundColor: `${colors.primary}18` }]}>
+    <View style={[styles.row, { flexDirection: row }]}>
+      <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.border }]}>
         {author?.avatar_url ? (
           <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
         ) : (
-          <Ionicons name="person" size={16} color={colors.primary} />
+          <Ionicons name="person" size={16} color={community.primary} />
         )}
       </View>
-      <View style={styles.body}>
-        <View style={[styles.headerRow, { flexDirection: row }]}>
-          <Text numberOfLines={1} style={[styles.name, { color: colors.text, textAlign: align }]}>
-            {author?.full_name ?? '…'}
+
+      <View style={styles.content}>
+        <View
+          style={[
+            styles.bubble,
+            {
+              backgroundColor: community.isDark ? community.surfaceRaised : '#F3F6FA',
+              borderColor: community.border
+            }
+          ]}
+        >
+          <View style={[styles.headerRow, { flexDirection: row }]}>
+            <Text numberOfLines={1} style={[styles.name, { color: community.text, textAlign: align }]}>
+              {author?.full_name ?? '…'}
+            </Text>
+            <Pressable onPress={handleMenu} hitSlop={10} style={styles.menuButton}>
+              <Ionicons name="ellipsis-horizontal" size={16} color={community.textMuted} />
+            </Pressable>
+          </View>
+
+          <Text
+            numberOfLines={8}
+            style={[
+              styles.text,
+              {
+                color: community.textSecondary,
+                textAlign: align,
+                writingDirection: isRTL ? 'rtl' : 'ltr'
+              }
+            ]}
+          >
+            {comment.body}
           </Text>
-          <Text style={[styles.time, { color: colors.muted }]}>{formatRelativeTime(comment.created_at, language)}</Text>
         </View>
-        <Text numberOfLines={8} style={[styles.text, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
-          {comment.body}
+
+        <Text style={[styles.time, { color: community.textMuted, textAlign: align }]}>
+          {formatRelativeTime(comment.created_at, language)}
         </Text>
       </View>
-      <Pressable onPress={handleMenu} hitSlop={10} style={styles.menuButton}>
-        <Ionicons name="ellipsis-horizontal" size={16} color={colors.muted} />
-      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { borderBottomWidth: StyleSheet.hairlineWidth, paddingVertical: 12, gap: 10, alignItems: 'flex-start' },
-  avatar: { width: 32, height: 32, borderRadius: 11, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImg: { width: 32, height: 32, borderRadius: 11 },
-  body: { flex: 1, gap: 3 },
-  headerRow: { justifyContent: 'space-between', alignItems: 'center' },
-  name: { fontWeight: '900', fontSize: 13 },
-  time: { fontSize: 10.5, fontWeight: '700' },
-  text: { fontSize: 13.5, lineHeight: 20 },
-  menuButton: { padding: 4 }
+  row: {
+    gap: 9,
+    alignItems: 'flex-start',
+    paddingVertical: 4
+  },
+  avatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  avatarImg: {
+    width: 34,
+    height: 34,
+    borderRadius: 17
+  },
+  content: {
+    flex: 1,
+    gap: 4
+  },
+  bubble: {
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingTop: 9,
+    paddingBottom: 10,
+    gap: 4
+  },
+  headerRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  name: {
+    flex: 1,
+    fontWeight: '900',
+    fontSize: 12.5
+  },
+  text: {
+    fontSize: 13.5,
+    lineHeight: 20
+  },
+  time: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    paddingHorizontal: 4
+  },
+  menuButton: {
+    padding: 3
+  }
 });

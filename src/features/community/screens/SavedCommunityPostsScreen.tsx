@@ -18,12 +18,8 @@ import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
+import { getCommunityTheme } from '../communityTheme';
 
-// Authenticated-only (gated the same way as every other Teacher Space
-// screen - see TeacherSpaceGate), paginated, newest-saved-first. Only the
-// current teacher's own saves are ever readable here: community_saves' RLS
-// policy restricts SELECT to `user_id = auth.uid()`, so this screen can
-// never show or imply another user's saved-post relationships.
 export function SavedCommunityPostsScreen({ navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -34,15 +30,17 @@ export function SavedCommunityPostsScreen({ navigation }: any) {
 
 function SavedCommunityPostsList({ navigation }: any) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { session } = useAuth();
   const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
+  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
 
   const saved = useSavedCommunityPosts();
   const rows = useMemo(() => saved.data?.pages.flat() ?? [], [saved.data]);
-  const posts = useMemo(() => rows.map((row) => row.post), [rows]);
+  const posts = useMemo(() => rows.map((item) => item.post), [rows]);
 
   const authorIds = useMemo(() => [...new Set(posts.map((post) => post.author_id))], [posts]);
   const authors = useTeacherPublicProfiles(authorIds);
@@ -58,10 +56,6 @@ function SavedCommunityPostsList({ navigation }: any) {
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
 
-  // Owner-only actions (Phase F) - a teacher can technically save their own
-  // post, so this stays wired here too for correctness, even though it's an
-  // edge case. RLS (community_posts_own_update / _own_delete) is the real
-  // boundary regardless of the isOwner check below.
   const visibilityMutation = useSetOwnCommunityPostVisibility();
   const deleteMutation = useDeleteCommunityPost();
 
@@ -96,27 +90,34 @@ function SavedCommunityPostsList({ navigation }: any) {
 
   const header = (
     <View style={styles.header}>
-      <Text style={[styles.title, { color: colors.text, textAlign: align }]}>{copy.savedPosts.title}</Text>
-      <Text style={[styles.subtitle, { color: colors.muted, textAlign: align }]}>{copy.savedPosts.subtitle}</Text>
+      <View style={[styles.headerCard, { backgroundColor: community.primary }]}>
+        <View style={styles.headerIcon}>
+          <Ionicons name="bookmark" size={22} color="#FFFFFF" />
+        </View>
+        <Text style={[styles.title, { textAlign: align }]}>{copy.savedPosts.title}</Text>
+        <Text style={[styles.subtitle, { textAlign: align }]}>{copy.savedPosts.subtitle}</Text>
+      </View>
     </View>
   );
 
   if (saved.isLoading) {
     return (
-      <Screen style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.muted }}>{copy.savedPosts.loading}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <ActivityIndicator color={community.primary} size="large" />
+        <Text style={{ color: community.textMuted }}>{copy.savedPosts.loading}</Text>
       </Screen>
     );
   }
 
   if (saved.isError) {
     return (
-      <Screen style={styles.center}>
-        <Ionicons name="cloud-offline-outline" size={34} color={colors.primary} />
-        <Text style={[styles.emptyTitle, { color: colors.text }]}>{copy.savedPosts.loadError}</Text>
-        <Text style={[styles.emptyText, { color: colors.muted }]}>{copy.savedPosts.loadErrorText}</Text>
-        <Pressable onPress={() => saved.refetch()} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="cloud-offline-outline" size={30} color={community.primary} />
+        </View>
+        <Text style={[styles.emptyTitle, { color: community.text }]}>{copy.savedPosts.loadError}</Text>
+        <Text style={[styles.emptyText, { color: community.textSecondary }]}>{copy.savedPosts.loadErrorText}</Text>
+        <Pressable onPress={() => saved.refetch()} style={[styles.retryButton, { backgroundColor: community.primary }]}>
           <Text style={styles.retryButtonText}>{copy.savedPosts.retry}</Text>
         </Pressable>
       </Screen>
@@ -124,7 +125,7 @@ function SavedCommunityPostsList({ navigation }: any) {
   }
 
   return (
-    <Screen style={styles.listPage}>
+    <Screen style={{ ...styles.listPage, backgroundColor: community.background }}>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
@@ -136,10 +137,21 @@ function SavedCommunityPostsList({ navigation }: any) {
           if (saved.hasNextPage && !saved.isFetchingNextPage) saved.fetchNextPage();
         }}
         ListEmptyComponent={
-          <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Ionicons name="bookmark-outline" size={30} color={colors.primary} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>{copy.savedPosts.emptyTitle}</Text>
-            <Text style={[styles.emptyText, { color: colors.muted }]}>{copy.savedPosts.emptyText}</Text>
+          <View
+            style={[
+              styles.emptyCard,
+              {
+                backgroundColor: community.surface,
+                borderColor: community.border,
+                shadowColor: community.shadow
+              }
+            ]}
+          >
+            <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+              <Ionicons name="bookmark-outline" size={28} color={community.primary} />
+            </View>
+            <Text style={[styles.emptyTitle, { color: community.text }]}>{copy.savedPosts.emptyTitle}</Text>
+            <Text style={[styles.emptyText, { color: community.textSecondary }]}>{copy.savedPosts.emptyText}</Text>
           </View>
         }
         renderItem={({ item }) => {
@@ -149,6 +161,7 @@ function SavedCommunityPostsList({ navigation }: any) {
           const ownerBusy =
             (visibilityMutation.isPending && visibilityMutation.variables?.postId === item.id) ||
             (deleteMutation.isPending && deleteMutation.variables?.postId === item.id);
+
           return (
             <CommunityPostCard
               post={item}
@@ -170,11 +183,11 @@ function SavedCommunityPostsList({ navigation }: any) {
             />
           );
         }}
-        ItemSeparatorComponent={() => <View style={{ height: 13 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         ListFooterComponent={
           saved.isFetchingNextPage ? (
             <View style={styles.footerLoading}>
-              <ActivityIndicator color={colors.primary} />
+              <ActivityIndicator color={community.primary} />
             </View>
           ) : null
         }
@@ -184,16 +197,38 @@ function SavedCommunityPostsList({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 24 },
   listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
-  listContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40, gap: 0 },
-  header: { gap: 6, marginBottom: 18 },
-  title: { fontSize: 24, fontWeight: '900' },
-  subtitle: { fontSize: 12.5 },
-  emptyTitle: { fontWeight: '900', fontSize: 18 },
+  listContent: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 40 },
+  header: { marginBottom: 14 },
+  headerCard: { borderRadius: 22, padding: 18, gap: 5 },
+  headerIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 7
+  },
+  title: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
+  subtitle: { color: 'rgba(255,255,255,0.82)', fontSize: 12.5, lineHeight: 19 },
+  stateIcon: { width: 54, height: 54, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  emptyTitle: { fontWeight: '900', fontSize: 18, textAlign: 'center' },
   emptyText: { lineHeight: 21, fontSize: 13, textAlign: 'center' },
   retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  retryButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 15 },
-  emptyCard: { borderWidth: 1, borderRadius: 22, padding: 24, gap: 8, alignItems: 'center', marginTop: 10 },
+  retryButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
+  emptyCard: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 24,
+    gap: 9,
+    alignItems: 'center',
+    marginTop: 6,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1
+  },
   footerLoading: { paddingVertical: 18, alignItems: 'center' }
 });

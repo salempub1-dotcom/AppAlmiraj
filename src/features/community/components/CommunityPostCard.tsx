@@ -6,14 +6,10 @@ import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { formatRelativeTime } from '../../../utils/formatRelativeTime';
 import { communityTypeIcons } from '../contentTypeIcons';
+import { getCommunityTheme, getCommunityTypeTone } from '../communityTheme';
 
-// Like/save are wired here (Phase D) as controlled props - `liked`/`saved`
-// come from the screen's batched useCommunityLikedIds/useCommunitySavedIds
-// lookups, and the toggle callbacks call the screen's single shared
-// useCommunityLike/useCommunitySave mutation. The card itself never talks
-// to Supabase directly (Screen -> Hook -> Repository stays intact), and
-// every prop here is optional so the card still renders sensibly (as
-// static, non-interactive counters) anywhere it's used without them.
+// Like/save are controlled props supplied by screens using the existing batched
+// interaction hooks. This component remains UI-only and never talks to Supabase.
 export function CommunityPostCard({
   post,
   author,
@@ -42,11 +38,6 @@ export function CommunityPostCard({
   onToggleSave?: () => void;
   likePending?: boolean;
   savePending?: boolean;
-  // Owner-only actions (Phase F). All optional so the card still renders as
-  // a plain read-only card anywhere it's used without them - the (...)
-  // menu only ever appears when `isOwner` is explicitly passed true, which
-  // every screen computes from `post.author_id === session?.user.id`
-  // (RLS is the real boundary either way - see useCommunityPostOwner.ts).
   isOwner?: boolean;
   onEdit?: () => void;
   onDeletePost?: () => void;
@@ -55,11 +46,12 @@ export function CommunityPostCard({
   showHiddenBadge?: boolean;
 }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
-
+  const typeTone = getCommunityTypeTone(post.type, community);
   const meta = [post.subject, ...(post.level ?? [])].filter(Boolean) as string[];
 
   const handleOwnerMenu = () => {
@@ -74,117 +66,187 @@ export function CommunityPostCard({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.card, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.94 : 1 }]}
+      style={({ pressed }) => [
+        styles.card,
+        {
+          backgroundColor: community.surface,
+          borderColor: community.border,
+          shadowColor: community.shadow,
+          opacity: pressed ? 0.97 : 1,
+          transform: [{ scale: pressed ? 0.995 : 1 }]
+        }
+      ]}
     >
       <View style={[styles.authorRow, { flexDirection: row }]}>
         <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: row }]}>
-          <View style={[styles.avatar, { backgroundColor: `${colors.primary}18` }]}>
+          <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.border }]}>
             {author?.avatar_url ? (
               <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
             ) : (
-              <Ionicons name="person" size={18} color={colors.primary} />
+              <Ionicons name="person" size={20} color={community.primary} />
             )}
           </View>
-          <View>
-            <Text numberOfLines={1} style={[styles.authorName, { color: colors.text, textAlign: align }]}>
+
+          <View style={styles.authorText}>
+            <Text numberOfLines={1} style={[styles.authorName, { color: community.text, textAlign: align }]}>
               {author?.full_name ?? '…'}
             </Text>
-            {!!author?.subject && (
-              <Text numberOfLines={1} style={[styles.authorMeta, { color: colors.muted, textAlign: align }]}>
-                {author.subject}
+
+            <View style={[styles.authorMetaRow, { flexDirection: row }]}>
+              {!!author?.subject && (
+                <Text numberOfLines={1} style={[styles.authorMeta, { color: community.textSecondary, textAlign: align }]}>
+                  {author.subject}
+                </Text>
+              )}
+              {!!author?.subject && <View style={[styles.metaDot, { backgroundColor: community.textMuted }]} />}
+              <Text style={[styles.time, { color: community.textMuted }]}>
+                {formatRelativeTime(post.created_at, language)}
               </Text>
-            )}
+            </View>
           </View>
         </Pressable>
-        <View style={[styles.authorTrailing, { flexDirection: row }]}>
-          <Text style={[styles.time, { color: colors.muted }]}>{formatRelativeTime(post.created_at, language)}</Text>
-          {isOwner && (
-            <Pressable
-              onPress={handleOwnerMenu}
-              disabled={ownerBusy}
-              hitSlop={10}
-              accessibilityLabel={copy.card.moreOptions}
-              style={{ opacity: ownerBusy ? 0.5 : 1 }}
-            >
-              <Ionicons name="ellipsis-horizontal" size={18} color={colors.muted} />
-            </Pressable>
-          )}
-        </View>
+
+        {isOwner && (
+          <Pressable
+            onPress={handleOwnerMenu}
+            disabled={ownerBusy}
+            hitSlop={10}
+            accessibilityLabel={copy.card.moreOptions}
+            style={({ pressed }) => [
+              styles.moreButton,
+              {
+                backgroundColor: pressed ? community.primarySoft : 'transparent',
+                opacity: ownerBusy ? 0.5 : 1
+              }
+            ]}
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color={community.textSecondary} />
+          </Pressable>
+        )}
       </View>
 
       <View style={[styles.badgesRow, { flexDirection: row }]}>
-        <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row }]}>
-          <Ionicons name={communityTypeIcons[post.type]} size={14} color={colors.primary} />
-          <Text style={[styles.typeText, { color: colors.primary }]}>{copy.types[post.type]}</Text>
+        <View style={[styles.typeBadge, { backgroundColor: typeTone.background, flexDirection: row }]}>
+          <Ionicons name={communityTypeIcons[post.type]} size={14} color={typeTone.foreground} />
+          <Text style={[styles.typeText, { color: typeTone.foreground }]}>{copy.types[post.type]}</Text>
         </View>
+
         {showHiddenBadge && (
-          <View style={[styles.hiddenBadge, { backgroundColor: `${colors.danger}18`, flexDirection: row }]}>
-            <Ionicons name="eye-off-outline" size={12} color={colors.danger} />
-            <Text style={[styles.hiddenBadgeText, { color: colors.danger }]}>{copy.card.hiddenBadge}</Text>
+          <View style={[styles.hiddenBadge, { backgroundColor: `${community.danger}14`, flexDirection: row }]}>
+            <Ionicons name="eye-off-outline" size={12} color={community.danger} />
+            <Text style={[styles.hiddenBadgeText, { color: community.danger }]}>{copy.card.hiddenBadge}</Text>
           </View>
         )}
       </View>
 
       {!!post.title && (
-        <Text numberOfLines={3} style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+        <Text
+          numberOfLines={3}
+          style={[
+            styles.title,
+            {
+              color: community.text,
+              textAlign: align,
+              writingDirection: isRTL ? 'rtl' : 'ltr'
+            }
+          ]}
+        >
           {post.title}
         </Text>
       )}
 
       {!!post.body && (
-        <Text numberOfLines={4} style={[styles.body, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+        <Text
+          numberOfLines={5}
+          style={[
+            styles.body,
+            {
+              color: community.textSecondary,
+              textAlign: align,
+              writingDirection: isRTL ? 'rtl' : 'ltr'
+            }
+          ]}
+        >
           {post.body}
         </Text>
       )}
 
       {post.media?.type === 'image' && !!post.media.url && (
-        <Image source={{ uri: post.media.url }} style={styles.imagePreview} resizeMode="cover" />
+        <View style={[styles.imageShell, { backgroundColor: community.imageBackdrop }]}>
+          <Image source={{ uri: post.media.url }} style={styles.imagePreview} resizeMode="cover" />
+        </View>
       )}
 
       {post.media?.type === 'pdf' && !!post.media.url && (
-        <View style={[styles.pdfCard, { backgroundColor: `${colors.muted}10`, borderColor: colors.border, flexDirection: row }]}>
-          <Ionicons name="document-attach-outline" size={20} color={colors.primary} />
-          <Text numberOfLines={1} style={[styles.pdfName, { color: colors.text, textAlign: align }]}>
-            {post.media.name || copy.card.openPdf}
-          </Text>
-          <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.muted} />
+        <View
+          style={[
+            styles.pdfCard,
+            {
+              backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC',
+              borderColor: community.border,
+              flexDirection: row
+            }
+          ]}
+        >
+          <View style={[styles.pdfIcon, { backgroundColor: community.primarySoft }]}>
+            <Ionicons name="document-text-outline" size={22} color={community.primary} />
+          </View>
+
+          <View style={styles.pdfTextWrap}>
+            <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>
+              {post.media.name || copy.card.openPdf}
+            </Text>
+            <Text style={[styles.pdfMeta, { color: community.textMuted, textAlign: align }]}>PDF</Text>
+          </View>
+
+          <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={community.textMuted} />
         </View>
       )}
 
       {meta.length > 0 && (
         <View style={[styles.metaWrap, { flexDirection: row }]}>
           {meta.map((item) => (
-            <View key={item} style={[styles.metaChip, { backgroundColor: `${colors.muted}10`, borderColor: colors.border }]}>
-              <Text style={[styles.metaText, { color: colors.muted }]}>{item}</Text>
+            <View key={item} style={[styles.metaChip, { backgroundColor: community.primarySoft }]}>
+              <Text style={[styles.metaText, { color: community.primaryStrong }]}>{item}</Text>
             </View>
           ))}
         </View>
       )}
 
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <View style={[styles.divider, { backgroundColor: community.divider }]} />
 
-      <View style={[styles.footer, { flexDirection: row }]}>
-        <View style={[styles.countersRow, { flexDirection: row }]}>
-          <InteractionButton
-            icon={liked ? 'heart' : 'heart-outline'}
-            value={post.likes_count}
-            color={liked ? colors.danger : colors.muted}
-            onPress={onToggleLike}
-            disabled={likePending}
-          />
-          <InteractionButton icon="chatbubble-outline" value={post.comments_count} color={colors.muted} onPress={onPress} />
-          <InteractionButton
-            icon={saved ? 'bookmark' : 'bookmark-outline'}
-            value={post.saves_count}
-            color={saved ? colors.primary : colors.muted}
-            onPress={onToggleSave}
-            disabled={savePending}
-          />
-        </View>
-        <View style={[styles.openRow, { flexDirection: row }]}>
-          <Text style={[styles.open, { color: colors.primary }]}>{copy.card.viewDetails}</Text>
-          <Ionicons name={isRTL ? 'arrow-back' : 'arrow-forward'} size={15} color={colors.primary} />
-        </View>
+      <View style={[styles.actionsRow, { flexDirection: row }]}>
+        <InteractionButton
+          icon={liked ? 'heart' : 'heart-outline'}
+          value={post.likes_count}
+          active={liked}
+          activeColor={community.primary}
+          inactiveColor={community.textSecondary}
+          activeBackground={community.primarySoft}
+          onPress={onToggleLike}
+          disabled={likePending}
+        />
+
+        <InteractionButton
+          icon="chatbubble-outline"
+          value={post.comments_count}
+          active={false}
+          activeColor={community.primary}
+          inactiveColor={community.textSecondary}
+          activeBackground={community.primarySoft}
+          onPress={onPress}
+        />
+
+        <InteractionButton
+          icon={saved ? 'bookmark' : 'bookmark-outline'}
+          value={post.saves_count}
+          active={saved}
+          activeColor={community.primary}
+          inactiveColor={community.textSecondary}
+          activeBackground={community.primarySoft}
+          onPress={onToggleSave}
+          disabled={savePending}
+        />
       </View>
     </Pressable>
   );
@@ -193,52 +255,224 @@ export function CommunityPostCard({
 function InteractionButton({
   icon,
   value,
-  color,
+  active,
+  activeColor,
+  inactiveColor,
+  activeBackground,
   onPress,
   disabled
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   value: number;
-  color: string;
+  active?: boolean;
+  activeColor: string;
+  inactiveColor: string;
+  activeBackground: string;
   onPress?: () => void;
   disabled?: boolean;
 }) {
+  const color = active ? activeColor : inactiveColor;
+
   return (
-    <Pressable onPress={onPress} disabled={!onPress || disabled} hitSlop={8} style={[styles.counter, { opacity: disabled ? 0.5 : 1 }]}>
-      <Ionicons name={icon} size={14} color={color} />
-      <Text style={[styles.counterText, { color }]}>{value}</Text>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress || disabled}
+      hitSlop={6}
+      style={({ pressed }) => [
+        styles.actionButton,
+        {
+          backgroundColor: active ? activeBackground : 'transparent',
+          opacity: disabled ? 0.45 : pressed ? 0.72 : 1
+        }
+      ]}
+    >
+      <Ionicons name={icon} size={19} color={color} />
+      <Text style={[styles.actionCount, { color }]}>{value}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: 1, borderRadius: 24, padding: 17, gap: 11, overflow: 'hidden' },
-  authorRow: { justifyContent: 'space-between', alignItems: 'center' },
-  authorLockup: { alignItems: 'center', gap: 9, flexShrink: 1 },
-  avatar: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImg: { width: 36, height: 36, borderRadius: 12 },
-  authorName: { fontWeight: '900', fontSize: 13.5, maxWidth: 160 },
-  authorMeta: { fontSize: 11, marginTop: 1 },
-  authorTrailing: { alignItems: 'center', gap: 10 },
-  time: { fontSize: 11, fontWeight: '700' },
-  badgesRow: { alignItems: 'center', gap: 8 },
-  typeBadge: { alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  typeText: { fontWeight: '900', fontSize: 11.5 },
-  hiddenBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
-  hiddenBadgeText: { fontWeight: '900', fontSize: 10.5 },
-  title: { fontWeight: '900', fontSize: 17, lineHeight: 27 },
-  body: { lineHeight: 23, fontSize: 14 },
-  imagePreview: { width: '100%', height: 170, borderRadius: 17 },
-  pdfCard: { borderWidth: 1, borderRadius: 14, minHeight: 50, paddingHorizontal: 12, alignItems: 'center', gap: 9 },
-  pdfName: { flex: 1, fontWeight: '700', fontSize: 13 },
-  metaWrap: { flexWrap: 'wrap', gap: 6 },
-  metaChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
-  metaText: { fontSize: 11.5, fontWeight: '700' },
-  divider: { height: StyleSheet.hairlineWidth, marginTop: 2 },
-  footer: { justifyContent: 'space-between', alignItems: 'center' },
-  countersRow: { gap: 14, alignItems: 'center' },
-  counter: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  counterText: { fontSize: 12, fontWeight: '700' },
-  openRow: { alignItems: 'center', gap: 5 },
-  open: { fontWeight: '900', fontSize: 12 }
+  card: {
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 15,
+    paddingBottom: 10,
+    gap: 12,
+    overflow: 'hidden',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
+  },
+  authorRow: {
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  authorLockup: {
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    minWidth: 0
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  avatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22
+  },
+  authorText: {
+    flex: 1,
+    minWidth: 0
+  },
+  authorName: {
+    fontWeight: '900',
+    fontSize: 14.5
+  },
+  authorMetaRow: {
+    marginTop: 3,
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap'
+  },
+  authorMeta: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    maxWidth: 130
+  },
+  metaDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 999
+  },
+  time: {
+    fontSize: 11,
+    fontWeight: '600'
+  },
+  moreButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  badgesRow: {
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap'
+  },
+  typeBadge: {
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 6
+  },
+  typeText: {
+    fontWeight: '800',
+    fontSize: 11.5
+  },
+  hiddenBadge: {
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
+  hiddenBadgeText: {
+    fontWeight: '800',
+    fontSize: 10.5
+  },
+  title: {
+    fontWeight: '900',
+    fontSize: 17,
+    lineHeight: 25
+  },
+  body: {
+    lineHeight: 23,
+    fontSize: 14.25,
+    fontWeight: '500'
+  },
+  imageShell: {
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden'
+  },
+  imagePreview: {
+    width: '100%',
+    height: 210
+  },
+  pdfCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    minHeight: 66,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    alignItems: 'center',
+    gap: 10
+  },
+  pdfIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  pdfTextWrap: {
+    flex: 1,
+    minWidth: 0
+  },
+  pdfName: {
+    fontWeight: '800',
+    fontSize: 13
+  },
+  pdfMeta: {
+    marginTop: 2,
+    fontSize: 10.5,
+    fontWeight: '700'
+  },
+  metaWrap: {
+    flexWrap: 'wrap',
+    gap: 6
+  },
+  metaChip: {
+    borderRadius: 999,
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
+  metaText: {
+    fontSize: 11,
+    fontWeight: '800'
+  },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 1
+  },
+  actionsRow: {
+    justifyContent: 'space-around',
+    alignItems: 'center'
+  },
+  actionButton: {
+    minWidth: 72,
+    minHeight: 38,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6
+  },
+  actionCount: {
+    fontSize: 12,
+    fontWeight: '800'
+  }
 });
