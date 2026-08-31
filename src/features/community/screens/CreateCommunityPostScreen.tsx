@@ -12,7 +12,7 @@ import { EDUCATIONAL_LEVELS } from '../../../repositories/contentRepository';
 import {
   ALLOWED_IMAGE_MIME_TYPES,
   ALLOWED_PDF_MIME_TYPES,
-  MAX_IMAGE_BYTES,
+  CommunityMediaTooLargeError,
   MAX_PDF_BYTES,
   type PickedCommunityFile
 } from '../../../repositories/communityMediaRepository';
@@ -69,10 +69,15 @@ function CreateCommunityPostContent({ navigation }: any) {
       Alert.alert(copy.form.validationMimeImage);
       return;
     }
-    if (asset.fileSize && asset.fileSize > MAX_IMAGE_BYTES) {
-      Alert.alert(copy.form.validationSizeImage);
-      return;
-    }
+    // No size gate here on purpose (Phase C.1): the picked image is
+    // compressed automatically before upload (see
+    // communityMediaRepository.ts's compressImageForUpload), so a teacher
+    // should not be blocked from picking a normal, large phone photo just
+    // because its original size is over the cap. The repository still
+    // enforces the cap as a defense-in-depth check on the compressed
+    // bytes and throws CommunityMediaTooLargeError if compression
+    // genuinely can't bring a pathological image under it - handled in
+    // handlePublish below, which shows validationSizeImage for that case.
 
     setAttachment({
       kind: 'image',
@@ -134,7 +139,13 @@ function CreateCommunityPostContent({ navigation }: any) {
       },
       {
         onSuccess: (post) => navigation.replace('CommunityPostDetail', { postId: post.id }),
-        onError: () => Alert.alert(copy.form.publishError)
+        onError: (error) => {
+          if (error instanceof CommunityMediaTooLargeError) {
+            Alert.alert(error.kind === 'image' ? copy.form.validationSizeImage : copy.form.validationSizePdf);
+            return;
+          }
+          Alert.alert(copy.form.publishError);
+        }
       }
     );
   };
