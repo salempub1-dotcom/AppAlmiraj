@@ -11,6 +11,7 @@ export const communityCopy = {
       feed: 'فضاء الأستاذ',
       detail: 'المنشور',
       create: 'منشور جديد',
+      editPost: 'تعديل المنشور',
       profile: 'الملف الشخصي',
       saved: 'المحفوظات'
     },
@@ -41,7 +42,9 @@ export const communityCopy = {
       likes: 'إعجاب',
       comments: 'تعليق',
       saves: 'حفظ',
-      report: 'الإبلاغ عن المنشور'
+      report: 'الإبلاغ عن المنشور',
+      moreOptions: 'خيارات المنشور',
+      hiddenBadge: 'مخفي'
     },
     detail: {
       loading: 'جاري فتح المنشور...',
@@ -168,13 +171,37 @@ export const communityCopy = {
       resource: 'مورد',
       classroom_experience: 'تجربة صفية',
       tip: 'نصيحة'
-    } satisfies Record<CommunityPostType, string>
+    } satisfies Record<CommunityPostType, string>,
+    owner: {
+      edit: 'تعديل المنشور',
+      delete: 'حذف المنشور',
+      hide: 'إخفاء المنشور',
+      show: 'إظهار المنشور',
+      cancel: 'إلغاء',
+      deleteConfirmTitle: 'حذف نهائي؟',
+      deleteConfirmText: 'لا يمكن التراجع عن هذا الإجراء. سيتم حذف المنشور وكل تعليقاته وإعجاباته نهائيًا.',
+      confirmDelete: 'حذف نهائي',
+      editSuccess: 'تم تعديل المنشور',
+      deleteSuccess: 'تم حذف المنشور',
+      hideSuccess: 'تم إخفاء المنشور',
+      showSuccess: 'تم إظهار المنشور',
+      updateError: 'تعذر تعديل المنشور',
+      deleteError: 'تعذر حذف المنشور',
+      statusError: 'تعذر تحديث حالة المنشور',
+      loadError: 'تعذر تحميل المنشور للتعديل',
+      loadErrorText: 'قد يكون المنشور غير متاح.',
+      retry: 'إعادة المحاولة',
+      notAuthorized: 'لا يمكنك تعديل هذا المنشور',
+      save: 'حفظ التعديلات',
+      saving: 'جارٍ الحفظ...'
+    }
   },
   en: {
     nav: {
       feed: 'Teacher Space',
       detail: 'Post',
       create: 'New post',
+      editPost: 'Edit post',
       profile: 'Profile',
       saved: 'Saved'
     },
@@ -205,7 +232,9 @@ export const communityCopy = {
       likes: 'likes',
       comments: 'comments',
       saves: 'saves',
-      report: 'Report post'
+      report: 'Report post',
+      moreOptions: 'Post options',
+      hiddenBadge: 'Hidden'
     },
     detail: {
       loading: 'Opening post...',
@@ -332,7 +361,30 @@ export const communityCopy = {
       resource: 'Resource',
       classroom_experience: 'Classroom experience',
       tip: 'Tip'
-    } satisfies Record<CommunityPostType, string>
+    } satisfies Record<CommunityPostType, string>,
+    owner: {
+      edit: 'Edit post',
+      delete: 'Delete post',
+      hide: 'Hide post',
+      show: 'Show post',
+      cancel: 'Cancel',
+      deleteConfirmTitle: 'Delete permanently?',
+      deleteConfirmText: 'This action cannot be undone. The post and all its comments and likes will be permanently deleted.',
+      confirmDelete: 'Delete permanently',
+      editSuccess: 'Post updated',
+      deleteSuccess: 'Post deleted',
+      hideSuccess: 'Post hidden',
+      showSuccess: 'Post shown again',
+      updateError: 'Could not update the post',
+      deleteError: 'Could not delete the post',
+      statusError: 'Could not update the post status',
+      loadError: 'Could not load this post for editing',
+      loadErrorText: 'This post may be unavailable.',
+      retry: 'Retry',
+      notAuthorized: 'You cannot edit this post',
+      save: 'Save changes',
+      saving: 'Saving...'
+    }
   }
 } satisfies Record<AppLanguage, any>;
 
