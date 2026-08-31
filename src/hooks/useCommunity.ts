@@ -80,14 +80,25 @@ export function useTeacherPublicProfile(profileId: string) {
   });
 }
 
-export function useTeacherPosts(authorId: string, limit = 20) {
-  return useQuery({
-    queryKey: ['community', 'teacher-posts', authorId, limit],
+const TEACHER_POSTS_PAGE_SIZE = 12;
+
+// Paginated, newest-first posts for a teacher's public profile page (Phase
+// D). Backed by communityRepository.teacherPosts(), which - unlike feed() -
+// lets a teacher see their own hidden/removed posts on their own profile
+// while still only ever showing another teacher's visible posts.
+export function useTeacherCommunityPosts(authorId: string) {
+  return useInfiniteQuery({
+    queryKey: ['community', 'teacher-posts', authorId],
     enabled: Boolean(authorId),
-    queryFn: async () => {
-      const { data, error } = await communityRepository.feed({ authorId, limit });
+    initialPageParam: undefined as string | undefined,
+    queryFn: async ({ pageParam }) => {
+      const { data, error } = await communityRepository.teacherPosts(authorId, pageParam, TEACHER_POSTS_PAGE_SIZE);
       if (error) throw error;
       return (data ?? []) as CommunityPost[];
+    },
+    getNextPageParam: (lastPage) => {
+      const last = lastPage[lastPage.length - 1];
+      return lastPage.length === TEACHER_POSTS_PAGE_SIZE && last ? last.created_at : undefined;
     }
   });
 }

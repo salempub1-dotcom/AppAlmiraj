@@ -93,6 +93,26 @@ export type CommunityComment = {
   updated_at: string;
 };
 
+// V1 report reasons - stable slugs (not localized text) so the reason is
+// filterable/consistent regardless of the reporting teacher's UI language.
+// Bilingual labels live in communityCopy.ts (report.reasons).
+export type CommunityReportReason =
+  | 'not_educational'
+  | 'inappropriate'
+  | 'harassment'
+  | 'copyright'
+  | 'misleading'
+  | 'other';
+
+export const COMMUNITY_REPORT_REASONS: CommunityReportReason[] = [
+  'not_educational',
+  'inappropriate',
+  'harassment',
+  'copyright',
+  'misleading',
+  'other'
+];
+
 // Own community_profiles row (bio / visibility toggle / cached counters).
 export type CommunityProfile = {
   id: string;
@@ -164,6 +184,26 @@ export const communityRepository = {
       .limit(limit);
   },
 
+  // Paginated posts for a teacher's public profile page. Mirrors feed()'s
+  // cursor pagination, but scoped to one author. Unlike feed() (always
+  // status = 'visible'), a teacher viewing their OWN profile sees their own
+  // rows exactly as RLS allows (including their own hidden/removed posts) -
+  // viewing someone else's profile only ever shows that teacher's visible
+  // posts, matching the Phase D requirement that no hidden/removed post from
+  // another teacher is ever shown.
+  async teacherPosts(authorId: string, before?: string, limit = 12) {
+    const viewerId = await currentUserId();
+    let query = supabase
+      .from('community_posts')
+      .select(postFields)
+      .eq('author_id', authorId)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (viewerId !== authorId) query = query.eq('status', 'visible');
+    if (before) query = query.lt('created_at', before);
+    return query;
+  },
+
   async create(input: CommunityPostInput) {
     const userId = await currentUserId();
     if (!userId) throw new Error('يجب تسجيل الدخول');
@@ -228,26 +268,47 @@ export const communityRepository = {
     return supabase.from('community_saves').delete().eq('post_id', postId).eq('user_id', userId);
   },
 
-  async mySavedPosts(limit = 50) {
+  async mySavedPostIds(postIds: string[]) {
+    const userId = await currentUserId();
+    if (!userId || postIds.length === 0) return { data: [], error: null };
+    return supabase.from('community_saves').select('post_id').eq('user_id', userId).in('post_id', postIds);
+  },
+
+  // Paginated, newest-saved-first. `community_saves.created_at` (aliased
+  // saved_at, since the RLS "read own saves only" policy means this can
+  // never leak another user's saves) drives the cursor - NOT the post's own
+  // created_at - so "newest saved" ordering is correct even for an old post
+  // a teacher saves today. RLS also still applies to the embedded
+  // community_posts row, so a since-removed/hidden post a teacher once
+  // saved simply won't come back through the !inner join.
+  async mySavedPosts(before?: string, limit = 12) {
     const userId = await currentUserId();
     if (!userId) return { data: [], error: null };
-    return supabase
+    let query = supabase
       .from('community_saves')
-      .select(`post_id, community_posts!inner(${postFields})`)
+      .select(`post_id, saved_at:created_at, community_posts!inner(${postFields})`)
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(limit);
+    if (before) query = query.lt('created_at', before);
+    return query;
   },
 
   // ---- Comments -----------------------------------------------------------------
-  async comments(postId: string, limit = 100) {
-    return supabase
+  // Paginated, newest-first (mirrors feed()'s cursor pattern). RLS already
+  // restricts rows to status = 'visible' OR author_id = auth.uid(); the
+  // client-side status filter further narrows a teacher's own view to only
+  // their own visible comments, consistent with the original Phase B design.
+  async comments(postId: string, before?: string, limit = 20) {
+    let query = supabase
       .from('community_comments')
       .select('id,post_id,author_id,body,status,created_at,updated_at')
       .eq('post_id', postId)
       .eq('status', 'visible')
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(limit);
+    if (before) query = query.lt('created_at', before);
+    return query;
   },
 
   async addComment(postId: string, body: string) {
@@ -268,6 +329,11 @@ export const communityRepository = {
   async follow(teacherId: string) {
     const userId = await currentUserId();
     if (!userId) throw new Error('يجب تسجيل الدخول');
+    // Defense in depth: the UI never renders a Follow button on a teacher's
+    // own profile, and community_follows has a `check (follower_id <>
+    // following_id)` constraint server-side either way - this just avoids a
+    // pointless round trip if it's ever somehow triggered.
+    if (userId === teacherId) throw new Error('لا يمكن متابعة نفسك.');
     return supabase.from('community_follows').insert({ follower_id: userId, following_id: teacherId });
   },
 

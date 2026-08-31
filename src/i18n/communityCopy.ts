@@ -1,5 +1,5 @@
 import type { AppLanguage } from '../context/LanguageProvider';
-import type { CommunityPostType } from '../repositories/communityRepository';
+import type { CommunityPostType, CommunityReportReason } from '../repositories/communityRepository';
 
 // Teacher Space ("فضاء الأستاذ") bilingual copy. Kept as its own file,
 // separate from the central LanguageProvider translation tree, mirroring
@@ -11,7 +11,8 @@ export const communityCopy = {
       feed: 'فضاء الأستاذ',
       detail: 'المنشور',
       create: 'منشور جديد',
-      profile: 'الملف الشخصي'
+      profile: 'الملف الشخصي',
+      saved: 'المحفوظات'
     },
     entry: {
       title: 'فضاء الأستاذ',
@@ -21,6 +22,7 @@ export const communityCopy = {
       title: 'فضاء الأستاذ',
       subtitle: 'مساحة تواصل تعليمية بين الأساتذة',
       newPost: 'منشور جديد',
+      savedPosts: 'المحفوظات',
       loading: 'جارٍ تحميل المنشورات...',
       loadMore: 'تحميل المزيد',
       loadingMore: 'جارٍ التحميل...',
@@ -38,7 +40,8 @@ export const communityCopy = {
       viewDetails: 'عرض التفاصيل',
       likes: 'إعجاب',
       comments: 'تعليق',
-      saves: 'حفظ'
+      saves: 'حفظ',
+      report: 'الإبلاغ عن المنشور'
     },
     detail: {
       loading: 'جاري فتح المنشور...',
@@ -50,7 +53,72 @@ export const communityCopy = {
       openPdf: 'فتح ملف PDF',
       about: 'عن الأستاذ',
       viewProfile: 'عرض الملف الشخصي',
-      interactionsSoon: 'الإعجاب والتعليق والحفظ قريبًا'
+      moreOptions: 'خيارات المنشور'
+    },
+    interactions: {
+      like: 'إعجاب',
+      liked: 'أعجبني',
+      save: 'حفظ',
+      saved: 'محفوظ',
+      comment: 'تعليق',
+      likeError: 'تعذر تسجيل الإعجاب',
+      saveError: 'تعذر حفظ المنشور'
+    },
+    comments: {
+      title: 'التعليقات',
+      loading: 'جارٍ تحميل التعليقات...',
+      loadError: 'تعذر تحميل التعليقات',
+      empty: 'لا توجد تعليقات بعد. كن أول من يعلّق.',
+      placeholder: 'اكتب تعليقًا...',
+      post: 'نشر',
+      posting: 'جارٍ النشر...',
+      loadMore: 'تحميل المزيد من التعليقات',
+      loadingMore: 'جارٍ التحميل...',
+      deleteConfirmTitle: 'حذف التعليق',
+      deleteConfirmText: 'هل تريد حذف هذا التعليق؟',
+      delete: 'حذف',
+      cancel: 'إلغاء',
+      deleteError: 'تعذر حذف التعليق',
+      postError: 'تعذر نشر التعليق',
+      report: 'الإبلاغ عن التعليق',
+      moreOptions: 'خيارات التعليق'
+    },
+    follow: {
+      follow: 'متابعة',
+      following: 'تتابعه',
+      unfollow: 'إلغاء المتابعة',
+      followError: 'تعذرت المتابعة',
+      unfollowError: 'تعذر إلغاء المتابعة'
+    },
+    report: {
+      title: 'الإبلاغ عن محتوى',
+      reasonLabel: 'سبب الإبلاغ',
+      detailsLabel: 'تفاصيل إضافية (اختياري)',
+      detailsPlaceholder: 'أضف أي تفاصيل تساعدنا على المراجعة...',
+      submit: 'إرسال البلاغ',
+      submitting: 'جارٍ الإرسال...',
+      cancel: 'إلغاء',
+      success: 'تم إرسال البلاغ. شكرًا لمساعدتك في الحفاظ على فضاء الأستاذ.',
+      error: 'تعذر إرسال البلاغ. حاول مرة أخرى.',
+      reasonRequired: 'اختر سبب الإبلاغ',
+      reasons: {
+        not_educational: 'غير تعليمي',
+        inappropriate: 'محتوى غير لائق',
+        harassment: 'إساءة أو مضايقة',
+        copyright: 'حقوق ملكية',
+        misleading: 'معلومات مضللة',
+        other: 'أخرى'
+      } satisfies Record<CommunityReportReason, string>
+    },
+    savedPosts: {
+      title: 'المحفوظات',
+      subtitle: 'المنشورات التي حفظتها لمراجعتها لاحقًا',
+      loading: 'جارٍ تحميل المحفوظات...',
+      loadError: 'تعذر تحميل المحفوظات',
+      loadErrorText: 'تحقق من الاتصال ثم أعد المحاولة.',
+      retry: 'إعادة المحاولة',
+      emptyTitle: 'لا توجد منشورات محفوظة',
+      emptyText: 'اضغط على أيقونة الحفظ في أي منشور لإضافته هنا.'
     },
     form: {
       title: 'منشور جديد',
@@ -86,7 +154,8 @@ export const communityCopy = {
       following: 'يتابع',
       posts: 'منشور',
       postsTitle: 'منشورات هذا الأستاذ',
-      noPosts: 'لا توجد منشورات منشورة بعد'
+      noPosts: 'لا توجد منشورات منشورة بعد',
+      loadingMore: 'جارٍ التحميل...'
     },
     types: {
       text: 'منشور نصي',
@@ -106,7 +175,8 @@ export const communityCopy = {
       feed: 'Teacher Space',
       detail: 'Post',
       create: 'New post',
-      profile: 'Profile'
+      profile: 'Profile',
+      saved: 'Saved'
     },
     entry: {
       title: 'Teacher Space',
@@ -116,6 +186,7 @@ export const communityCopy = {
       title: 'Teacher Space',
       subtitle: 'An educational community for teachers',
       newPost: 'New post',
+      savedPosts: 'Saved',
       loading: 'Loading posts...',
       loadMore: 'Load more',
       loadingMore: 'Loading...',
@@ -133,7 +204,8 @@ export const communityCopy = {
       viewDetails: 'View details',
       likes: 'likes',
       comments: 'comments',
-      saves: 'saves'
+      saves: 'saves',
+      report: 'Report post'
     },
     detail: {
       loading: 'Opening post...',
@@ -145,7 +217,72 @@ export const communityCopy = {
       openPdf: 'Open PDF',
       about: 'About the teacher',
       viewProfile: 'View profile',
-      interactionsSoon: 'Likes, comments and saves are coming soon'
+      moreOptions: 'Post options'
+    },
+    interactions: {
+      like: 'Like',
+      liked: 'Liked',
+      save: 'Save',
+      saved: 'Saved',
+      comment: 'Comment',
+      likeError: 'Could not update like',
+      saveError: 'Could not save this post'
+    },
+    comments: {
+      title: 'Comments',
+      loading: 'Loading comments...',
+      loadError: 'Could not load comments',
+      empty: 'No comments yet. Be the first to comment.',
+      placeholder: 'Write a comment...',
+      post: 'Post',
+      posting: 'Posting...',
+      loadMore: 'Load more comments',
+      loadingMore: 'Loading...',
+      deleteConfirmTitle: 'Delete comment',
+      deleteConfirmText: 'Delete this comment?',
+      delete: 'Delete',
+      cancel: 'Cancel',
+      deleteError: 'Could not delete comment',
+      postError: 'Could not post comment',
+      report: 'Report comment',
+      moreOptions: 'Comment options'
+    },
+    follow: {
+      follow: 'Follow',
+      following: 'Following',
+      unfollow: 'Unfollow',
+      followError: 'Could not follow',
+      unfollowError: 'Could not unfollow'
+    },
+    report: {
+      title: 'Report content',
+      reasonLabel: 'Reason',
+      detailsLabel: 'Additional details (optional)',
+      detailsPlaceholder: 'Add any details that help us review this...',
+      submit: 'Submit report',
+      submitting: 'Submitting...',
+      cancel: 'Cancel',
+      success: 'Report sent. Thank you for helping keep Teacher Space safe.',
+      error: 'Could not send the report. Please try again.',
+      reasonRequired: 'Choose a reason',
+      reasons: {
+        not_educational: 'Not educational',
+        inappropriate: 'Inappropriate content',
+        harassment: 'Harassment',
+        copyright: 'Copyright',
+        misleading: 'Misleading information',
+        other: 'Other'
+      } satisfies Record<CommunityReportReason, string>
+    },
+    savedPosts: {
+      title: 'Saved',
+      subtitle: 'Posts you saved to review later',
+      loading: 'Loading saved posts...',
+      loadError: 'Could not load saved posts',
+      loadErrorText: 'Check your connection and try again.',
+      retry: 'Retry',
+      emptyTitle: 'No saved posts',
+      emptyText: 'Tap the save icon on any post to add it here.'
     },
     form: {
       title: 'New post',
@@ -181,7 +318,8 @@ export const communityCopy = {
       following: 'Following',
       posts: 'Posts',
       postsTitle: "This teacher's posts",
-      noPosts: 'No published posts yet'
+      noPosts: 'No published posts yet',
+      loadingMore: 'Loading...'
     },
     types: {
       text: 'Text post',

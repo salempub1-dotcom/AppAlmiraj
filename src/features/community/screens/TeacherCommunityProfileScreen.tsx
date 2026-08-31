@@ -1,9 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
+import { useAuth } from '../../../context/AuthProvider';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
-import { useTeacherPosts, useTeacherPublicProfile } from '../../../hooks/useCommunity';
+import { useTeacherCommunityPosts, useTeacherPublicProfile } from '../../../hooks/useCommunity';
+import {
+  useCommunityLike,
+  useCommunityLikedIds,
+  useCommunitySave,
+  useCommunitySavedIds,
+  useFollowTeacher,
+  useIsFollowing
+} from '../../../hooks/useCommunityInteractions';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
@@ -23,14 +33,31 @@ export function TeacherCommunityProfileScreen({ route, navigation }: any) {
 
 function TeacherCommunityProfileContent({ route, navigation }: any) {
   const { colors } = useTheme();
+  const { session } = useAuth();
+  const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
   const teacherId = String(route.params?.teacherId ?? '');
+  const isOwnProfile = Boolean(viewerId) && viewerId === teacherId;
 
   const profile = useTeacherPublicProfile(teacherId);
-  const posts = useTeacherPosts(teacherId);
+  const posts = useTeacherCommunityPosts(teacherId);
+  const postRows = useMemo(() => posts.data?.pages.flat() ?? [], [posts.data]);
+
+  // Follow state/action - no button at all on your own profile, so this
+  // hook is only ever meaningfully used for another teacher's profile.
+  const isFollowing = useIsFollowing(isOwnProfile ? '' : teacherId);
+  const followMutation = useFollowTeacher();
+
+  // Same batched like/save pattern as the feed, scoped to this teacher's
+  // currently-loaded posts.
+  const postIds = useMemo(() => postRows.map((post) => post.id), [postRows]);
+  const likedIds = useCommunityLikedIds(postIds);
+  const savedIds = useCommunitySavedIds(postIds);
+  const likeMutation = useCommunityLike();
+  const saveMutation = useCommunitySave();
 
   if (profile.isLoading) {
     return (
@@ -53,6 +80,14 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 
   const teacher = profile.data;
   const levels = (teacher.level ?? []).join('، ');
+  const following = isFollowing.data ?? false;
+
+  const handleToggleFollow = () => {
+    followMutation.mutate(
+      { teacherId, following },
+      { onError: () => Alert.alert(following ? copy.follow.unfollowError : copy.follow.followError) }
+    );
+  };
 
   return (
     <Screen scroll style={styles.page}>
@@ -81,6 +116,27 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
           <Text style={[styles.bio, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{teacher.bio}</Text>
         )}
 
+        {!isOwnProfile && (
+          <Pressable
+            onPress={handleToggleFollow}
+            disabled={followMutation.isPending && followMutation.variables?.teacherId === teacherId}
+            style={[
+              styles.followButton,
+              {
+                backgroundColor: following ? colors.background : colors.primary,
+                borderColor: following ? colors.border : colors.primary,
+                flexDirection: row,
+                opacity: followMutation.isPending && followMutation.variables?.teacherId === teacherId ? 0.6 : 1
+              }
+            ]}
+          >
+            <Ionicons name={following ? 'checkmark' : 'person-add-outline'} size={16} color={following ? colors.text : '#0B1833'} />
+            <Text style={[styles.followButtonText, { color: following ? colors.text : '#0B1833' }]}>
+              {following ? copy.follow.following : copy.follow.follow}
+            </Text>
+          </Pressable>
+        )}
+
         <View style={[styles.statsRow, { flexDirection: row, borderColor: colors.border }]}>
           <Stat value={teacher.followers_count} label={copy.profile.followers} />
           <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
@@ -94,22 +150,42 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 
       {posts.isLoading && <ActivityIndicator color={colors.primary} />}
 
-      {!posts.isLoading && (posts.data ?? []).length === 0 && (
+      {!posts.isLoading && postRows.length === 0 && (
         <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={{ color: colors.muted, textAlign: 'center' }}>{copy.profile.noPosts}</Text>
         </View>
       )}
 
       <View style={styles.list}>
-        {(posts.data ?? []).map((post) => (
-          <CommunityPostCard
-            key={post.id}
-            post={post}
-            author={teacher}
-            onPress={() => navigation.navigate('CommunityPostDetail', { postId: post.id })}
-          />
-        ))}
+        {postRows.map((post) => {
+          const liked = likedIds.data?.has(post.id) ?? false;
+          const saved = savedIds.data?.has(post.id) ?? false;
+          return (
+            <CommunityPostCard
+              key={post.id}
+              post={post}
+              author={teacher}
+              onPress={() => navigation.navigate('CommunityPostDetail', { postId: post.id })}
+              liked={liked}
+              saved={saved}
+              onToggleLike={() => likeMutation.mutate({ postId: post.id, liked })}
+              onToggleSave={() => saveMutation.mutate({ postId: post.id, saved })}
+              likePending={likeMutation.isPending && likeMutation.variables?.postId === post.id}
+              savePending={saveMutation.isPending && saveMutation.variables?.postId === post.id}
+            />
+          );
+        })}
       </View>
+
+      {posts.hasNextPage && (
+        <Pressable onPress={() => posts.fetchNextPage()} style={styles.loadMoreButton} disabled={posts.isFetchingNextPage}>
+          {posts.isFetchingNextPage ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>{copy.profile.loadingMore}</Text>
+          )}
+        </Pressable>
+      )}
     </Screen>
   );
 }
@@ -134,6 +210,8 @@ const styles = StyleSheet.create({
   subMeta: { fontSize: 13 },
   wilayaRow: { alignItems: 'center', gap: 5 },
   bio: { fontSize: 14.5, lineHeight: 23, width: '100%', marginTop: 4 },
+  followButton: { minHeight: 44, borderRadius: 14, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 4 },
+  followButtonText: { fontWeight: '900', fontSize: 13.5 },
   statsRow: { width: '100%', borderTopWidth: StyleSheet.hairlineWidth, marginTop: 8, paddingTop: 14, justifyContent: 'space-around' },
   stat: { alignItems: 'center', gap: 3 },
   statValue: { fontWeight: '900', fontSize: 17 },
@@ -142,6 +220,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: '900' },
   emptyCard: { borderWidth: 1, borderRadius: 20, padding: 20 },
   list: { gap: 13 },
+  loadMoreButton: { paddingVertical: 16, alignItems: 'center' },
   errorTitle: { fontSize: 18, fontWeight: '900' },
   errorBody: { textAlign: 'center', lineHeight: 21 }
 });

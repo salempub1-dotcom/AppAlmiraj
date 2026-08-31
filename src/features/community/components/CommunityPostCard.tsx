@@ -7,16 +7,35 @@ import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/
 import { formatRelativeTime } from '../../../utils/formatRelativeTime';
 import { communityTypeIcons } from '../contentTypeIcons';
 
+// Like/save are wired here (Phase D) as controlled props - `liked`/`saved`
+// come from the screen's batched useCommunityLikedIds/useCommunitySavedIds
+// lookups, and the toggle callbacks call the screen's single shared
+// useCommunityLike/useCommunitySave mutation. The card itself never talks
+// to Supabase directly (Screen -> Hook -> Repository stays intact), and
+// every prop here is optional so the card still renders sensibly (as
+// static, non-interactive counters) anywhere it's used without them.
 export function CommunityPostCard({
   post,
   author,
   onPress,
-  onPressAuthor
+  onPressAuthor,
+  liked,
+  saved,
+  onToggleLike,
+  onToggleSave,
+  likePending,
+  savePending
 }: {
   post: CommunityPost;
   author?: PublicTeacherProfile | null;
   onPress: () => void;
   onPressAuthor?: () => void;
+  liked?: boolean;
+  saved?: boolean;
+  onToggleLike?: () => void;
+  onToggleSave?: () => void;
+  likePending?: boolean;
+  savePending?: boolean;
 }) {
   const { colors } = useTheme();
   const { language, isRTL } = useLanguage();
@@ -97,9 +116,21 @@ export function CommunityPostCard({
 
       <View style={[styles.footer, { flexDirection: row }]}>
         <View style={[styles.countersRow, { flexDirection: row }]}>
-          <Counter icon="heart-outline" value={post.likes_count} color={colors.muted} />
-          <Counter icon="chatbubble-outline" value={post.comments_count} color={colors.muted} />
-          <Counter icon="bookmark-outline" value={post.saves_count} color={colors.muted} />
+          <InteractionButton
+            icon={liked ? 'heart' : 'heart-outline'}
+            value={post.likes_count}
+            color={liked ? colors.danger : colors.muted}
+            onPress={onToggleLike}
+            disabled={likePending}
+          />
+          <InteractionButton icon="chatbubble-outline" value={post.comments_count} color={colors.muted} onPress={onPress} />
+          <InteractionButton
+            icon={saved ? 'bookmark' : 'bookmark-outline'}
+            value={post.saves_count}
+            color={saved ? colors.primary : colors.muted}
+            onPress={onToggleSave}
+            disabled={savePending}
+          />
         </View>
         <View style={[styles.openRow, { flexDirection: row }]}>
           <Text style={[styles.open, { color: colors.primary }]}>{copy.card.viewDetails}</Text>
@@ -110,12 +141,24 @@ export function CommunityPostCard({
   );
 }
 
-function Counter({ icon, value, color }: { icon: keyof typeof Ionicons.glyphMap; value: number; color: string }) {
+function InteractionButton({
+  icon,
+  value,
+  color,
+  onPress,
+  disabled
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  value: number;
+  color: string;
+  onPress?: () => void;
+  disabled?: boolean;
+}) {
   return (
-    <View style={styles.counter}>
+    <Pressable onPress={onPress} disabled={!onPress || disabled} hitSlop={8} style={[styles.counter, { opacity: disabled ? 0.5 : 1 }]}>
       <Ionicons name={icon} size={14} color={color} />
       <Text style={[styles.counterText, { color }]}>{value}</Text>
-    </View>
+    </Pressable>
   );
 }
 
