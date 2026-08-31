@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { useAuth } from '../../../context/AuthProvider';
 import { useLanguage } from '../../../context/LanguageProvider';
@@ -12,11 +12,32 @@ import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
+import { getCommunityTheme } from '../communityTheme';
+import { getCommunitySocialCopy } from '../communitySocialCopy';
 
-// TeacherSpaceGate renders CommunityFeedList only once a session is
-// confirmed - useCommunityFeed/useTeacherPublicProfiles are declared inside
-// CommunityFeedList, so they are never mounted (and never query Supabase)
-// for a guest or during the initial auth bootstrap.
+type FeedFilter =
+  | 'all'
+  | 'idea'
+  | 'question'
+  | 'test'
+  | 'exam'
+  | 'resource'
+  | 'classroom_experience'
+  | 'tip';
+
+const FEED_FILTERS: FeedFilter[] = [
+  'all',
+  'idea',
+  'question',
+  'test',
+  'exam',
+  'resource',
+  'classroom_experience',
+  'tip'
+];
+
+// TeacherSpaceGate renders CommunityFeedList only once a session is confirmed,
+// so no community query mounts for a guest or during auth bootstrap.
 export function CommunityFeedScreen({ navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -27,15 +48,28 @@ export function CommunityFeedScreen({ navigation }: any) {
 
 function CommunityFeedList({ navigation }: any) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { session } = useAuth();
   const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
+  const social = getCommunitySocialCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
+  const [activeFilter, setActiveFilter] = useState<FeedFilter>('all');
 
   const feed = useCommunityFeed();
   const posts = useMemo<CommunityPost[]>(() => feed.data?.pages.flat() ?? [], [feed.data]);
+  const visiblePosts = useMemo(() => {
+    if (activeFilter === 'all') return posts;
+
+    if (activeFilter === 'resource') {
+      return posts.filter((post) => post.type === 'resource' || post.type === 'pdf');
+    }
+
+    return posts.filter((post) => post.type === activeFilter);
+  }, [activeFilter, posts]);
+
   const authorIds = useMemo(() => [...new Set(posts.map((post) => post.author_id))], [posts]);
   const authors = useTeacherPublicProfiles(authorIds);
   const authorById = useMemo(() => {
@@ -44,17 +78,13 @@ function CommunityFeedList({ navigation }: any) {
     return map;
   }, [authors.data]);
 
-  // Batched (one request each for the whole currently-loaded post set, not
-  // one per card) current-user like/save state - see useCommunityInteractions.
+  // Interaction state remains batched for the currently loaded post set.
   const postIds = useMemo(() => posts.map((post) => post.id), [posts]);
   const likedIds = useCommunityLikedIds(postIds);
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
 
-  // Owner-only actions (Phase F) - wired per-row below only when the
-  // current teacher is that post's author. RLS is the real boundary
-  // (community_posts_own_update / _own_delete) regardless of this check.
   const visibilityMutation = useSetOwnCommunityPostVisibility();
   const deleteMutation = useDeleteCommunityPost();
 
@@ -87,56 +117,132 @@ function CommunityFeedList({ navigation }: any) {
     ]);
   };
 
+  const openComposer = () => navigation.navigate('CreateCommunityPost');
+
+  const quickActions = [
+    { key: 'idea', label: social.quickIdea, icon: 'bulb-outline' as const },
+    { key: 'question', label: social.quickQuestion, icon: 'help-circle-outline' as const },
+    { key: 'image', label: social.quickImage, icon: 'image-outline' as const },
+    { key: 'pdf', label: social.quickPdf, icon: 'document-text-outline' as const }
+  ];
+
   const header = (
     <View style={styles.header}>
-      <View style={[styles.headerTopRow, { flexDirection: row }]}>
-        <View style={[styles.headerIcon, { backgroundColor: colors.primary }]}>
-          <Ionicons name="people" size={22} color="#0B1833" />
-        </View>
-        <View style={[styles.headerActions, { flexDirection: row }]}>
+      <View style={[styles.heroCard, { backgroundColor: community.primary }]}>
+        <View style={[styles.heroTopRow, { flexDirection: row }]}>
+          <View style={styles.heroIcon}>
+            <Ionicons name="people" size={23} color="#FFFFFF" />
+          </View>
+
           <Pressable
             onPress={() => navigation.navigate('SavedCommunityPosts')}
-            style={[styles.savedButton, { borderColor: colors.border }]}
+            style={({ pressed }) => [styles.savedButton, { opacity: pressed ? 0.7 : 1 }]}
           >
-            <Ionicons name="bookmark-outline" size={18} color={colors.text} />
-          </Pressable>
-          <Pressable onPress={() => navigation.navigate('CreateCommunityPost')} style={[styles.addButton, { backgroundColor: colors.primary, flexDirection: row }]}>
-            <Ionicons name="add" size={18} color="#0B1833" />
-            <Text style={styles.addButtonText}>{copy.feed.newPost}</Text>
+            <Ionicons name="bookmark-outline" size={20} color="#FFFFFF" />
           </Pressable>
         </View>
+
+        <Text style={[styles.heroEyebrow, { textAlign: align }]}>{social.communityLabel}</Text>
+        <Text style={[styles.title, { textAlign: align }]}>{copy.feed.title}</Text>
+        <Text style={[styles.subtitle, { textAlign: align }]}>{copy.feed.subtitle}</Text>
       </View>
-      <Text style={[styles.title, { color: colors.text, textAlign: align }]}>{copy.feed.title}</Text>
-      <Text style={[styles.subtitle, { color: colors.muted, textAlign: align }]}>{copy.feed.subtitle}</Text>
+
+      <View
+        style={[
+          styles.composer,
+          {
+            backgroundColor: community.surface,
+            borderColor: community.border,
+            shadowColor: community.shadow
+          }
+        ]}
+      >
+        <Pressable onPress={openComposer} style={[styles.composerMain, { flexDirection: row }]}>
+          <View style={[styles.composerAvatar, { backgroundColor: community.primarySoft }]}>
+            <Ionicons name="person" size={20} color={community.primary} />
+          </View>
+          <View style={[styles.composerPrompt, { backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC' }]}>
+            <Text numberOfLines={2} style={[styles.composerPromptText, { color: community.textSecondary, textAlign: align }]}>
+              {social.composerPrompt}
+            </Text>
+          </View>
+        </Pressable>
+
+        <View style={[styles.composerDivider, { backgroundColor: community.divider }]} />
+
+        <View style={[styles.quickActions, { flexDirection: row }]}>
+          {quickActions.map((action) => (
+            <Pressable
+              key={action.key}
+              onPress={openComposer}
+              style={({ pressed }) => [styles.quickAction, { opacity: pressed ? 0.65 : 1 }]}
+            >
+              <Ionicons name={action.icon} size={18} color={community.primary} />
+              <Text style={[styles.quickActionText, { color: community.textSecondary }]}>{action.label}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.filterSection}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[styles.filtersContent, { flexDirection: row }]}
+        >
+          {FEED_FILTERS.map((filter) => {
+            const active = filter === activeFilter;
+            return (
+              <Pressable
+                key={filter}
+                onPress={() => setActiveFilter(filter)}
+                style={[
+                  styles.filterChip,
+                  {
+                    backgroundColor: active ? community.primary : community.surface,
+                    borderColor: active ? community.primary : community.border
+                  }
+                ]}
+              >
+                <Text style={[styles.filterText, { color: active ? '#FFFFFF' : community.textSecondary }]}>
+                  {social.filters[filter]}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 
   if (feed.isLoading) {
     return (
-      <Screen style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.muted }}>{copy.feed.loading}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <ActivityIndicator color={community.primary} size="large" />
+        <Text style={{ color: community.textMuted }}>{copy.feed.loading}</Text>
       </Screen>
     );
   }
 
   if (feed.isError) {
     return (
-      <Screen style={styles.center}>
-        <Ionicons name="cloud-offline-outline" size={34} color={colors.primary} />
-        <Text style={[styles.guestTitle, { color: colors.text }]}>{copy.feed.loadError}</Text>
-        <Text style={[styles.guestText, { color: colors.muted }]}>{copy.feed.loadErrorText}</Text>
-        <Pressable onPress={() => feed.refetch()} style={[styles.retryButton, { backgroundColor: colors.primary }]}>
-          <Text style={styles.signInButtonText}>{copy.feed.retry}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="cloud-offline-outline" size={30} color={community.primary} />
+        </View>
+        <Text style={[styles.stateTitle, { color: community.text }]}>{copy.feed.loadError}</Text>
+        <Text style={[styles.stateText, { color: community.textSecondary }]}>{copy.feed.loadErrorText}</Text>
+        <Pressable onPress={() => feed.refetch()} style={[styles.retryButton, { backgroundColor: community.primary }]}>
+          <Text style={styles.retryText}>{copy.feed.retry}</Text>
         </Pressable>
       </Screen>
     );
   }
 
   return (
-    <Screen style={styles.listPage}>
+    <Screen style={{ ...styles.listPage, backgroundColor: community.background }}>
       <FlatList
-        data={posts}
+        data={visiblePosts}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={header}
         contentContainerStyle={styles.listContent}
@@ -146,10 +252,25 @@ function CommunityFeedList({ navigation }: any) {
           if (feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage();
         }}
         ListEmptyComponent={
-          <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Ionicons name="chatbubbles-outline" size={30} color={colors.primary} />
-            <Text style={[styles.guestTitle, { color: colors.text }]}>{copy.feed.emptyTitle}</Text>
-            <Text style={[styles.guestText, { color: colors.muted }]}>{copy.feed.emptyText}</Text>
+          <View
+            style={[
+              styles.emptyCard,
+              {
+                backgroundColor: community.surface,
+                borderColor: community.border,
+                shadowColor: community.shadow
+              }
+            ]}
+          >
+            <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+              <Ionicons name="chatbubbles-outline" size={28} color={community.primary} />
+            </View>
+            <Text style={[styles.stateTitle, { color: community.text, textAlign: 'center' }]}>{copy.feed.emptyTitle}</Text>
+            <Text style={[styles.stateText, { color: community.textSecondary, textAlign: 'center' }]}>{copy.feed.emptyText}</Text>
+            <Pressable onPress={openComposer} style={[styles.emptyCta, { backgroundColor: community.primary }]}>
+              <Ionicons name="add" size={18} color="#FFFFFF" />
+              <Text style={styles.emptyCtaText}>{copy.feed.newPost}</Text>
+            </Pressable>
           </View>
         }
         renderItem={({ item }) => {
@@ -159,6 +280,7 @@ function CommunityFeedList({ navigation }: any) {
           const ownerBusy =
             (visibilityMutation.isPending && visibilityMutation.variables?.postId === item.id) ||
             (deleteMutation.isPending && deleteMutation.variables?.postId === item.id);
+
           return (
             <CommunityPostCard
               post={item}
@@ -180,12 +302,12 @@ function CommunityFeedList({ navigation }: any) {
             />
           );
         }}
-        ItemSeparatorComponent={() => <View style={{ height: 13 }} />}
+        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         ListFooterComponent={
           feed.isFetchingNextPage ? (
             <View style={styles.footerLoading}>
-              <ActivityIndicator color={colors.primary} />
-              <Text style={{ color: colors.muted, fontSize: 12 }}>{copy.feed.loadingMore}</Text>
+              <ActivityIndicator color={community.primary} />
+              <Text style={{ color: community.textMuted, fontSize: 12 }}>{copy.feed.loadingMore}</Text>
             </View>
           ) : null
         }
@@ -195,22 +317,197 @@ function CommunityFeedList({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 12 },
-  listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
-  listContent: { paddingHorizontal: 20, paddingTop: 4, paddingBottom: 40, gap: 0 },
-  header: { gap: 8, marginBottom: 18 },
-  headerTopRow: { justifyContent: 'space-between', alignItems: 'center' },
-  headerIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
-  headerActions: { alignItems: 'center', gap: 8 },
-  savedButton: { width: 42, height: 42, borderRadius: 14, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  addButton: { borderRadius: 14, minHeight: 42, paddingHorizontal: 15, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  addButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 13 },
-  title: { fontSize: 26, fontWeight: '900' },
-  subtitle: { fontSize: 12.5 },
-  guestTitle: { fontWeight: '900', fontSize: 18 },
-  guestText: { lineHeight: 21, fontSize: 13 },
-  signInButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 15 },
-  retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  emptyCard: { borderWidth: 1, borderRadius: 22, padding: 24, gap: 8, alignItems: 'center', marginTop: 10 },
-  footerLoading: { paddingVertical: 18, alignItems: 'center', gap: 6 }
+  center: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 14,
+    paddingHorizontal: 24
+  },
+  listPage: {
+    padding: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0
+  },
+  listContent: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 40
+  },
+  header: {
+    gap: 12,
+    marginBottom: 14
+  },
+  heroCard: {
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 15,
+    paddingBottom: 19,
+    overflow: 'hidden'
+  },
+  heroTopRow: {
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12
+  },
+  heroIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 15,
+    backgroundColor: 'rgba(255,255,255,0.16)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  savedButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  heroEyebrow: {
+    color: 'rgba(255,255,255,0.76)',
+    fontSize: 11.5,
+    fontWeight: '800',
+    marginBottom: 4
+  },
+  title: {
+    color: '#FFFFFF',
+    fontSize: 27,
+    fontWeight: '900'
+  },
+  subtitle: {
+    color: 'rgba(255,255,255,0.84)',
+    fontSize: 12.5,
+    lineHeight: 19,
+    marginTop: 4
+  },
+  composer: {
+    borderWidth: 1,
+    borderRadius: 19,
+    padding: 12,
+    gap: 11,
+    shadowOpacity: 0.05,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2
+  },
+  composerMain: {
+    gap: 10,
+    alignItems: 'center'
+  },
+  composerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerPrompt: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 21,
+    paddingHorizontal: 14,
+    justifyContent: 'center'
+  },
+  composerPromptText: {
+    fontSize: 12.5,
+    lineHeight: 18,
+    fontWeight: '600'
+  },
+  composerDivider: {
+    height: StyleSheet.hairlineWidth
+  },
+  quickActions: {
+    justifyContent: 'space-around',
+    alignItems: 'center'
+  },
+  quickAction: {
+    minWidth: 62,
+    minHeight: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 3
+  },
+  quickActionText: {
+    fontSize: 10.5,
+    fontWeight: '700'
+  },
+  filterSection: {
+    marginHorizontal: -14
+  },
+  filtersContent: {
+    paddingHorizontal: 14,
+    gap: 8
+  },
+  filterChip: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8
+  },
+  filterText: {
+    fontSize: 12,
+    fontWeight: '800'
+  },
+  stateIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  stateTitle: {
+    fontWeight: '900',
+    fontSize: 18
+  },
+  stateText: {
+    lineHeight: 21,
+    fontSize: 13
+  },
+  retryButton: {
+    minHeight: 46,
+    borderRadius: 14,
+    paddingHorizontal: 22,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  retryText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 14
+  },
+  emptyCard: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 25,
+    gap: 9,
+    alignItems: 'center',
+    marginTop: 6,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1
+  },
+  emptyCta: {
+    marginTop: 6,
+    minHeight: 42,
+    borderRadius: 13,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6
+  },
+  emptyCtaText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 12.5
+  },
+  footerLoading: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    gap: 6
+  }
 });

@@ -18,14 +18,12 @@ import {
 } from '../../../repositories/communityMediaRepository';
 import { COMMUNITY_POST_TYPES, type CommunityPostType } from '../../../repositories/communityRepository';
 import { CommunityChip } from '../components/CommunityChip';
-import { communityTypeIcons } from '../contentTypeIcons';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
+import { communityTypeIcons } from '../contentTypeIcons';
+import { getCommunityTheme } from '../communityTheme';
 
 type PendingAttachment = { kind: 'image' | 'pdf'; file: PickedCommunityFile; previewUri: string };
 
-// Gated the same way as the rest of Teacher Space - see TeacherSpaceGate. A
-// guest cannot reach this screen today (it's only linked from the gated
-// feed), but this keeps that guarantee explicit rather than implicit.
 export function CreateCommunityPostScreen({ navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -36,6 +34,7 @@ export function CreateCommunityPostScreen({ navigation }: any) {
 
 function CreateCommunityPostContent({ navigation }: any) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
@@ -60,6 +59,7 @@ function CreateCommunityPostContent({ navigation }: any) {
       Alert.alert(copy.form.permissionError);
       return;
     }
+
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
     if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
@@ -69,15 +69,6 @@ function CreateCommunityPostContent({ navigation }: any) {
       Alert.alert(copy.form.validationMimeImage);
       return;
     }
-    // No size gate here on purpose (Phase C.1): the picked image is
-    // compressed automatically before upload (see
-    // communityMediaRepository.ts's compressImageForUpload), so a teacher
-    // should not be blocked from picking a normal, large phone photo just
-    // because its original size is over the cap. The repository still
-    // enforces the cap as a defense-in-depth check on the compressed
-    // bytes and throws CommunityMediaTooLargeError if compression
-    // genuinely can't bring a pathological image under it - handled in
-    // handlePublish below, which shows validationSizeImage for that case.
 
     setAttachment({
       kind: 'image',
@@ -96,6 +87,7 @@ function CreateCommunityPostContent({ navigation }: any) {
       Alert.alert(copy.form.validationMimePdf);
       return;
     }
+
     if (asset.size && asset.size > MAX_PDF_BYTES) {
       Alert.alert(copy.form.validationSizePdf);
       return;
@@ -109,11 +101,6 @@ function CreateCommunityPostContent({ navigation }: any) {
   };
 
   const handlePublish = () => {
-    // Belt-and-suspenders against double-submit: the Publish button is
-    // already `disabled` while a mutation is in flight, but guard the
-    // handler itself too in case of a double-tap racing ahead of the
-    // re-render (e.g. two rapid taps registered before React re-renders
-    // the disabled state).
     if (createPost.isPending) return;
 
     const trimmedBody = body.trim();
@@ -144,6 +131,7 @@ function CreateCommunityPostContent({ navigation }: any) {
             Alert.alert(error.kind === 'image' ? copy.form.validationSizeImage : copy.form.validationSizePdf);
             return;
           }
+
           Alert.alert(copy.form.publishError);
         }
       }
@@ -153,21 +141,54 @@ function CreateCommunityPostContent({ navigation }: any) {
   const busy = createPost.isPending;
 
   return (
-    <Screen scroll style={styles.page}>
+    <Screen scroll style={{ ...styles.page, backgroundColor: community.background }}>
+      <View
+        style={[
+          styles.composerCard,
+          {
+            backgroundColor: community.surface,
+            borderColor: community.border,
+            shadowColor: community.shadow
+          }
+        ]}
+      >
+        <View style={[styles.composerHeader, { flexDirection: row }]}>
+          <View style={[styles.avatar, { backgroundColor: community.primarySoft }]}>
+            <Ionicons name="person" size={22} color={community.primary} />
+          </View>
+          <View style={styles.composerHeaderText}>
+            <Text style={[styles.composerTitle, { color: community.text, textAlign: align }]}>{copy.feed.newPost}</Text>
+            <Text style={[styles.composerSubtitle, { color: community.textMuted, textAlign: align }]}>{copy.form.bodyPlaceholder}</Text>
+          </View>
+        </View>
+
+        <TextField
+          value={body}
+          onChangeText={setBody}
+          placeholder={copy.form.bodyPlaceholder}
+          align={align}
+          multiline
+          numberOfLines={7}
+          large
+        />
+      </View>
+
       <Section title={copy.form.postType} align={align}>
         <View style={styles.chipsRow}>
           {COMMUNITY_POST_TYPES.map((item) => (
-            <CommunityChip key={item} label={copy.types[item]} active={type === item} onPress={() => setType(item)} icon={communityTypeIcons[item]} />
+            <CommunityChip
+              key={item}
+              label={copy.types[item]}
+              active={type === item}
+              onPress={() => setType(item)}
+              icon={communityTypeIcons[item]}
+            />
           ))}
         </View>
       </Section>
 
       <Section title={copy.form.titleField} align={align}>
         <TextField value={title} onChangeText={setTitle} placeholder={copy.form.titleOptional} align={align} />
-      </Section>
-
-      <Section title={copy.form.body} align={align}>
-        <TextField value={body} onChangeText={setBody} placeholder={copy.form.bodyPlaceholder} align={align} multiline numberOfLines={6} />
       </Section>
 
       <Section title={copy.form.subject} align={align}>
@@ -186,19 +207,36 @@ function CreateCommunityPostContent({ navigation }: any) {
         {attachment ? (
           <View style={styles.attachmentPreviewWrap}>
             {attachment.kind === 'image' ? (
-              <Image source={{ uri: attachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
+              <View style={[styles.imagePreviewShell, { backgroundColor: community.imageBackdrop }]}>
+                <Image source={{ uri: attachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
+              </View>
             ) : (
-              <View style={[styles.pdfRow, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
-                <Ionicons name="document-attach-outline" size={18} color={colors.primary} />
-                <Text numberOfLines={1} style={[styles.pdfName, { color: colors.text, textAlign: align }]}>
-                  {attachment.file.name}
-                </Text>
+              <View
+                style={[
+                  styles.pdfRow,
+                  {
+                    backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC',
+                    borderColor: community.border,
+                    flexDirection: row
+                  }
+                ]}
+              >
+                <View style={[styles.pdfIcon, { backgroundColor: community.primarySoft }]}>
+                  <Ionicons name="document-text-outline" size={21} color={community.primary} />
+                </View>
+                <View style={styles.pdfCopy}>
+                  <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>
+                    {attachment.file.name}
+                  </Text>
+                  <Text style={[styles.pdfMeta, { color: community.textMuted, textAlign: align }]}>PDF</Text>
+                </View>
               </View>
             )}
+
             <View style={[styles.attachmentButtonsRow, { flexDirection: row }]}>
               <MediaButton
                 label={copy.form.changeAttachment}
-                icon={attachment.kind === 'image' ? 'image-outline' : 'document-attach-outline'}
+                icon={attachment.kind === 'image' ? 'image-outline' : 'document-text-outline'}
                 onPress={attachment.kind === 'image' ? pickImage : pickPdf}
               />
               <MediaButton label={copy.form.removeAttachment} icon="trash-outline" onPress={() => setAttachment(null)} danger />
@@ -206,8 +244,8 @@ function CreateCommunityPostContent({ navigation }: any) {
           </View>
         ) : (
           <View style={[styles.attachmentButtonsRow, { flexDirection: row }]}>
-            <MediaButton label={copy.form.addImage} icon="image-outline" onPress={pickImage} />
-            <MediaButton label={copy.form.addPdf} icon="document-attach-outline" onPress={pickPdf} />
+            <MediaButton label={copy.form.addImage} icon="image-outline" onPress={pickImage} emphasized />
+            <MediaButton label={copy.form.addPdf} icon="document-text-outline" onPress={pickPdf} emphasized />
           </View>
         )}
       </Section>
@@ -215,9 +253,16 @@ function CreateCommunityPostContent({ navigation }: any) {
       <Pressable
         onPress={handlePublish}
         disabled={busy}
-        style={[styles.publishButton, { backgroundColor: colors.primary, opacity: busy ? 0.6 : 1, flexDirection: row }]}
+        style={({ pressed }) => [
+          styles.publishButton,
+          {
+            backgroundColor: community.primary,
+            opacity: busy ? 0.55 : pressed ? 0.88 : 1,
+            flexDirection: row
+          }
+        ]}
       >
-        {busy ? <ActivityIndicator color="#0B1833" /> : <Ionicons name="cloud-upload-outline" size={19} color="#0B1833" />}
+        {busy ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="send-outline" size={19} color="#FFFFFF" />}
         <Text style={styles.publishButtonText}>
           {busy ? (attachment ? copy.form.uploading : copy.form.publishing) : copy.form.publish}
         </Text>
@@ -228,9 +273,20 @@ function CreateCommunityPostContent({ navigation }: any) {
 
 function Section({ title, align, children }: { title: string; align: 'right' | 'left'; children: React.ReactNode }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
   return (
-    <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{title}</Text>
+    <View
+      style={[
+        styles.section,
+        {
+          backgroundColor: community.surface,
+          borderColor: community.border,
+          shadowColor: community.shadow
+        }
+      ]}
+    >
+      <Text style={[styles.sectionTitle, { color: community.text, textAlign: align }]}>{title}</Text>
       {children}
     </View>
   );
@@ -242,7 +298,8 @@ function TextField({
   placeholder,
   align,
   multiline,
-  numberOfLines
+  numberOfLines,
+  large
 }: {
   value: string;
   onChangeText: (value: string) => void;
@@ -250,25 +307,37 @@ function TextField({
   align: 'right' | 'left';
   multiline?: boolean;
   numberOfLines?: number;
+  large?: boolean;
 }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
   return (
     <View
       style={[
         styles.input,
-        { borderColor: colors.border, backgroundColor: colors.background },
-        multiline ? styles.inputMultiline : null
+        {
+          borderColor: community.border,
+          backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC'
+        },
+        multiline ? styles.inputMultiline : null,
+        large ? styles.inputLarge : null
       ]}
     >
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor={colors.muted}
+        placeholderTextColor={community.textMuted}
         textAlign={align}
         multiline={multiline}
         numberOfLines={numberOfLines}
-        style={[styles.textInputInner, { color: colors.text }, multiline ? styles.textInputMultiline : null]}
+        style={[
+          styles.textInputInner,
+          { color: community.text },
+          multiline ? styles.textInputMultiline : null,
+          large ? styles.textInputLarge : null
+        ]}
       />
     </View>
   );
@@ -278,39 +347,192 @@ function MediaButton({
   label,
   icon,
   onPress,
-  danger
+  danger,
+  emphasized
 }: {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
   onPress: () => void;
   danger?: boolean;
+  emphasized?: boolean;
 }) {
   const { colors } = useTheme();
-  const color = danger ? colors.danger : colors.text;
+  const community = getCommunityTheme(colors);
+  const color = danger ? community.danger : community.primary;
+
   return (
-    <Pressable onPress={onPress} style={[styles.mediaButton, { borderColor: colors.border }]}>
-      <Ionicons name={icon} size={16} color={color} />
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.mediaButton,
+        {
+          borderColor: danger ? `${community.danger}55` : community.border,
+          backgroundColor: emphasized ? community.primarySoft : community.surface,
+          opacity: pressed ? 0.72 : 1
+        }
+      ]}
+    >
+      <Ionicons name={icon} size={18} color={color} />
       <Text style={[styles.mediaButtonText, { color }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 16 },
-  section: { borderWidth: 1, borderRadius: 22, padding: 17, gap: 12 },
-  sectionTitle: { fontSize: 14.5, fontWeight: '900' },
-  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  input: { borderWidth: 1, borderRadius: 14, minHeight: 52, justifyContent: 'center', paddingHorizontal: 14 },
-  inputMultiline: { minHeight: 130, paddingVertical: 12 },
-  textInputInner: { fontSize: 15, paddingVertical: 4 },
-  textInputMultiline: { minHeight: 110, textAlignVertical: 'top' },
-  attachmentPreviewWrap: { gap: 10 },
-  imagePreview: { width: '100%', height: 160, borderRadius: 16 },
-  pdfRow: { borderWidth: 1, borderRadius: 14, minHeight: 52, paddingHorizontal: 14, alignItems: 'center', gap: 9 },
-  pdfName: { flex: 1, fontWeight: '700', fontSize: 13.5 },
-  attachmentButtonsRow: { gap: 8 },
-  mediaButton: { flex: 1, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderStyle: 'dashed', borderRadius: 14, minHeight: 52, paddingHorizontal: 12 },
-  mediaButtonText: { fontWeight: '800', fontSize: 13 },
-  publishButton: { minHeight: 56, borderRadius: 17, gap: 8, alignItems: 'center', justifyContent: 'center' },
-  publishButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 16 }
+  page: {
+    gap: 14,
+    paddingBottom: 30
+  },
+  composerCard: {
+    borderWidth: 1,
+    borderRadius: 22,
+    padding: 15,
+    gap: 13,
+    shadowOpacity: 0.05,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2
+  },
+  composerHeader: {
+    alignItems: 'center',
+    gap: 10
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerHeaderText: {
+    flex: 1
+  },
+  composerTitle: {
+    fontSize: 15,
+    fontWeight: '900'
+  },
+  composerSubtitle: {
+    marginTop: 2,
+    fontSize: 11.5,
+    fontWeight: '600'
+  },
+  section: {
+    borderWidth: 1,
+    borderRadius: 20,
+    padding: 15,
+    gap: 11,
+    shadowOpacity: 0.035,
+    shadowRadius: 7,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '900'
+  },
+  chipsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 15,
+    minHeight: 50,
+    justifyContent: 'center',
+    paddingHorizontal: 13
+  },
+  inputMultiline: {
+    minHeight: 120,
+    paddingVertical: 11
+  },
+  inputLarge: {
+    minHeight: 150,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent'
+  },
+  textInputInner: {
+    fontSize: 14.5,
+    paddingVertical: 4
+  },
+  textInputMultiline: {
+    minHeight: 100,
+    textAlignVertical: 'top'
+  },
+  textInputLarge: {
+    minHeight: 135,
+    fontSize: 16,
+    lineHeight: 25
+  },
+  attachmentPreviewWrap: {
+    gap: 10
+  },
+  imagePreviewShell: {
+    borderRadius: 16,
+    overflow: 'hidden'
+  },
+  imagePreview: {
+    width: '100%',
+    height: 210
+  },
+  pdfRow: {
+    borderWidth: 1,
+    borderRadius: 15,
+    minHeight: 64,
+    paddingHorizontal: 11,
+    paddingVertical: 9,
+    alignItems: 'center',
+    gap: 10
+  },
+  pdfIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  pdfCopy: {
+    flex: 1,
+    minWidth: 0
+  },
+  pdfName: {
+    fontWeight: '800',
+    fontSize: 13.5
+  },
+  pdfMeta: {
+    marginTop: 2,
+    fontSize: 10.5,
+    fontWeight: '700'
+  },
+  attachmentButtonsRow: {
+    gap: 8
+  },
+  mediaButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderRadius: 14,
+    minHeight: 50,
+    paddingHorizontal: 10
+  },
+  mediaButtonText: {
+    fontWeight: '800',
+    fontSize: 12.5
+  },
+  publishButton: {
+    minHeight: 56,
+    borderRadius: 17,
+    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  publishButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+    fontSize: 15.5
+  }
 });

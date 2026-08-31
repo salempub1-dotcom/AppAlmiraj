@@ -19,12 +19,8 @@ import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
+import { getCommunityTheme } from '../communityTheme';
 
-// Displays ONLY the fields returned by public.get_public_teacher_profiles():
-// full_name, avatar, subject, level, wilaya, bio, followers/following/posts
-// counts. It never reads `profiles` directly, so phone/email/notif_prefs/
-// role can never appear here even by accident. Gated the same way as the
-// rest of Teacher Space - see TeacherSpaceGate.
 export function TeacherCommunityProfileScreen({ route, navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -35,6 +31,7 @@ export function TeacherCommunityProfileScreen({ route, navigation }: any) {
 
 function TeacherCommunityProfileContent({ route, navigation }: any) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { session } = useAuth();
   const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
@@ -48,22 +45,15 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   const posts = useTeacherCommunityPosts(teacherId);
   const postRows = useMemo(() => posts.data?.pages.flat() ?? [], [posts.data]);
 
-  // Follow state/action - no button at all on your own profile, so this
-  // hook is only ever meaningfully used for another teacher's profile.
   const isFollowing = useIsFollowing(isOwnProfile ? '' : teacherId);
   const followMutation = useFollowTeacher();
 
-  // Same batched like/save pattern as the feed, scoped to this teacher's
-  // currently-loaded posts.
   const postIds = useMemo(() => postRows.map((post) => post.id), [postRows]);
   const likedIds = useCommunityLikedIds(postIds);
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
 
-  // Owner-only actions (Phase F). Only ever wired up for the current
-  // teacher's own posts - see isOwner={isOwnProfile} below. RLS still gates
-  // the actual mutations (community_posts_own_update / _own_delete).
   const visibilityMutation = useSetOwnCommunityPostVisibility();
   const deleteMutation = useDeleteCommunityPost();
 
@@ -98,19 +88,21 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 
   if (profile.isLoading) {
     return (
-      <Screen style={styles.center}>
-        <ActivityIndicator color={colors.primary} size="large" />
-        <Text style={{ color: colors.muted }}>{copy.profile.loading}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <ActivityIndicator color={community.primary} size="large" />
+        <Text style={{ color: community.textMuted }}>{copy.profile.loading}</Text>
       </Screen>
     );
   }
 
   if (profile.isError || !profile.data) {
     return (
-      <Screen style={styles.center}>
-        <Ionicons name="person-remove-outline" size={34} color={colors.primary} />
-        <Text style={[styles.errorTitle, { color: colors.text }]}>{copy.profile.loadError}</Text>
-        <Text style={[styles.errorBody, { color: colors.muted }]}>{copy.profile.loadErrorText}</Text>
+      <Screen style={{ ...styles.center, backgroundColor: community.background }}>
+        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="person-remove-outline" size={30} color={community.primary} />
+        </View>
+        <Text style={[styles.errorTitle, { color: community.text }]}>{copy.profile.loadError}</Text>
+        <Text style={[styles.errorBody, { color: community.textSecondary }]}>{copy.profile.loadErrorText}</Text>
       </Screen>
     );
   }
@@ -127,69 +119,122 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   };
 
   return (
-    <Screen scroll style={styles.page}>
-      <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[styles.avatar, { backgroundColor: `${colors.primary}18`, alignSelf: 'center' }]}>
+    <Screen scroll style={{ ...styles.page, backgroundColor: community.background }}>
+      <View
+        style={[
+          styles.hero,
+          {
+            backgroundColor: community.surface,
+            borderColor: community.border,
+            shadowColor: community.shadow
+          }
+        ]}
+      >
+        <View style={[styles.cover, { backgroundColor: community.primary }]}>
+          <View style={styles.coverBubbleOne} />
+          <View style={styles.coverBubbleTwo} />
+        </View>
+
+        <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.surface }]}>
           {teacher.avatar_url ? (
             <Image source={{ uri: teacher.avatar_url }} style={styles.avatarImg} />
           ) : (
-            <Ionicons name="person" size={34} color={colors.primary} />
+            <Ionicons name="person" size={40} color={community.primary} />
           )}
         </View>
-        <Text style={[styles.name, { color: colors.text, textAlign: 'center' }]}>{teacher.full_name ?? ''}</Text>
+
+        <Text style={[styles.name, { color: community.text, textAlign: 'center' }]}>{teacher.full_name ?? ''}</Text>
+
         {(!!teacher.subject || !!levels) && (
-          <Text style={[styles.subMeta, { color: colors.muted, textAlign: 'center' }]}>
+          <Text style={[styles.subMeta, { color: community.textSecondary, textAlign: 'center' }]}>
             {[teacher.subject, levels].filter(Boolean).join('  •  ')}
           </Text>
         )}
+
         {!!teacher.wilaya && (
-          <View style={[styles.wilayaRow, { flexDirection: row, alignSelf: 'center' }]}>
-            <Ionicons name="location-outline" size={14} color={colors.muted} />
-            <Text style={{ color: colors.muted, fontSize: 12.5 }}>{teacher.wilaya}</Text>
+          <View style={[styles.wilayaRow, { flexDirection: row }]}>
+            <Ionicons name="location-outline" size={14} color={community.textMuted} />
+            <Text style={{ color: community.textMuted, fontSize: 12.5 }}>{teacher.wilaya}</Text>
           </View>
         )}
 
         {!!teacher.bio && (
-          <Text style={[styles.bio, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{teacher.bio}</Text>
+          <Text
+            style={[
+              styles.bio,
+              {
+                color: community.textSecondary,
+                textAlign: align,
+                writingDirection: isRTL ? 'rtl' : 'ltr'
+              }
+            ]}
+          >
+            {teacher.bio}
+          </Text>
         )}
 
         {!isOwnProfile && (
           <Pressable
             onPress={handleToggleFollow}
             disabled={followMutation.isPending && followMutation.variables?.teacherId === teacherId}
-            style={[
+            style={({ pressed }) => [
               styles.followButton,
               {
-                backgroundColor: following ? colors.background : colors.primary,
-                borderColor: following ? colors.border : colors.primary,
+                backgroundColor: following ? community.surface : community.primary,
+                borderColor: following ? community.border : community.primary,
                 flexDirection: row,
-                opacity: followMutation.isPending && followMutation.variables?.teacherId === teacherId ? 0.6 : 1
+                opacity:
+                  followMutation.isPending && followMutation.variables?.teacherId === teacherId
+                    ? 0.55
+                    : pressed
+                      ? 0.82
+                      : 1
               }
             ]}
           >
-            <Ionicons name={following ? 'checkmark' : 'person-add-outline'} size={16} color={following ? colors.text : '#0B1833'} />
-            <Text style={[styles.followButtonText, { color: following ? colors.text : '#0B1833' }]}>
+            <Ionicons
+              name={following ? 'checkmark' : 'person-add-outline'}
+              size={17}
+              color={following ? community.text : '#FFFFFF'}
+            />
+            <Text style={[styles.followButtonText, { color: following ? community.text : '#FFFFFF' }]}>
               {following ? copy.follow.following : copy.follow.follow}
             </Text>
           </Pressable>
         )}
 
-        <View style={[styles.statsRow, { flexDirection: row, borderColor: colors.border }]}>
+        <View style={[styles.statsRow, { flexDirection: row, borderColor: community.divider }]}>
           <Stat value={teacher.followers_count} label={copy.profile.followers} />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={[styles.statDivider, { backgroundColor: community.divider }]} />
           <Stat value={teacher.following_count} label={copy.profile.following} />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View style={[styles.statDivider, { backgroundColor: community.divider }]} />
           <Stat value={teacher.posts_count} label={copy.profile.posts} />
         </View>
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{copy.profile.postsTitle}</Text>
+      <View style={[styles.sectionHeader, { flexDirection: row }]}>
+        <Text style={[styles.sectionTitle, { color: community.text, textAlign: align }]}>{copy.profile.postsTitle}</Text>
+        <View style={[styles.sectionIcon, { backgroundColor: community.primarySoft }]}>
+          <Ionicons name="newspaper-outline" size={17} color={community.primary} />
+        </View>
+      </View>
 
-      {posts.isLoading && <ActivityIndicator color={colors.primary} />}
+      {posts.isLoading && <ActivityIndicator color={community.primary} />}
 
       {!posts.isLoading && postRows.length === 0 && (
-        <View style={[styles.emptyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={{ color: colors.muted, textAlign: 'center' }}>{copy.profile.noPosts}</Text>
+        <View
+          style={[
+            styles.emptyCard,
+            {
+              backgroundColor: community.surface,
+              borderColor: community.border
+            }
+          ]}
+        >
+          <View style={[styles.emptyIcon, { backgroundColor: community.primarySoft }]}>
+            <Ionicons name="document-text-outline" size={25} color={community.primary} />
+          </View>
+          <Text style={{ color: community.textMuted, textAlign: 'center' }}>{copy.profile.noPosts}</Text>
         </View>
       )}
 
@@ -200,6 +245,7 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
           const ownerBusy =
             (visibilityMutation.isPending && visibilityMutation.variables?.postId === post.id) ||
             (deleteMutation.isPending && deleteMutation.variables?.postId === post.id);
+
           return (
             <CommunityPostCard
               key={post.id}
@@ -224,11 +270,17 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
       </View>
 
       {posts.hasNextPage && (
-        <Pressable onPress={() => posts.fetchNextPage()} style={styles.loadMoreButton} disabled={posts.isFetchingNextPage}>
+        <Pressable
+          onPress={() => posts.fetchNextPage()}
+          style={styles.loadMoreButton}
+          disabled={posts.isFetchingNextPage}
+        >
           {posts.isFetchingNextPage ? (
-            <ActivityIndicator color={colors.primary} />
+            <ActivityIndicator color={community.primary} />
           ) : (
-            <Text style={{ color: colors.primary, fontWeight: '800', fontSize: 13 }}>{copy.profile.loadingMore}</Text>
+            <Text style={{ color: community.primary, fontWeight: '800', fontSize: 13 }}>
+              {copy.profile.loadingMore}
+            </Text>
           )}
         </Pressable>
       )}
@@ -238,35 +290,94 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 
 function Stat({ value, label }: { value: number; label: string }) {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
+
   return (
     <View style={styles.stat}>
-      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.muted }]}>{label}</Text>
+      <Text style={[styles.statValue, { color: community.text }]}>{value}</Text>
+      <Text style={[styles.statLabel, { color: community.textMuted }]}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 18 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14 },
-  hero: { borderWidth: 1, borderRadius: 26, padding: 22, gap: 10, alignItems: 'center' },
-  avatar: { width: 74, height: 74, borderRadius: 24, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImg: { width: 74, height: 74, borderRadius: 24 },
-  name: { fontSize: 22, fontWeight: '900' },
-  subMeta: { fontSize: 13 },
-  wilayaRow: { alignItems: 'center', gap: 5 },
-  bio: { fontSize: 14.5, lineHeight: 23, width: '100%', marginTop: 4 },
-  followButton: { minHeight: 44, borderRadius: 14, borderWidth: 1, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center', gap: 7, marginTop: 4 },
+  page: { gap: 16, paddingBottom: 28 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 24 },
+  stateIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  hero: {
+    borderWidth: 1,
+    borderRadius: 24,
+    paddingBottom: 18,
+    alignItems: 'center',
+    overflow: 'hidden',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
+  },
+  cover: { width: '100%', height: 96, overflow: 'hidden' },
+  coverBubbleOne: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    top: -55,
+    right: 20
+  },
+  coverBubbleTwo: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255,255,255,0.09)',
+    bottom: -42,
+    left: 28
+  },
+  avatar: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    borderWidth: 4,
+    marginTop: -43,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  avatarImg: { width: 78, height: 78, borderRadius: 39 },
+  name: { fontSize: 21, fontWeight: '900', marginTop: 10, paddingHorizontal: 16 },
+  subMeta: { fontSize: 12.5, marginTop: 3, paddingHorizontal: 18 },
+  wilayaRow: { alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6 },
+  bio: { fontSize: 14, lineHeight: 22, width: '100%', marginTop: 12, paddingHorizontal: 18 },
+  followButton: {
+    minHeight: 44,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    marginTop: 14
+  },
   followButtonText: { fontWeight: '900', fontSize: 13.5 },
-  statsRow: { width: '100%', borderTopWidth: StyleSheet.hairlineWidth, marginTop: 8, paddingTop: 14, justifyContent: 'space-around' },
-  stat: { alignItems: 'center', gap: 3 },
+  statsRow: {
+    width: '100%',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    marginTop: 16,
+    paddingTop: 14,
+    justifyContent: 'space-around'
+  },
+  stat: { alignItems: 'center', gap: 3, minWidth: 74 },
   statValue: { fontWeight: '900', fontSize: 17 },
-  statLabel: { fontSize: 11.5 },
-  statDivider: { width: StyleSheet.hairlineWidth },
+  statLabel: { fontSize: 11.5, fontWeight: '600' },
+  statDivider: { width: StyleSheet.hairlineWidth, height: 34 },
+  sectionHeader: { alignItems: 'center', justifyContent: 'space-between' },
   sectionTitle: { fontSize: 18, fontWeight: '900' },
-  emptyCard: { borderWidth: 1, borderRadius: 20, padding: 20 },
-  list: { gap: 13 },
+  sectionIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  emptyCard: { borderWidth: 1, borderRadius: 20, padding: 22, gap: 9, alignItems: 'center' },
+  emptyIcon: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  list: { gap: 12 },
   loadMoreButton: { paddingVertical: 16, alignItems: 'center' },
-  errorTitle: { fontSize: 18, fontWeight: '900' },
+  errorTitle: { fontSize: 18, fontWeight: '900', textAlign: 'center' },
   errorBody: { textAlign: 'center', lineHeight: 21 }
 });
