@@ -6,6 +6,7 @@ import { AppLanguage, useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useIsAdmin } from '../../../hooks/useAdminAccess';
 import { getAdminCopy } from '../../../i18n/adminCopy';
+import { getCommunityCopy } from '../../../i18n/communityCopy';
 
 export function ProfileScreen({ navigation }: any) {
   const { session, isGuest, signOut } = useAuth();
@@ -13,6 +14,7 @@ export function ProfileScreen({ navigation }: any) {
   const { language, setLanguage, t, isRTL } = useLanguage();
   const { isAdmin } = useIsAdmin();
   const adminCopy = getAdminCopy(language);
+  const communityCopy = getCommunityCopy(language);
   const align = isRTL ? 'right' as const : 'left' as const;
   const row = isRTL ? 'row-reverse' as const : 'row' as const;
 
@@ -79,6 +81,15 @@ export function ProfileScreen({ navigation }: any) {
             </View>
             <View style={[styles.menuIcon, { backgroundColor: `${colors.primary}16` }]}><Ionicons name="cube-outline" size={20} color={colors.primary} /></View>
           </View>
+
+          <Pressable onPress={() => navigation.navigate('Community')} style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
+            <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.muted} />
+            <View style={styles.menuCopy}>
+              <Text style={[styles.menuTitle, { color: colors.text, textAlign: align }]}>{communityCopy.entry.title}</Text>
+              <Text style={[styles.menuText, { color: colors.muted, textAlign: align }]}>{communityCopy.entry.subtitle}</Text>
+            </View>
+            <View style={[styles.menuIcon, { backgroundColor: `${colors.primary}16` }]}><Ionicons name="people-outline" size={20} color={colors.primary} /></View>
+          </Pressable>
 
           {isAdmin && (
             <Pressable onPress={() => navigation.navigate('ContentManager')} style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>

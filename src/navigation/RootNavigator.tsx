@@ -6,6 +6,7 @@ import { ClassTimerScreen } from '../features/teacher-tools/screens/ClassTimerSc
 import { GroupMakerScreen } from '../features/teacher-tools/screens/GroupMakerScreen';
 import { RandomStudentScreen } from '../features/teacher-tools/screens/RandomStudentScreen';
 import { BottomTabs } from './BottomTabs';
+import { CommunityStackNavigator } from './CommunityStackNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ export function RootNavigator() {
         }}
       >
         <Stack.Screen name="Main" component={BottomTabs} options={{ headerShown: false }} />
+        <Stack.Screen name="Community" component={CommunityStackNavigator} options={{ headerShown: false }} />
         <Stack.Screen name="ContentDetail" component={ContentDetailScreen} options={{ title: 'التفاصيل' }} />
         <Stack.Screen name="ClassTimer" component={ClassTimerScreen} options={{ title: 'مؤقت القسم' }} />
         <Stack.Screen name="RandomStudent" component={RandomStudentScreen} options={{ title: 'اختيار تلميذ' }} />

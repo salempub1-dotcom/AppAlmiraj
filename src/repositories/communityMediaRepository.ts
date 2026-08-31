@@ -16,7 +16,13 @@ export type PickedCommunityFile = {
 
 const BUCKET = 'community-media';
 
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'];
+export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+export const ALLOWED_PDF_MIME_TYPES = ['application/pdf'];
+
+// Conservative caps for the Supabase Free plan (1GB total storage, 5GB/month
+// egress) - well under the platform's 50MB hard upload limit.
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
 function extensionFromName(name: string, mimeType?: string | null) {
   const fromName = name.split('.').pop();
@@ -25,9 +31,15 @@ function extensionFromName(name: string, mimeType?: string | null) {
   return 'bin';
 }
 
-async function uploadFile(kind: 'image' | 'pdf', file: PickedCommunityFile) {
-  if (file.mimeType && !ALLOWED_MIME_TYPES.includes(file.mimeType)) {
-    throw new Error('نوع الملف غير مدعوم. يُسمح فقط بالصور أو ملفات PDF.');
+// Path convention: community-media/{auth.uid()}/{postId}/{file} - matches
+// the storage.foldername(name)[1] = auth.uid() check in 0005_community.sql.
+// `postId` scopes the file to the post it belongs to (created first by the
+// caller - see useCreateCommunityPost), so orphaned uploads are easy to
+// reason about and clean up.
+async function uploadFile(kind: 'image' | 'pdf', file: PickedCommunityFile, postId: string) {
+  const allowed = kind === 'image' ? ALLOWED_IMAGE_MIME_TYPES : ALLOWED_PDF_MIME_TYPES;
+  if (file.mimeType && !allowed.includes(file.mimeType)) {
+    throw new Error('نوع الملف غير مدعوم.');
   }
 
   const { data: auth } = await supabase.auth.getUser();
@@ -36,7 +48,7 @@ async function uploadFile(kind: 'image' | 'pdf', file: PickedCommunityFile) {
   const response = await fetch(file.uri);
   const arrayBuffer = await response.arrayBuffer();
   const ext = extensionFromName(file.name, file.mimeType);
-  const path = `${auth.user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const path = `${auth.user.id}/${postId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
   const { error } = await supabase.storage.from(BUCKET).upload(path, arrayBuffer, {
     contentType: file.mimeType ?? undefined,
@@ -49,8 +61,8 @@ async function uploadFile(kind: 'image' | 'pdf', file: PickedCommunityFile) {
 }
 
 export const communityMediaRepository = {
-  uploadImage: (file: PickedCommunityFile) => uploadFile('image', file),
-  uploadPdf: (file: PickedCommunityFile) => uploadFile('pdf', file),
+  uploadImage: (file: PickedCommunityFile, postId: string) => uploadFile('image', file, postId),
+  uploadPdf: (file: PickedCommunityFile, postId: string) => uploadFile('pdf', file, postId),
   async remove(path: string) {
     return supabase.storage.from(BUCKET).remove([path]);
   }
