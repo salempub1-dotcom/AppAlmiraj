@@ -20,7 +20,7 @@ export function CommunityStackNavigator() {
   const nav = getCommunityCopy(language).nav;
 
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'right' }}>
+    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}>
       <Stack.Screen name="CommunityFeed" component={CommunityFeedScreen} options={{ title: nav.feed }} />
       <Stack.Screen name="CommunityPostDetail" component={CommunityPostDetailScreen} options={{ title: nav.detail }} />
       <Stack.Screen name="CreateCommunityPost" component={CreateCommunityPostScreen} options={{ title: nav.create }} />

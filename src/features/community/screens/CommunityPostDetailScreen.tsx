@@ -7,8 +7,21 @@ import { useCommunityPostDetail, useTeacherPublicProfile } from '../../../hooks/
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import { formatRelativeTime } from '../../../utils/formatRelativeTime';
 import { communityTypeIcons } from '../contentTypeIcons';
+import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 
+// Gated the same way as the feed: useCommunityPostDetail/useTeacherPublicProfile
+// only run once a session is confirmed (see TeacherSpaceGate). There is no
+// in-app path that reaches this screen as a guest today, but this keeps the
+// guarantee true even if a future deep link or Phase D change adds one.
 export function CommunityPostDetailScreen({ route, navigation }: any) {
+  return (
+    <TeacherSpaceGate navigation={navigation}>
+      <CommunityPostDetailContent route={route} navigation={navigation} />
+    </TeacherSpaceGate>
+  );
+}
+
+function CommunityPostDetailContent({ route, navigation }: any) {
   const { colors } = useTheme();
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);

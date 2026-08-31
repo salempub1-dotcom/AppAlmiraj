@@ -19,10 +19,22 @@ import {
 import { COMMUNITY_POST_TYPES, type CommunityPostType } from '../../../repositories/communityRepository';
 import { CommunityChip } from '../components/CommunityChip';
 import { communityTypeIcons } from '../contentTypeIcons';
+import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 
 type PendingAttachment = { kind: 'image' | 'pdf'; file: PickedCommunityFile; previewUri: string };
 
+// Gated the same way as the rest of Teacher Space - see TeacherSpaceGate. A
+// guest cannot reach this screen today (it's only linked from the gated
+// feed), but this keeps that guarantee explicit rather than implicit.
 export function CreateCommunityPostScreen({ navigation }: any) {
+  return (
+    <TeacherSpaceGate navigation={navigation}>
+      <CreateCommunityPostContent navigation={navigation} />
+    </TeacherSpaceGate>
+  );
+}
+
+function CreateCommunityPostContent({ navigation }: any) {
   const { colors } = useTheme();
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
@@ -92,6 +104,13 @@ export function CreateCommunityPostScreen({ navigation }: any) {
   };
 
   const handlePublish = () => {
+    // Belt-and-suspenders against double-submit: the Publish button is
+    // already `disabled` while a mutation is in flight, but guard the
+    // handler itself too in case of a double-tap racing ahead of the
+    // re-render (e.g. two rapid taps registered before React re-renders
+    // the disabled state).
+    if (createPost.isPending) return;
+
     const trimmedBody = body.trim();
     if (!trimmedBody && !attachment) {
       Alert.alert(copy.form.validationEmpty);
@@ -188,7 +207,9 @@ export function CreateCommunityPostScreen({ navigation }: any) {
         style={[styles.publishButton, { backgroundColor: colors.primary, opacity: busy ? 0.6 : 1, flexDirection: row }]}
       >
         {busy ? <ActivityIndicator color="#0B1833" /> : <Ionicons name="cloud-upload-outline" size={19} color="#0B1833" />}
-        <Text style={styles.publishButtonText}>{busy ? copy.form.publishing : copy.form.publish}</Text>
+        <Text style={styles.publishButtonText}>
+          {busy ? (attachment ? copy.form.uploading : copy.form.publishing) : copy.form.publish}
+        </Text>
       </Pressable>
     </Screen>
   );

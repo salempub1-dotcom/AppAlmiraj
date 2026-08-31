@@ -2,46 +2,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
-import { useAuth } from '../../../context/AuthProvider';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useCommunityFeed, useTeacherPublicProfiles } from '../../../hooks/useCommunity';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
+import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 
+// TeacherSpaceGate renders CommunityFeedList only once a session is
+// confirmed - useCommunityFeed/useTeacherPublicProfiles are declared inside
+// CommunityFeedList, so they are never mounted (and never query Supabase)
+// for a guest or during the initial auth bootstrap.
 export function CommunityFeedScreen({ navigation }: any) {
-  const { colors } = useTheme();
-  const { language, isRTL } = useLanguage();
-  const { isGuest } = useAuth();
-  const copy = getCommunityCopy(language);
-  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
-
-  // Teacher Space is authenticated-only end to end (RLS enforces this too -
-  // guests get zero rows back), but gating here avoids ever issuing the
-  // query for a guest and gives a clear, on-brand sign-in prompt instead.
-  if (isGuest) {
-    return (
-      <Screen style={styles.center}>
-        <View style={[styles.guestIcon, { backgroundColor: `${colors.primary}18` }]}>
-          <Ionicons name="people-outline" size={34} color={colors.primary} />
-        </View>
-        <Text style={[styles.guestTitle, { color: colors.text, textAlign: 'center' }]}>{copy.feed.guestTitle}</Text>
-        <Text style={[styles.guestText, { color: colors.muted, textAlign: 'center', writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
-          {copy.feed.guestText}
-        </Text>
-        <Pressable
-          onPress={() => navigation.navigate('Main', { screen: 'Profile', params: { screen: 'SignIn' } })}
-          style={[styles.signInButton, { backgroundColor: colors.primary, flexDirection: row }]}
-        >
-          <Ionicons name="log-in-outline" size={19} color="#0B1833" />
-          <Text style={styles.signInButtonText}>{copy.feed.signIn}</Text>
-        </Pressable>
-      </Screen>
-    );
-  }
-
-  return <CommunityFeedList navigation={navigation} />;
+  return (
+    <TeacherSpaceGate navigation={navigation}>
+      <CommunityFeedList navigation={navigation} />
+    </TeacherSpaceGate>
+  );
 }
 
 function CommunityFeedList({ navigation }: any) {
@@ -151,10 +129,8 @@ const styles = StyleSheet.create({
   addButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 13 },
   title: { fontSize: 26, fontWeight: '900' },
   subtitle: { fontSize: 12.5 },
-  guestIcon: { width: 62, height: 62, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   guestTitle: { fontWeight: '900', fontSize: 18 },
   guestText: { lineHeight: 21, fontSize: 13 },
-  signInButton: { minHeight: 52, borderRadius: 16, paddingHorizontal: 22, alignItems: 'center', justifyContent: 'center', gap: 8 },
   signInButtonText: { color: '#0B1833', fontWeight: '900', fontSize: 15 },
   retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
   emptyCard: { borderWidth: 1, borderRadius: 22, padding: 24, gap: 8, alignItems: 'center', marginTop: 10 },

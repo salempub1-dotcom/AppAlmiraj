@@ -6,12 +6,22 @@ import { useTheme } from '../../../context/ThemeProvider';
 import { useTeacherPosts, useTeacherPublicProfile } from '../../../hooks/useCommunity';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import { CommunityPostCard } from '../components/CommunityPostCard';
+import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 
 // Displays ONLY the fields returned by public.get_public_teacher_profiles():
 // full_name, avatar, subject, level, wilaya, bio, followers/following/posts
 // counts. It never reads `profiles` directly, so phone/email/notif_prefs/
-// role can never appear here even by accident.
+// role can never appear here even by accident. Gated the same way as the
+// rest of Teacher Space - see TeacherSpaceGate.
 export function TeacherCommunityProfileScreen({ route, navigation }: any) {
+  return (
+    <TeacherSpaceGate navigation={navigation}>
+      <TeacherCommunityProfileContent route={route} navigation={navigation} />
+    </TeacherSpaceGate>
+  );
+}
+
+function TeacherCommunityProfileContent({ route, navigation }: any) {
   const { colors } = useTheme();
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);

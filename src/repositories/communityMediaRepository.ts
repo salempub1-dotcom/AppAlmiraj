@@ -20,8 +20,14 @@ export const ALLOWED_IMAGE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'
 export const ALLOWED_PDF_MIME_TYPES = ['application/pdf'];
 
 // Conservative caps for the Supabase Free plan (1GB total storage, 5GB/month
-// egress) - well under the platform's 50MB hard upload limit.
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+// egress) - well under the platform's 50MB hard upload limit. Images are
+// capped tighter than PDFs on purpose: an image auto-renders for every
+// viewer who scrolls past it in the feed, so its bytes are downloaded far
+// more often than a PDF, which only downloads when a teacher explicitly
+// taps "Open PDF". Supabase Free has no server-side image transform/resize,
+// so this byte cap - not a dimension resize - is the only lever available
+// today; see the Phase C report for the follow-up recommendation.
+export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const MAX_PDF_BYTES = 10 * 1024 * 1024;
 
 function extensionFromName(name: string, mimeType?: string | null) {
@@ -47,6 +53,15 @@ async function uploadFile(kind: 'image' | 'pdf', file: PickedCommunityFile, post
 
   const response = await fetch(file.uri);
   const arrayBuffer = await response.arrayBuffer();
+
+  // Defense in depth: the screen already checks the picked asset's reported
+  // size before calling this, but re-check the actual downloaded bytes here
+  // too, since a picker's reported size can be missing on some platforms.
+  const maxBytes = kind === 'image' ? MAX_IMAGE_BYTES : MAX_PDF_BYTES;
+  if (arrayBuffer.byteLength > maxBytes) {
+    throw new Error('حجم الملف كبير جدًا.');
+  }
+
   const ext = extensionFromName(file.name, file.mimeType);
   const path = `${auth.user.id}/${postId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
