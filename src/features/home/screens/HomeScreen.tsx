@@ -6,10 +6,12 @@ import { Screen } from '../../../components/Screen';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useLatestContent } from '../../../hooks/useContent';
+import { getCommunityCopy } from '../../../i18n/communityCopy';
 
 export function HomeScreen() {
   const { colors } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, language, isRTL } = useLanguage();
+  const communityCopy = getCommunityCopy(language);
   const navigation = useNavigation<any>();
   const latest = useLatestContent(6);
   const align = isRTL ? 'right' as const : 'left' as const;
@@ -45,6 +47,20 @@ export function HomeScreen() {
           <Ionicons name="compass-outline" size={20} color="#0B1833" /><Text style={styles.primaryCtaText}>{t('home.explore')}</Text>
         </Pressable>
       </View>
+
+      <Pressable
+        onPress={() => navigation.navigate('Community')}
+        style={({ pressed }) => [styles.communityCard, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row, opacity: pressed ? 0.94 : 1 }]}
+      >
+        <View style={[styles.communityIcon, { backgroundColor: `${colors.primary}18` }]}>
+          <Ionicons name="people" size={24} color={colors.primary} />
+        </View>
+        <View style={styles.communityCopy}>
+          <Text style={[styles.communityTitle, { color: colors.text, textAlign: align }]}>{communityCopy.entry.title}</Text>
+          <Text style={[styles.communitySubtitle, { color: colors.muted, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{communityCopy.entry.subtitle}</Text>
+        </View>
+        <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.muted} />
+      </Pressable>
 
       <View style={[styles.sectionHeader, { flexDirection: row }]}>
         <Pressable onPress={() => navigation.navigate('Explore')} style={[styles.linkRow, { flexDirection: row }]}>
@@ -82,5 +98,10 @@ export function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 22 }, topBar: { justifyContent: 'space-between', alignItems: 'center' }, brandLockup: { alignItems: 'center', gap: 10 }, logoMark: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center' }, brandName: { fontSize: 18, fontWeight: '900' }, brandSub: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.5 }, iconButton: { width: 42, height: 42, borderWidth: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, hero: { backgroundColor: '#0B1833', borderRadius: 30, padding: 23, gap: 14, overflow: 'hidden' }, heroTopRow: { alignItems: 'center', justifyContent: 'space-between' }, heroBadge: { alignItems: 'center', gap: 7, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 }, heroBadgeDot: { width: 7, height: 7, borderRadius: 99, backgroundColor: '#D4AF37' }, heroBadgeText: { color: '#D7DFEB', fontWeight: '800', fontSize: 11.5 }, heroTitle: { color: '#FFFFFF', fontSize: 29, lineHeight: 42, fontWeight: '900' }, heroBody: { color: '#C7D0DE', lineHeight: 24, fontSize: 14.5 }, primaryCta: { minHeight: 54, borderRadius: 17, backgroundColor: '#D4AF37', gap: 8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }, primaryCtaText: { color: '#0B1833', fontWeight: '900', fontSize: 16 }, sectionHeader: { justifyContent: 'space-between', alignItems: 'flex-end' }, sectionTitle: { fontSize: 23, fontWeight: '900' }, sectionCaption: { fontSize: 12, marginTop: 3 }, linkRow: { alignItems: 'center', gap: 2, paddingVertical: 5 }, seeAll: { fontWeight: '900', fontSize: 12.5 }, quickGrid: { flexWrap: 'wrap', gap: 10 }, quickCard: { width: '48.4%', minHeight: 146, borderWidth: 1, borderRadius: 22, padding: 16, justifyContent: 'center', gap: 8 }, quickIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, quickTitle: { fontWeight: '900', fontSize: 15.5 }, quickSubtitle: { lineHeight: 19, fontSize: 11.5 }, list: { gap: 13 }, stateCard: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 7 }, stateTitle: { fontWeight: '900', fontSize: 17 }, stateBody: { lineHeight: 22 }, trustCard: { borderWidth: 1, borderRadius: 22, padding: 16, gap: 12, alignItems: 'flex-start' }, trustIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, trustCopy: { flex: 1, gap: 5 }, trustTitle: { fontWeight: '900' }, trustBody: { lineHeight: 21, fontSize: 12.5 }
+  page: { gap: 22 }, topBar: { justifyContent: 'space-between', alignItems: 'center' },
+  communityCard: { borderWidth: 1, borderRadius: 22, padding: 15, alignItems: 'center', gap: 12 },
+  communityIcon: { width: 46, height: 46, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  communityCopy: { flex: 1, gap: 3 },
+  communityTitle: { fontWeight: '900', fontSize: 15.5 },
+  communitySubtitle: { fontSize: 11.5, lineHeight: 16 }, brandLockup: { alignItems: 'center', gap: 10 }, logoMark: { width: 42, height: 42, borderRadius: 14, backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center' }, brandName: { fontSize: 18, fontWeight: '900' }, brandSub: { fontSize: 10.5, fontWeight: '700', letterSpacing: 0.5 }, iconButton: { width: 42, height: 42, borderWidth: 1, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, hero: { backgroundColor: '#0B1833', borderRadius: 30, padding: 23, gap: 14, overflow: 'hidden' }, heroTopRow: { alignItems: 'center', justifyContent: 'space-between' }, heroBadge: { alignItems: 'center', gap: 7, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7 }, heroBadgeDot: { width: 7, height: 7, borderRadius: 99, backgroundColor: '#D4AF37' }, heroBadgeText: { color: '#D7DFEB', fontWeight: '800', fontSize: 11.5 }, heroTitle: { color: '#FFFFFF', fontSize: 29, lineHeight: 42, fontWeight: '900' }, heroBody: { color: '#C7D0DE', lineHeight: 24, fontSize: 14.5 }, primaryCta: { minHeight: 54, borderRadius: 17, backgroundColor: '#D4AF37', gap: 8, alignItems: 'center', justifyContent: 'center', marginTop: 2 }, primaryCtaText: { color: '#0B1833', fontWeight: '900', fontSize: 16 }, sectionHeader: { justifyContent: 'space-between', alignItems: 'flex-end' }, sectionTitle: { fontSize: 23, fontWeight: '900' }, sectionCaption: { fontSize: 12, marginTop: 3 }, linkRow: { alignItems: 'center', gap: 2, paddingVertical: 5 }, seeAll: { fontWeight: '900', fontSize: 12.5 }, quickGrid: { flexWrap: 'wrap', gap: 10 }, quickCard: { width: '48.4%', minHeight: 146, borderWidth: 1, borderRadius: 22, padding: 16, justifyContent: 'center', gap: 8 }, quickIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, quickTitle: { fontWeight: '900', fontSize: 15.5 }, quickSubtitle: { lineHeight: 19, fontSize: 11.5 }, list: { gap: 13 }, stateCard: { borderWidth: 1, borderRadius: 22, padding: 20, gap: 7 }, stateTitle: { fontWeight: '900', fontSize: 17 }, stateBody: { lineHeight: 22 }, trustCard: { borderWidth: 1, borderRadius: 22, padding: 16, gap: 12, alignItems: 'flex-start' }, trustIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, trustCopy: { flex: 1, gap: 5 }, trustTitle: { fontWeight: '900' }, trustBody: { lineHeight: 21, fontSize: 12.5 }
 });

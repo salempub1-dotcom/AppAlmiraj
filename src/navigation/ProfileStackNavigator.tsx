@@ -3,6 +3,7 @@ import { SignInScreen } from '../features/auth/screens/SignInScreen';
 import { SignUpScreen } from '../features/auth/screens/SignUpScreen';
 import { EditProfileScreen } from '../features/profile/screens/EditProfileScreen';
 import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
+import { CommunityModerationScreen } from '../features/admin/screens/CommunityModerationScreen';
 import { ContentFormScreen } from '../features/admin/screens/ContentFormScreen';
 import { ContentManagerScreen } from '../features/admin/screens/ContentManagerScreen';
 import { ContentPreviewScreen } from '../features/admin/screens/ContentPreviewScreen';
@@ -30,6 +31,7 @@ export function ProfileStackNavigator() {
         options={({ route }: any) => ({ title: route.params?.id ? nav.editContent : nav.contentForm })}
       />
       <Stack.Screen name="ContentPreview" component={ContentPreviewScreen} options={{ title: nav.preview }} />
+      <Stack.Screen name="CommunityModeration" component={CommunityModerationScreen} options={{ title: nav.communityModeration }} />
     </Stack.Navigator>
   );
 }
