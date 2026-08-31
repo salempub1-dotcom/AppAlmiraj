@@ -140,7 +140,9 @@ function CommunityPostDetailContent({ route, navigation }: any) {
           </View>
 
           {!!post.title && (
-            <Text style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{post.title}</Text>
+            <Text numberOfLines={6} style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+              {post.title}
+            </Text>
           )}
           {!!meta && <Text style={[styles.meta, { color: colors.muted, textAlign: align }]}>{meta}</Text>}
           <Text style={[styles.time, { color: colors.muted, textAlign: align }]}>{formatRelativeTime(post.created_at, language)}</Text>

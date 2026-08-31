@@ -79,7 +79,9 @@ export function CommunityPostCard({
       </View>
 
       {!!post.title && (
-        <Text style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{post.title}</Text>
+        <Text numberOfLines={3} style={[styles.title, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+          {post.title}
+        </Text>
       )}
 
       {!!post.body && (

@@ -113,6 +113,22 @@ export const COMMUNITY_REPORT_REASONS: CommunityReportReason[] = [
   'other'
 ];
 
+export type CommunityReportStatus = 'open' | 'reviewed' | 'dismissed' | 'actioned';
+export type CommunityReportTargetType = 'post' | 'comment' | 'profile';
+
+export type CommunityReport = {
+  id: string;
+  target_type: CommunityReportTargetType;
+  target_id: string;
+  reporter_id: string;
+  reason: string;
+  details: string | null;
+  status: CommunityReportStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+};
+
 // Own community_profiles row (bio / visibility toggle / cached counters).
 export type CommunityProfile = {
   id: string;
@@ -407,14 +423,22 @@ export const communityRepository = {
 // official Content Manager are separate concepts operating on separate
 // tables, per the product spec.
 // ---------------------------------------------------------------------------
+export type CommunityReportListFilters = {
+  // 'resolved' collapses the three closed statuses (reviewed/dismissed/
+  // actioned) into one tab - the Moderation screen's "Open" / "Resolved"
+  // split from the Phase E spec - while still keeping each report's own
+  // precise status (shown on its row) intact.
+  status?: 'open' | 'resolved';
+  targetType?: CommunityReportTargetType;
+};
+
 export const communityModerationRepository = {
-  async listReports(status: 'open' | 'reviewed' | 'dismissed' | 'actioned' = 'open', limit = 100) {
-    return supabase
-      .from('community_reports')
-      .select('*')
-      .eq('status', status)
-      .order('created_at', { ascending: false })
-      .limit(limit);
+  async listReports(filters: CommunityReportListFilters = {}, limit = 100) {
+    let query = supabase.from('community_reports').select('*').order('created_at', { ascending: false }).limit(limit);
+    if (filters.status === 'open') query = query.eq('status', 'open');
+    else if (filters.status === 'resolved') query = query.in('status', ['reviewed', 'dismissed', 'actioned']);
+    if (filters.targetType) query = query.eq('target_type', filters.targetType);
+    return query;
   },
 
   async resolveReport(id: string, status: 'reviewed' | 'dismissed' | 'actioned') {
@@ -438,5 +462,25 @@ export const communityModerationRepository = {
       .eq('id', id)
       .select('id,post_id,author_id,body,status,created_at,updated_at')
       .single();
+  },
+
+  // Batched target-content previews for the moderation list - ONE request
+  // for every distinct reported post id currently on screen, and one for
+  // every distinct reported comment id, never one per report row. Admin
+  // read access (including already-hidden/removed rows, which is exactly
+  // what a moderator needs to see) comes from the existing
+  // community_posts_admin_read_all / community_comments_admin_read_all RLS
+  // policies - this performs no privilege check of its own.
+  async postsByIds(ids: string[]) {
+    if (ids.length === 0) return { data: [] as CommunityPost[], error: null };
+    return supabase.from('community_posts').select(postFields).in('id', ids);
+  },
+
+  async commentsByIds(ids: string[]) {
+    if (ids.length === 0) return { data: [] as CommunityComment[], error: null };
+    return supabase
+      .from('community_comments')
+      .select('id,post_id,author_id,body,status,created_at,updated_at')
+      .in('id', ids);
   }
 };

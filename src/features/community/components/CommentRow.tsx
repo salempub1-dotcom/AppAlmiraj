@@ -59,7 +59,9 @@ export function CommentRow({
           </Text>
           <Text style={[styles.time, { color: colors.muted }]}>{formatRelativeTime(comment.created_at, language)}</Text>
         </View>
-        <Text style={[styles.text, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{comment.body}</Text>
+        <Text numberOfLines={8} style={[styles.text, { color: colors.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+          {comment.body}
+        </Text>
       </View>
       <Pressable onPress={handleMenu} hitSlop={10} style={styles.menuButton}>
         <Ionicons name="ellipsis-horizontal" size={16} color={colors.muted} />

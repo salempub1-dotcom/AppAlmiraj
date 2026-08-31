@@ -101,6 +101,17 @@ export function ProfileScreen({ navigation }: any) {
               <View style={[styles.menuIcon, { backgroundColor: `${colors.primary}16` }]}><Ionicons name="library-outline" size={20} color={colors.primary} /></View>
             </Pressable>
           )}
+
+          {isAdmin && (
+            <Pressable onPress={() => navigation.navigate('CommunityModeration')} style={[styles.menuItem, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
+              <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.muted} />
+              <View style={styles.menuCopy}>
+                <Text style={[styles.menuTitle, { color: colors.text, textAlign: align }]}>{adminCopy.communityModerationEntry.title}</Text>
+                <Text style={[styles.menuText, { color: colors.muted, textAlign: align }]}>{adminCopy.communityModerationEntry.subtitle}</Text>
+              </View>
+              <View style={[styles.menuIcon, { backgroundColor: `${colors.primary}16` }]}><Ionicons name="shield-checkmark-outline" size={20} color={colors.primary} /></View>
+            </Pressable>
+          )}
         </View>
       )}
 
