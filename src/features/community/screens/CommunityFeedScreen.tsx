@@ -1,11 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
+import { useAuth } from '../../../context/AuthProvider';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useCommunityFeed, useTeacherPublicProfiles } from '../../../hooks/useCommunity';
 import { useCommunityLike, useCommunityLikedIds, useCommunitySave, useCommunitySavedIds } from '../../../hooks/useCommunityInteractions';
+import { useDeleteCommunityPost, useSetOwnCommunityPostVisibility } from '../../../hooks/useCommunityPostOwner';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
@@ -25,6 +27,8 @@ export function CommunityFeedScreen({ navigation }: any) {
 
 function CommunityFeedList({ navigation }: any) {
   const { colors } = useTheme();
+  const { session } = useAuth();
+  const viewerId = session?.user.id ?? null;
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
@@ -47,6 +51,41 @@ function CommunityFeedList({ navigation }: any) {
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
+
+  // Owner-only actions (Phase F) - wired per-row below only when the
+  // current teacher is that post's author. RLS is the real boundary
+  // (community_posts_own_update / _own_delete) regardless of this check.
+  const visibilityMutation = useSetOwnCommunityPostVisibility();
+  const deleteMutation = useDeleteCommunityPost();
+
+  const handleToggleVisibility = (post: CommunityPost) => {
+    const nextStatus = post.status === 'hidden' ? 'visible' : 'hidden';
+    visibilityMutation.mutate(
+      { postId: post.id, status: nextStatus },
+      {
+        onSuccess: () => Alert.alert(nextStatus === 'hidden' ? copy.owner.hideSuccess : copy.owner.showSuccess),
+        onError: () => Alert.alert(copy.owner.statusError)
+      }
+    );
+  };
+
+  const handleDeletePost = (post: CommunityPost) => {
+    Alert.alert(copy.owner.deleteConfirmTitle, copy.owner.deleteConfirmText, [
+      { text: copy.owner.cancel, style: 'cancel' },
+      {
+        text: copy.owner.confirmDelete,
+        style: 'destructive',
+        onPress: () =>
+          deleteMutation.mutate(
+            { postId: post.id, media: post.media },
+            {
+              onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
+              onError: () => Alert.alert(copy.owner.deleteError)
+            }
+          )
+      }
+    ]);
+  };
 
   const header = (
     <View style={styles.header}>
@@ -116,6 +155,10 @@ function CommunityFeedList({ navigation }: any) {
         renderItem={({ item }) => {
           const liked = likedIds.data?.has(item.id) ?? false;
           const saved = savedIds.data?.has(item.id) ?? false;
+          const isOwner = Boolean(viewerId) && viewerId === item.author_id;
+          const ownerBusy =
+            (visibilityMutation.isPending && visibilityMutation.variables?.postId === item.id) ||
+            (deleteMutation.isPending && deleteMutation.variables?.postId === item.id);
           return (
             <CommunityPostCard
               post={item}
@@ -128,6 +171,12 @@ function CommunityFeedList({ navigation }: any) {
               onToggleSave={() => saveMutation.mutate({ postId: item.id, saved })}
               likePending={likeMutation.isPending && likeMutation.variables?.postId === item.id}
               savePending={saveMutation.isPending && saveMutation.variables?.postId === item.id}
+              isOwner={isOwner}
+              onEdit={() => navigation.navigate('EditCommunityPost', { postId: item.id })}
+              onDeletePost={() => handleDeletePost(item)}
+              onToggleVisibility={() => handleToggleVisibility(item)}
+              ownerBusy={ownerBusy}
+              showHiddenBadge={isOwner && item.status === 'hidden'}
             />
           );
         }}

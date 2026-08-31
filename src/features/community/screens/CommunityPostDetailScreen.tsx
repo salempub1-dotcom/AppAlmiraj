@@ -15,6 +15,7 @@ import {
   useCommunitySavedIds,
   useDeleteCommunityComment
 } from '../../../hooks/useCommunityInteractions';
+import { useDeleteCommunityPost, useSetOwnCommunityPostVisibility } from '../../../hooks/useCommunityPostOwner';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { formatRelativeTime } from '../../../utils/formatRelativeTime';
@@ -77,6 +78,13 @@ function CommunityPostDetailContent({ route, navigation }: any) {
 
   const [reportTarget, setReportTarget] = useState<ReportTarget>(null);
 
+  // Owner-only actions (Phase F) - the menu below only ever offers these
+  // when the current teacher is this post's own author (isOwnPost). RLS
+  // (community_posts_own_update / _own_delete) is the real boundary
+  // regardless of what this screen renders.
+  const visibilityMutation = useSetOwnCommunityPostVisibility();
+  const deletePostMutation = useDeleteCommunityPost();
+
   if (detail.isLoading) {
     return (
       <Screen style={styles.center}>
@@ -119,16 +127,76 @@ function CommunityPostDetailContent({ route, navigation }: any) {
     });
   };
 
+  const handleToggleVisibility = () => {
+    const nextStatus = post.status === 'hidden' ? 'visible' : 'hidden';
+    visibilityMutation.mutate(
+      { postId: post.id, status: nextStatus },
+      {
+        onSuccess: () => Alert.alert(nextStatus === 'hidden' ? copy.owner.hideSuccess : copy.owner.showSuccess),
+        onError: () => Alert.alert(copy.owner.statusError)
+      }
+    );
+  };
+
+  const handleDeletePost = () => {
+    Alert.alert(copy.owner.deleteConfirmTitle, copy.owner.deleteConfirmText, [
+      { text: copy.owner.cancel, style: 'cancel' },
+      {
+        text: copy.owner.confirmDelete,
+        style: 'destructive',
+        onPress: () =>
+          deletePostMutation.mutate(
+            { postId: post.id, media: post.media },
+            {
+              onSuccess: () => {
+                Alert.alert(copy.owner.deleteSuccess);
+                // Deletion happened from Post Detail - the post this screen
+                // was showing no longer exists, so go back rather than
+                // leaving the user stranded on a now-dead detail view.
+                navigation.goBack();
+              },
+              onError: () => Alert.alert(copy.owner.deleteError)
+            }
+          )
+      }
+    ]);
+  };
+
+  const handleOwnerMenu = () => {
+    Alert.alert(copy.detail.moreOptions, undefined, [
+      { text: copy.owner.edit, onPress: () => navigation.navigate('EditCommunityPost', { postId: post.id }) },
+      { text: post.status === 'hidden' ? copy.owner.show : copy.owner.hide, onPress: handleToggleVisibility },
+      { text: copy.owner.delete, style: 'destructive', onPress: handleDeletePost },
+      { text: copy.owner.cancel, style: 'cancel' }
+    ]);
+  };
+
+  const ownerBusy =
+    (visibilityMutation.isPending && visibilityMutation.variables?.postId === post.id) ||
+    (deletePostMutation.isPending && deletePostMutation.variables?.postId === post.id);
+
   return (
     <>
       <Screen scroll style={styles.page}>
         <View style={[styles.hero, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.heroTopRow, { flexDirection: row }]}>
-            <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row }]}>
-              <Ionicons name={communityTypeIcons[post.type]} size={16} color={colors.primary} />
-              <Text style={[styles.typeText, { color: colors.primary }]}>{copy.types[post.type]}</Text>
+            <View style={[styles.badgesRow, { flexDirection: row }]}>
+              <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row }]}>
+                <Ionicons name={communityTypeIcons[post.type]} size={16} color={colors.primary} />
+                <Text style={[styles.typeText, { color: colors.primary }]}>{copy.types[post.type]}</Text>
+              </View>
+              {isOwnPost && post.status === 'hidden' && (
+                <View style={[styles.hiddenBadge, { backgroundColor: `${colors.danger}18`, flexDirection: row }]}>
+                  <Ionicons name="eye-off-outline" size={13} color={colors.danger} />
+                  <Text style={[styles.hiddenBadgeText, { color: colors.danger }]}>{copy.card.hiddenBadge}</Text>
+                </View>
+              )}
             </View>
-            {!isOwnPost && (
+            {isOwnPost ? (
+              <Pressable onPress={handleOwnerMenu} disabled={ownerBusy} hitSlop={10} accessibilityLabel={copy.detail.moreOptions}>
+                <Ionicons name="ellipsis-horizontal" size={20} color={colors.muted} style={{ opacity: ownerBusy ? 0.5 : 1 }} />
+              </Pressable>
+            ) : (
               <Pressable
                 onPress={() => setReportTarget({ targetType: 'post', targetId: post.id })}
                 hitSlop={10}
@@ -301,8 +369,11 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 14 },
   hero: { borderWidth: 1, borderRadius: 26, padding: 20, gap: 11 },
   heroTopRow: { justifyContent: 'space-between', alignItems: 'center' },
+  badgesRow: { alignItems: 'center', gap: 8, flexShrink: 1, flexWrap: 'wrap' },
   typeBadge: { alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 11, paddingVertical: 7 },
   typeText: { fontWeight: '900', fontSize: 12 },
+  hiddenBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
+  hiddenBadgeText: { fontWeight: '900', fontSize: 11 },
   title: { fontSize: 26, lineHeight: 37, fontWeight: '900' },
   meta: { lineHeight: 20, fontSize: 13 },
   time: { fontSize: 11.5, fontWeight: '700' },

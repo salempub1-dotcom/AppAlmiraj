@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
@@ -24,7 +24,13 @@ export function CommunityPostCard({
   onToggleLike,
   onToggleSave,
   likePending,
-  savePending
+  savePending,
+  isOwner,
+  onEdit,
+  onDeletePost,
+  onToggleVisibility,
+  ownerBusy,
+  showHiddenBadge
 }: {
   post: CommunityPost;
   author?: PublicTeacherProfile | null;
@@ -36,6 +42,17 @@ export function CommunityPostCard({
   onToggleSave?: () => void;
   likePending?: boolean;
   savePending?: boolean;
+  // Owner-only actions (Phase F). All optional so the card still renders as
+  // a plain read-only card anywhere it's used without them - the (...)
+  // menu only ever appears when `isOwner` is explicitly passed true, which
+  // every screen computes from `post.author_id === session?.user.id`
+  // (RLS is the real boundary either way - see useCommunityPostOwner.ts).
+  isOwner?: boolean;
+  onEdit?: () => void;
+  onDeletePost?: () => void;
+  onToggleVisibility?: () => void;
+  ownerBusy?: boolean;
+  showHiddenBadge?: boolean;
 }) {
   const { colors } = useTheme();
   const { language, isRTL } = useLanguage();
@@ -44,6 +61,15 @@ export function CommunityPostCard({
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
 
   const meta = [post.subject, ...(post.level ?? [])].filter(Boolean) as string[];
+
+  const handleOwnerMenu = () => {
+    Alert.alert(copy.card.moreOptions, undefined, [
+      { text: copy.owner.edit, onPress: onEdit },
+      { text: post.status === 'hidden' ? copy.owner.show : copy.owner.hide, onPress: onToggleVisibility },
+      { text: copy.owner.delete, style: 'destructive', onPress: onDeletePost },
+      { text: copy.owner.cancel, style: 'cancel' }
+    ]);
+  };
 
   return (
     <Pressable
@@ -70,12 +96,33 @@ export function CommunityPostCard({
             )}
           </View>
         </Pressable>
-        <Text style={[styles.time, { color: colors.muted }]}>{formatRelativeTime(post.created_at, language)}</Text>
+        <View style={[styles.authorTrailing, { flexDirection: row }]}>
+          <Text style={[styles.time, { color: colors.muted }]}>{formatRelativeTime(post.created_at, language)}</Text>
+          {isOwner && (
+            <Pressable
+              onPress={handleOwnerMenu}
+              disabled={ownerBusy}
+              hitSlop={10}
+              accessibilityLabel={copy.card.moreOptions}
+              style={{ opacity: ownerBusy ? 0.5 : 1 }}
+            >
+              <Ionicons name="ellipsis-horizontal" size={18} color={colors.muted} />
+            </Pressable>
+          )}
+        </View>
       </View>
 
-      <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row, alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}>
-        <Ionicons name={communityTypeIcons[post.type]} size={14} color={colors.primary} />
-        <Text style={[styles.typeText, { color: colors.primary }]}>{copy.types[post.type]}</Text>
+      <View style={[styles.badgesRow, { flexDirection: row }]}>
+        <View style={[styles.typeBadge, { backgroundColor: `${colors.primary}18`, flexDirection: row }]}>
+          <Ionicons name={communityTypeIcons[post.type]} size={14} color={colors.primary} />
+          <Text style={[styles.typeText, { color: colors.primary }]}>{copy.types[post.type]}</Text>
+        </View>
+        {showHiddenBadge && (
+          <View style={[styles.hiddenBadge, { backgroundColor: `${colors.danger}18`, flexDirection: row }]}>
+            <Ionicons name="eye-off-outline" size={12} color={colors.danger} />
+            <Text style={[styles.hiddenBadgeText, { color: colors.danger }]}>{copy.card.hiddenBadge}</Text>
+          </View>
+        )}
       </View>
 
       {!!post.title && (
@@ -172,9 +219,13 @@ const styles = StyleSheet.create({
   avatarImg: { width: 36, height: 36, borderRadius: 12 },
   authorName: { fontWeight: '900', fontSize: 13.5, maxWidth: 160 },
   authorMeta: { fontSize: 11, marginTop: 1 },
+  authorTrailing: { alignItems: 'center', gap: 10 },
   time: { fontSize: 11, fontWeight: '700' },
+  badgesRow: { alignItems: 'center', gap: 8 },
   typeBadge: { alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
   typeText: { fontWeight: '900', fontSize: 11.5 },
+  hiddenBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  hiddenBadgeText: { fontWeight: '900', fontSize: 10.5 },
   title: { fontWeight: '900', fontSize: 17, lineHeight: 27 },
   body: { lineHeight: 23, fontSize: 14 },
   imagePreview: { width: '100%', height: 170, borderRadius: 17 },

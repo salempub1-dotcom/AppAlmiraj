@@ -14,7 +14,9 @@ import {
   useFollowTeacher,
   useIsFollowing
 } from '../../../hooks/useCommunityInteractions';
+import { useDeleteCommunityPost, useSetOwnCommunityPostVisibility } from '../../../hooks/useCommunityPostOwner';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
+import type { CommunityPost } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 
@@ -58,6 +60,41 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
+
+  // Owner-only actions (Phase F). Only ever wired up for the current
+  // teacher's own posts - see isOwner={isOwnProfile} below. RLS still gates
+  // the actual mutations (community_posts_own_update / _own_delete).
+  const visibilityMutation = useSetOwnCommunityPostVisibility();
+  const deleteMutation = useDeleteCommunityPost();
+
+  const handleToggleVisibility = (post: CommunityPost) => {
+    const nextStatus = post.status === 'hidden' ? 'visible' : 'hidden';
+    visibilityMutation.mutate(
+      { postId: post.id, status: nextStatus },
+      {
+        onSuccess: () => Alert.alert(nextStatus === 'hidden' ? copy.owner.hideSuccess : copy.owner.showSuccess),
+        onError: () => Alert.alert(copy.owner.statusError)
+      }
+    );
+  };
+
+  const handleDeletePost = (post: CommunityPost) => {
+    Alert.alert(copy.owner.deleteConfirmTitle, copy.owner.deleteConfirmText, [
+      { text: copy.owner.cancel, style: 'cancel' },
+      {
+        text: copy.owner.confirmDelete,
+        style: 'destructive',
+        onPress: () =>
+          deleteMutation.mutate(
+            { postId: post.id, media: post.media },
+            {
+              onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
+              onError: () => Alert.alert(copy.owner.deleteError)
+            }
+          )
+      }
+    ]);
+  };
 
   if (profile.isLoading) {
     return (
@@ -160,6 +197,9 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
         {postRows.map((post) => {
           const liked = likedIds.data?.has(post.id) ?? false;
           const saved = savedIds.data?.has(post.id) ?? false;
+          const ownerBusy =
+            (visibilityMutation.isPending && visibilityMutation.variables?.postId === post.id) ||
+            (deleteMutation.isPending && deleteMutation.variables?.postId === post.id);
           return (
             <CommunityPostCard
               key={post.id}
@@ -172,6 +212,12 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
               onToggleSave={() => saveMutation.mutate({ postId: post.id, saved })}
               likePending={likeMutation.isPending && likeMutation.variables?.postId === post.id}
               savePending={saveMutation.isPending && saveMutation.variables?.postId === post.id}
+              isOwner={isOwnProfile}
+              onEdit={() => navigation.navigate('EditCommunityPost', { postId: post.id })}
+              onDeletePost={() => handleDeletePost(post)}
+              onToggleVisibility={() => handleToggleVisibility(post)}
+              ownerBusy={ownerBusy}
+              showHiddenBadge={isOwnProfile && post.status === 'hidden'}
             />
           );
         })}
