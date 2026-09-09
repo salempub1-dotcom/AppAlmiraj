@@ -136,7 +136,7 @@ export function CheckoutScreen({ navigation }: any) {
     setSubmitting(false);
 
     if (error || !data?.order) {
-      Alert.alert('تعذر إنشاء الطلب', error?.message ?? data?.error ?? 'حاول مرة أخرى.');
+      Alert.alert('تعذر إنشاء الطلب', error?.message ?? 'حاول مرة أخرى.');
       return;
     }
 
