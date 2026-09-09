@@ -16,9 +16,11 @@ export const palette = {
 export type AppColors = {
   background: string;
   card: string;
+  surface: string;
   text: string;
   muted: string;
   primary: string;
+  onPrimary: string;
   border: string;
   danger: string;
 };
@@ -26,9 +28,11 @@ export type AppColors = {
 export const lightColors: AppColors = {
   background: palette.lightBg,
   card: palette.lightCard,
+  surface: '#EEF2F7',
   text: palette.text,
   muted: palette.muted,
   primary: palette.gold,
+  onPrimary: palette.navy,
   border: '#E2E7EF',
   danger: palette.danger
 };
@@ -36,9 +40,11 @@ export const lightColors: AppColors = {
 export const darkColors: AppColors = {
   background: palette.darkBg,
   card: palette.darkCard,
+  surface: '#16253A',
   text: '#F7F9FC',
   muted: '#A9B4C5',
   primary: '#E1B94F',
+  onPrimary: palette.navy,
   border: '#22334C',
   danger: '#FF8A80'
 };
