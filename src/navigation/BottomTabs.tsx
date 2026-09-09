@@ -3,21 +3,17 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageProvider';
 import { useTheme } from '../context/ThemeProvider';
-import { ExploreScreen } from '../features/explore/screens/ExploreScreen';
-import { HomeScreen } from '../features/home/screens/HomeScreen';
-import { ToolsScreen } from '../features/teacher-tools/screens/ToolsScreen';
+import { CommunityStackNavigator } from './CommunityStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { StoreStackNavigator } from './StoreStackNavigator';
 
 const Tab = createBottomTabNavigator();
 
-const icons: Record<string, { active: keyof typeof Ionicons.glyphMap; inactive: keyof typeof Ionicons.glyphMap }> = {
-  Home: { active: 'home', inactive: 'home-outline' },
-  Explore: { active: 'compass', inactive: 'compass-outline' },
-  Tools: { active: 'construct', inactive: 'construct-outline' },
-  Store: { active: 'bag-handle', inactive: 'bag-handle-outline' },
-  Profile: { active: 'person', inactive: 'person-outline' }
-};
+const icons = {
+  Community: { active: 'people' as const, inactive: 'people-outline' as const },
+  Store: { active: 'storefront' as const, inactive: 'storefront-outline' as const },
+  Profile: { active: 'person-circle' as const, inactive: 'person-circle-outline' as const }
+} as const;
 
 export function BottomTabs() {
   const { colors } = useTheme();
@@ -27,6 +23,7 @@ export function BottomTabs() {
 
   return (
     <Tab.Navigator
+      initialRouteName="Community"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
@@ -34,10 +31,10 @@ export function BottomTabs() {
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: { fontSize: 10.5, fontWeight: '800', marginTop: 2, marginBottom: 2 },
         tabBarIcon: ({ color, focused }) => {
-          const config = icons[route.name];
+          const icon = icons[route.name as keyof typeof icons];
           return (
             <Ionicons
-              name={focused ? config.active : config.inactive}
+              name={focused ? icon.active : icon.inactive}
               color={focused ? '#0B1833' : color}
               size={19}
               style={focused ? { backgroundColor: colors.primary, padding: 7, borderRadius: 12, overflow: 'hidden' } : undefined}
@@ -59,9 +56,7 @@ export function BottomTabs() {
         tabBarItemStyle: { paddingTop: 1 }
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('nav.home') }} />
-      <Tab.Screen name="Explore" component={ExploreScreen} options={{ tabBarLabel: t('nav.explore') }} />
-      <Tab.Screen name="Tools" component={ToolsScreen} options={{ tabBarLabel: t('nav.tools') }} />
+      <Tab.Screen name="Community" component={CommunityStackNavigator} options={{ tabBarLabel: 'فضاء الأستاذ' }} />
       <Tab.Screen name="Store" component={StoreStackNavigator} options={{ tabBarLabel: t('nav.store') }} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarLabel: t('nav.profile') }} />
     </Tab.Navigator>
