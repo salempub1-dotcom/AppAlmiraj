@@ -22,6 +22,13 @@ type RepositoryResult<T> = {
   error: RepositoryError | null;
 };
 
+export type AppOrder = {
+  id: string | number;
+  tracking?: string | null;
+  total: number;
+  [key: string]: unknown;
+};
+
 async function getAccessToken() {
   const { data, error } = await supabase.auth.getSession();
   if (error) return { token: null, error: { message: error.message } };
@@ -65,7 +72,7 @@ async function callStore<T>(body: Record<string, unknown>): Promise<RepositoryRe
 
 export const orderRepository = {
   async create(input: CreateOrderInput) {
-    const result = await callStore<{ order: unknown; shippingPending: boolean }>({
+    const result = await callStore<{ order: AppOrder; shippingPending: boolean }>({
       action: 'create',
       ...input,
     });
