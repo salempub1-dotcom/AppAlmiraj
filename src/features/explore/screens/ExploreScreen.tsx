@@ -23,12 +23,13 @@ const categories: Category[] = [
   { label: 'مقالات', type: 'article', icon: 'document-text-outline' },
   { label: 'مستجدات', type: 'announcement', icon: 'megaphone-outline' }
 ];
+const defaultCategory: Category = categories[0]!;
 
 const levels = ['الكل', '3PS', '4PS', '5PS', '1MS', '2MS', '3MS', '4MS'];
 
 export function ExploreScreen() {
   const { colors } = useTheme();
-  const [category, setCategory] = useState<Category>(categories[0]);
+  const [category, setCategory] = useState<Category>(defaultCategory);
   const [level, setLevel] = useState('الكل');
   const [search, setSearch] = useState('');
 
@@ -45,7 +46,7 @@ export function ExploreScreen() {
   const hasFilters = category.label !== 'الكل' || level !== 'الكل' || search.trim().length > 0;
 
   const resetFilters = () => {
-    setCategory(categories[0]);
+    setCategory(defaultCategory);
     setLevel('الكل');
     setSearch('');
   };
