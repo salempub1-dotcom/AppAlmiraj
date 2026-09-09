@@ -9,7 +9,7 @@ function shuffle<T>(items: T[]) {
   const copy = [...items];
   for (let i = copy.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
+    [copy[i], copy[j]] = [copy[j]!, copy[i]!];
   }
   return copy;
 }
@@ -28,7 +28,7 @@ export function GroupMakerScreen() {
     if (names.length < 2) return;
     const count = Math.min(groupCount, names.length);
     const next = Array.from({ length: count }, () => [] as string[]);
-    shuffle(names).forEach((name, index) => next[index % count].push(name));
+    shuffle(names).forEach((name, index) => next[index % count]!.push(name));
     setGroups(next);
   };
 
