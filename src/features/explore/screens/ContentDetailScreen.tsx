@@ -4,7 +4,7 @@ import { Screen } from '../../../components/Screen';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useContentDetail } from '../../../hooks/useContent';
-import type { ContentMedia, PostType } from '../../../repositories/contentRepository';
+import type { ContentMedia, ContentPost, PostType } from '../../../repositories/contentRepository';
 
 const labels: Record<'ar' | 'en', Record<PostType, string>> = {
   ar: { video: 'فيديو تعليمي', article: 'مقال', teacher_tip: 'نصيحة للأستاذ', problem: 'مشكلة وحل', question: 'سؤال', poll: 'استطلاع', exam: 'اختبار', test: 'فرض', resource: 'مورد مجاني', announcement: 'مستجد' },
@@ -62,7 +62,7 @@ export function ContentDetailScreen({ route }: any) {
     );
   }
 
-  const post = detail.data;
+  const post = detail.data as ContentPost;
   const externalUrl = firstExternalUrl(post.media ?? {});
   const title = (language === 'en' && post.title_en) || post.title;
   const body = (language === 'en' && post.body_en) || post.body;
