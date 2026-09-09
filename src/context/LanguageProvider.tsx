@@ -3,7 +3,9 @@ import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useSt
 import { I18nManager } from 'react-native';
 
 export type AppLanguage = 'ar' | 'en';
-type TranslationTree = Record<string, string | TranslationTree>;
+interface TranslationTree {
+  [key: string]: string | TranslationTree;
+}
 const STORAGE_KEY = 'al-miraj-language';
 
 const translations: Record<AppLanguage, TranslationTree> = {
