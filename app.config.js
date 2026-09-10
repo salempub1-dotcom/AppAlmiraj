@@ -15,6 +15,7 @@ const config = {
   orientation: 'portrait',
   scheme: 'almiraj',
   userInterfaceStyle: 'automatic',
+  plugins: ['expo-font'],
   ios: {
     supportsTablet: true,
     bundleIdentifier: 'com.almiraj.education'
