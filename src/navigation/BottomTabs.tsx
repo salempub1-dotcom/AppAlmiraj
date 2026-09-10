@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageProvider';
 import { useTheme } from '../context/ThemeProvider';
+import { getCommunityCopy } from '../i18n/communityCopy';
 import { CommunityStackNavigator } from './CommunityStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { StoreStackNavigator } from './StoreStackNavigator';
@@ -17,7 +18,7 @@ const icons = {
 
 export function BottomTabs() {
   const { colors } = useTheme();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 8);
 
@@ -56,7 +57,7 @@ export function BottomTabs() {
         tabBarItemStyle: { paddingTop: 1 }
       })}
     >
-      <Tab.Screen name="Community" component={CommunityStackNavigator} options={{ tabBarLabel: 'فضاء الأستاذ' }} />
+      <Tab.Screen name="Community" component={CommunityStackNavigator} options={{ tabBarLabel: getCommunityCopy(language).nav.feed }} />
       <Tab.Screen name="Store" component={StoreStackNavigator} options={{ tabBarLabel: t('nav.store') }} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} options={{ tabBarLabel: t('nav.profile') }} />
     </Tab.Navigator>
