@@ -220,9 +220,9 @@ export function CommunityPostCard({
           icon={liked ? 'heart' : 'heart-outline'}
           value={post.likes_count}
           active={liked}
-          activeColor={community.primary}
+          activeColor={community.isDark ? '#FDA4AF' : '#BE123C'}
           inactiveColor={community.textSecondary}
-          activeBackground={community.primarySoft}
+          activeBackground={community.isDark ? '#402337' : '#FFF1F2'}
           onPress={onToggleLike}
           disabled={likePending}
         />
@@ -295,16 +295,16 @@ function InteractionButton({
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingTop: 15,
-    paddingBottom: 10,
-    gap: 12,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 12,
+    gap: 14,
     overflow: 'hidden',
     shadowOpacity: 0.06,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 2
+    elevation: 0
   },
   authorRow: {
     justifyContent: 'space-between',
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
   avatarImg: {
     width: 44,
     height: 44,
-    borderRadius: 22
+    borderRadius: 16
   },
   authorText: {
     flex: 1,
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   },
   authorName: {
     fontWeight: '900',
-    fontSize: 14.5
+    fontSize: 15
   },
   authorMetaRow: {
     marginTop: 3,
@@ -359,8 +359,8 @@ const styles = StyleSheet.create({
     fontWeight: '600'
   },
   moreButton: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center'
@@ -462,10 +462,10 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   actionButton: {
-    minWidth: 72,
-    minHeight: 38,
-    borderRadius: 12,
-    paddingHorizontal: 14,
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 14,
+    paddingHorizontal: 8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -20,7 +20,7 @@ export function CommunityStackNavigator() {
 
   return (
     <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}>
-      <Stack.Screen name="CommunityFeed" component={CommunityFeedScreen} options={{ title: nav.feed }} />
+      <Stack.Screen name="CommunityFeed" component={CommunityFeedScreen} options={{ title: nav.feed, headerShown: false }} />
       <Stack.Screen name="CommunityPostDetail" component={CommunityPostDetailScreen} options={{ title: nav.detail }} />
       <Stack.Screen name="CreateCommunityPost" component={CreateCommunityPostScreen} options={{ title: nav.create }} />
       <Stack.Screen name="EditCommunityPost" component={EditCommunityPostScreen} options={{ title: nav.editPost }} />
