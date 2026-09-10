@@ -14,7 +14,10 @@ export function RandomStudentScreen() {
   const [selected, setSelected] = useState('');
 
   const names = useMemo(() => rawNames.split(/\n|,/).map((name) => name.trim()).filter(Boolean), [rawNames]);
-  const pick = () => { if (names.length) setSelected(names[Math.floor(Math.random() * names.length)]); };
+  const pick = () => {
+    const name = names[Math.floor(Math.random() * names.length)];
+    if (name) setSelected(name);
+  };
 
   return (
     <Screen scroll style={styles.page}>

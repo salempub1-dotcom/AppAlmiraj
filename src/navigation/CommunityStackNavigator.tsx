@@ -11,11 +11,8 @@ import { getCommunityCopy } from '../i18n/communityCopy';
 
 const Stack = createNativeStackNavigator();
 
-// Teacher Space ("فضاء الأستاذ") - a dedicated stack, not a bottom tab.
-// Reached from a Home quick-access card and a Profile menu item (see
-// RootNavigator, HomeScreen, ProfileScreen). Explore stays the public,
-// official-content area; this stack is entirely separate, teacher-generated
-// community content.
+// Teacher Space is the initial bottom tab, with its own stack for community
+// screens. Official content remains separate from teacher-generated content.
 export function CommunityStackNavigator() {
   const { colors } = useTheme();
   const { language } = useLanguage();

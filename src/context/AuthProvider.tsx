@@ -20,7 +20,9 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(data.session);
       setLoading(false);
     });
-    const { data } = authRepository.onAuthStateChange((_event, nextSession) => setSession(nextSession));
+    const { data } = authRepository.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
