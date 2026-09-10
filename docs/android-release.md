@@ -8,7 +8,9 @@
 - Export is a compile/bundle check only: it does not execute app startup, authenticate users, compile native Android code, sign an APK, or test backend connectivity.
 - No Android emulator/device is available in the execution environment.
 - Expo dashboard authenticated as `almiradjapp`. Created the EAS project `al-miraj-app` after confirming the account had no projects. Project UUID: `284b813c-50f3-4104-a2bf-62dc065eebe6`.
-- EAS Update configuration is prepared but incomplete: `expo-updates` is not installed. Network package installation was blocked; an offline attempt failed with `ENOTCACHED`. No native build or OTA update has been published.
+- EAS Update dependencies installed on the user's computer and supplied for review: `expo-updates` 57.0.21, React Native 0.86.3, safe-area-context 5.7.0, and screens 4.26.2. Package and lockfile root specifications match; resolved direct versions and npm registry/integrity fields were checked.
+- The user's terminal screenshot confirms `tsc --noEmit` and Android export passed after installation (1,114 modules). These updated dependencies were not installed or executed in the assistant environment because registry access is restricted.
+- No native APK/AAB or OTA update has been published.
 
 ## Build profiles
 
@@ -18,26 +20,26 @@ The existing application ID remains `com.almiraj.education` and the app version 
 
 ## Before the first APK
 
-1. Finish the EAS Update dependency installation below before merging the configuration draft or creating a build.
-2. Resolve native dependency mismatches reported by the installed Expo SDK. At inspection: `react-native` 0.86.2 (expected 0.86.3), `react-native-safe-area-context` 5.9.1 (expected ~5.7.0), and `react-native-screens` 4.27.0 (expected ~4.26.0). Refresh package-lock.json together with package.json, then rerun typecheck and Android export. No dependency update was performed in this phase.
+1. Use the reviewed EAS Update branch (or main after it is merged) and run `npm ci` to install its committed lockfile.
+2. Run `npx expo install --check` before the first native build. The three previously identified native version mismatches have been corrected.
 3. Authenticate EAS CLI as `almiradjapp` and verify that `eas project:info` reports the UUID above. The browser session does not authenticate the CLI. Reuse this registered project.
 4. Configure the application's confirmed public runtime configuration in both relevant EAS environments. Never embed server credentials or signing secrets in source code. Runtime values were not available during the bundle-only test.
 5. Configure the approved app icon, Android adaptive icon, and splash assets. None are currently configured in app.config.js. Do not substitute an unapproved logo.
 6. Confirm/reuse Android signing credentials; do not replace an existing upload key.
 7. Run `eas build --platform android --profile preview` in the authenticated, configured environment.
 
-## Complete EAS Update setup
+## EAS Update dependency validation
 
-In an environment with permitted npm access, from the branch containing this configuration:
+The update module and native dependency alignment are committed. To reproduce validation from this revision in an environment with npm access:
 
 ```sh
-npx expo install expo-updates react-native react-native-safe-area-context react-native-screens
+npm ci
 npx expo install --check
 npm run typecheck
 npx expo export --platform android --max-workers 2
 ```
 
-The installed Expo SDK currently expects `expo-updates ~57.0.19`. Use Expo's version selection, commit both package.json and package-lock.json, and review the changes. Keep this configuration as a draft until installation and validation pass.
+The committed `expo-updates ~57.0.21` range is locked to 57.0.21. Future dependency updates must update package.json and package-lock.json together. The initial dependency-download blocker is resolved.
 
 After the release prerequisites above are completed, build and install the preview APK. For subsequent compatible Android updates:
 
