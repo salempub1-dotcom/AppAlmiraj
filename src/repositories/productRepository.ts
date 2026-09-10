@@ -15,6 +15,21 @@ export type Product = {
 
 const STORE_PRODUCTS_API = 'https://www.elm3raj.com/api/products';
 
+// The storefront API returns same-origin proxy paths. Native Image has no
+// website origin, so resolve them before products reach any screen.
+function normalizeProductImages(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((image) => {
+    if (typeof image !== 'string' || !image.trim()) return [];
+    try {
+      const url = new URL(image.trim(), STORE_PRODUCTS_API);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? [url.href] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
 type RepositoryResult<T> = {
   data: T | null;
   error: { message: string } | null;
@@ -34,7 +49,13 @@ async function fetchProducts(): Promise<RepositoryResult<Product[]>> {
       };
     }
 
-    return { data: payload.data as Product[], error: null };
+    return {
+      data: (payload.data as Product[]).map((product) => ({
+        ...product,
+        images: normalizeProductImages(product.images)
+      })),
+      error: null
+    };
   } catch (error) {
     return {
       data: null,
