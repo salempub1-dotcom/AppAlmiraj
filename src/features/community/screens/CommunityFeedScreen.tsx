@@ -12,7 +12,7 @@ import { getCommunityCopy } from '../../../i18n/communityCopy';
 import type { CommunityPost, PublicTeacherProfile } from '../../../repositories/communityRepository';
 import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
-import { getCommunityTheme } from '../communityTheme';
+import { getCommunityTheme, getCommunityTypeTone } from '../communityTheme';
 import { getCommunitySocialCopy } from '../communitySocialCopy';
 
 type FeedFilter =
@@ -128,17 +128,19 @@ function CommunityFeedList({ navigation }: any) {
 
   const header = (
     <View style={styles.header}>
-      <View style={[styles.heroCard, { backgroundColor: community.primary }]}>
+      <View style={[styles.heroCard, { backgroundColor: '#132443' }]}>
         <View style={[styles.heroTopRow, { flexDirection: row }]}>
           <View style={styles.heroIcon}>
-            <Ionicons name="people" size={23} color="#FFFFFF" />
+            <Ionicons name="school" size={25} color="#E8C568" />
           </View>
 
           <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={copy.nav.saved}
             onPress={() => navigation.navigate('SavedCommunityPosts')}
             style={({ pressed }) => [styles.savedButton, { opacity: pressed ? 0.7 : 1 }]}
           >
-            <Ionicons name="bookmark-outline" size={20} color="#FFFFFF" />
+            <Ionicons name="bookmark-outline" size={22} color="#E8C568" />
           </Pressable>
         </View>
 
@@ -159,7 +161,7 @@ function CommunityFeedList({ navigation }: any) {
       >
         <Pressable onPress={openComposer} style={[styles.composerMain, { flexDirection: row }]}>
           <View style={[styles.composerAvatar, { backgroundColor: community.primarySoft }]}>
-            <Ionicons name="person" size={20} color={community.primary} />
+            <Ionicons name="create-outline" size={23} color={community.primaryStrong} />
           </View>
           <View style={[styles.composerPrompt, { backgroundColor: community.isDark ? community.surfaceRaised : '#F8FAFC' }]}>
             <Text numberOfLines={2} style={[styles.composerPromptText, { color: community.textSecondary, textAlign: align }]}>
@@ -171,16 +173,22 @@ function CommunityFeedList({ navigation }: any) {
         <View style={[styles.composerDivider, { backgroundColor: community.divider }]} />
 
         <View style={[styles.quickActions, { flexDirection: row }]}>
-          {quickActions.map((action) => (
+          {quickActions.map((action) => {
+            const tone = getCommunityTypeTone(action.key, community);
+            return (
             <Pressable
               key={action.key}
+              accessibilityRole="button"
+              accessibilityLabel={action.label}
               onPress={openComposer}
               style={({ pressed }) => [styles.quickAction, { opacity: pressed ? 0.65 : 1 }]}
             >
-              <Ionicons name={action.icon} size={18} color={community.primary} />
+              <View style={[styles.quickActionIcon, { backgroundColor: tone.background }]}>
+                <Ionicons name={action.icon} size={22} color={tone.foreground} />
+              </View>
               <Text style={[styles.quickActionText, { color: community.textSecondary }]}>{action.label}</Text>
             </Pressable>
-          ))}
+          ); })}
         </View>
       </View>
 
@@ -195,16 +203,18 @@ function CommunityFeedList({ navigation }: any) {
             return (
               <Pressable
                 key={filter}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => setActiveFilter(filter)}
                 style={[
                   styles.filterChip,
                   {
-                    backgroundColor: active ? community.primary : community.surface,
-                    borderColor: active ? community.primary : community.border
+                    backgroundColor: active ? colors.primary : community.surface,
+                    borderColor: active ? colors.primary : community.border
                   }
                 ]}
               >
-                <Text style={[styles.filterText, { color: active ? '#FFFFFF' : community.textSecondary }]}>
+                <Text style={[styles.filterText, { color: active ? colors.onPrimary : community.textSecondary }]}>
                   {social.filters[filter]}
                 </Text>
               </Pressable>
@@ -330,19 +340,19 @@ const styles = StyleSheet.create({
     paddingVertical: 0
   },
   listContent: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
+    paddingHorizontal: 18,
+    paddingTop: 14,
     paddingBottom: 40
   },
   header: {
-    gap: 12,
-    marginBottom: 14
+    gap: 18,
+    marginBottom: 18
   },
   heroCard: {
-    borderRadius: 24,
-    paddingHorizontal: 18,
-    paddingTop: 15,
-    paddingBottom: 19,
+    borderRadius: 28,
+    paddingHorizontal: 22,
+    paddingTop: 20,
+    paddingBottom: 24,
     overflow: 'hidden'
   },
   heroTopRow: {
@@ -351,47 +361,47 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   heroIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    width: 48,
+    height: 48,
+    borderRadius: 18,
+    backgroundColor: '#233756',
     alignItems: 'center',
     justifyContent: 'center'
   },
   savedButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     borderRadius: 14,
     backgroundColor: 'rgba(255,255,255,0.14)',
     alignItems: 'center',
     justifyContent: 'center'
   },
   heroEyebrow: {
-    color: 'rgba(255,255,255,0.76)',
+    color: '#E8C568',
     fontSize: 11.5,
     fontWeight: '800',
     marginBottom: 4
   },
   title: {
     color: '#FFFFFF',
-    fontSize: 27,
+    fontSize: 30,
     fontWeight: '900'
   },
   subtitle: {
     color: 'rgba(255,255,255,0.84)',
-    fontSize: 12.5,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 23,
     marginTop: 4
   },
   composer: {
     borderWidth: 1,
-    borderRadius: 19,
-    padding: 12,
-    gap: 11,
+    borderRadius: 24,
+    padding: 16,
+    gap: 14,
     shadowOpacity: 0.05,
     shadowRadius: 9,
     shadowOffset: { width: 0, height: 3 },
-    elevation: 2
+    elevation: 0
   },
   composerMain: {
     gap: 10,
@@ -406,7 +416,7 @@ const styles = StyleSheet.create({
   },
   composerPrompt: {
     flex: 1,
-    minHeight: 42,
+    minHeight: 48,
     borderRadius: 21,
     paddingHorizontal: 14,
     justifyContent: 'center'
@@ -424,28 +434,31 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   quickAction: {
-    minWidth: 62,
-    minHeight: 38,
+    flex: 1,
+    minHeight: 68,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3
+    gap: 7
   },
+  quickActionIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   quickActionText: {
-    fontSize: 10.5,
+    fontSize: 12,
     fontWeight: '700'
   },
   filterSection: {
-    marginHorizontal: -14
+    marginHorizontal: -18
   },
   filtersContent: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 18,
     gap: 8
   },
   filterChip: {
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 8
+    paddingVertical: 11,
+    minHeight: 44,
+    justifyContent: 'center'
   },
   filterText: {
     fontSize: 12,
