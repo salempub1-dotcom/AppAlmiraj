@@ -1,3 +1,5 @@
+const isProduction = process.env.NODE_ENV === 'production';
+
 const config = {
   name: 'Al Miraj Education',
   slug: 'al-miraj-app',
@@ -6,7 +8,8 @@ const config = {
   runtimeVersion: { policy: 'fingerprint' },
   updates: {
     url: 'https://u.expo.dev/284b813c-50f3-4104-a2bf-62dc065eebe6',
-    checkAutomatically: 'ON_LOAD',
+    enabled: isProduction,
+    checkAutomatically: isProduction ? 'ON_LOAD' : 'NEVER',
     fallbackToCacheTimeout: 0
   },
   extra: {
