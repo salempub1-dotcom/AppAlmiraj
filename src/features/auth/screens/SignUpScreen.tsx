@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, StyleSheet, Text } from 'react-native';
 import { Button } from '../../../components/Button';
+import { GoogleSignInButton } from '../../../components/GoogleSignInButton';
 import { Screen } from '../../../components/Screen';
 import { TextField } from '../../../components/TextField';
 import { useTheme } from '../../../context/ThemeProvider';
@@ -27,6 +28,7 @@ export function SignUpScreen({ navigation }: any) {
       <TextField label="البريد الإلكتروني" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <TextField label="كلمة المرور" value={password} onChangeText={setPassword} secureTextEntry />
       <Button title="إنشاء حساب" onPress={submit} />
+      <GoogleSignInButton onSuccess={() => navigation.popToTop()} />
       <Button title="لديك حساب بالفعل؟ تسجيل الدخول" secondary onPress={() => navigation.navigate('SignIn')} />
     </Screen>
   );
