@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Keyboard, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
@@ -17,7 +17,6 @@ import {
   type PickedCommunityFile
 } from '../../../repositories/communityMediaRepository';
 import { COMMUNITY_POST_TYPES, type CommunityPostType } from '../../../repositories/communityRepository';
-import { CommunityChip } from '../components/CommunityChip';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 import { communityTypeIcons } from '../contentTypeIcons';
 import { getCommunityTheme } from '../communityTheme';
@@ -47,6 +46,9 @@ function CreateCommunityPostContent({ navigation }: any) {
   const [body, setBody] = useState('');
   const [subject, setSubject] = useState('');
   const [levels, setLevels] = useState<string[]>([]);
+  const [typeOpen, setTypeOpen] = useState(false);
+  const [stage, setStage] = useState<'PS' | 'MS' | null>(null);
+  const ar = language === 'ar';
   const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
 
   const toggleLevel = (item: string) => {
@@ -148,17 +150,18 @@ function CreateCommunityPostContent({ navigation }: any) {
           {
             backgroundColor: community.surface,
             borderColor: community.border,
+            borderTopColor: community.gold,
             shadowColor: community.shadow
           }
         ]}
       >
         <View style={[styles.composerHeader, { flexDirection: row }]}>
-          <View style={[styles.avatar, { backgroundColor: community.primarySoft }]}>
-            <Ionicons name="person" size={22} color={community.primary} />
+          <View style={[styles.avatar, { backgroundColor: '#D4AF37' }]}>
+            <Ionicons name="create-outline" size={22} color="#0B1833" />
           </View>
           <View style={styles.composerHeaderText}>
             <Text style={[styles.composerTitle, { color: community.text, textAlign: align }]}>{copy.feed.newPost}</Text>
-            <Text style={[styles.composerSubtitle, { color: community.textMuted, textAlign: align }]}>{copy.form.bodyPlaceholder}</Text>
+            <Text style={[styles.composerSubtitle, { color: community.isDark ? '#8CD9CF' : '#176C64', textAlign: align }]}>{ar ? 'فكرة منك قد تلهم أستاذًا آخر' : 'Your idea could inspire another teacher'}</Text>
           </View>
         </View>
 
@@ -174,17 +177,37 @@ function CreateCommunityPostContent({ navigation }: any) {
       </View>
 
       <Section title={copy.form.postType} align={align}>
-        <View style={styles.chipsRow}>
-          {COMMUNITY_POST_TYPES.map((item) => (
-            <CommunityChip
-              key={item}
-              label={copy.types[item]}
-              active={type === item}
-              onPress={() => setType(item)}
-              icon={communityTypeIcons[item]}
-            />
-          ))}
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${copy.form.postType}: ${copy.types[type]}`}
+          accessibilityState={{ expanded: typeOpen }}
+          onPress={() => { Keyboard.dismiss(); setTypeOpen((open) => !open); }}
+          style={({ pressed }) => [styles.selectButton, { flexDirection: row, backgroundColor: community.surfaceRaised, borderColor: typeOpen ? community.gold : community.border, opacity: pressed ? 0.8 : 1 }]}
+        >
+          <View style={[styles.selectIcon, { backgroundColor: community.isDark ? '#34301E' : '#FFF3CC' }]}>
+            <Ionicons name={communityTypeIcons[type]} size={20} color={community.isDark ? '#E8C65C' : '#7A5B09'} />
+          </View>
+          <Text style={[styles.selectLabel, { color: community.text, textAlign: align }]}>{copy.types[type]}</Text>
+          <Ionicons name={typeOpen ? 'chevron-up' : 'chevron-down'} size={18} color={community.textSecondary} />
+        </Pressable>
+        {typeOpen && (
+          <View style={[styles.options, { borderColor: community.border }]}>
+            {COMMUNITY_POST_TYPES.map((item) => (
+              <Pressable
+                key={item}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: type === item }}
+                accessibilityLabel={copy.types[item]}
+                onPress={() => { setType(item); setTypeOpen(false); }}
+                style={({ pressed }) => [styles.option, { flexDirection: row, backgroundColor: type === item ? community.primarySoft : community.surface, opacity: pressed ? 0.7 : 1 }]}
+              >
+                <Ionicons name={communityTypeIcons[item]} size={19} color={community.isDark ? '#E8C65C' : '#7A5B09'} />
+                <Text style={[styles.selectLabel, { color: community.text, textAlign: align }]}>{copy.types[item]}</Text>
+                {type === item && <Ionicons name="checkmark-circle" size={20} color={community.isDark ? '#8CD9CF' : '#176C64'} />}
+              </Pressable>
+            ))}
+          </View>
+        )}
       </Section>
 
       <Section title={copy.form.titleField} align={align}>
@@ -196,11 +219,42 @@ function CreateCommunityPostContent({ navigation }: any) {
       </Section>
 
       <Section title={copy.form.level} align={align}>
-        <View style={styles.chipsRow}>
-          {EDUCATIONAL_LEVELS.map((item) => (
-            <CommunityChip key={item} label={item} active={levels.includes(item)} onPress={() => toggleLevel(item)} />
+        <Text style={[styles.hint, { color: community.textMuted, textAlign: align }]}>
+          {ar ? 'اختر الطور ثم سنة أو أكثر (اختياري)' : 'Choose a stage, then one or more years (optional)'}
+        </Text>
+        <View style={[styles.stageRow, { flexDirection: row }]}>
+          {(['PS', 'MS'] as const).map((item) => (
+            <Pressable key={item} accessibilityRole="button" accessibilityState={{ selected: stage === item, expanded: stage === item }}
+              onPress={() => { Keyboard.dismiss(); setTypeOpen(false); setStage(stage === item ? null : item); }}
+              style={({ pressed }) => [styles.stageButton, { borderColor: stage === item ? community.gold : community.border, backgroundColor: stage === item ? (community.isDark ? '#34301E' : '#FFF3CC') : community.surfaceRaised, opacity: pressed ? 0.8 : 1 }]}>
+              <Ionicons name={item === 'PS' ? 'book-outline' : 'school-outline'} size={22} color={community.isDark ? '#E8C65C' : '#7A5B09'} />
+              <Text style={[styles.stageLabel, { color: community.text }]}>{item === 'PS' ? (ar ? 'ابتدائي' : 'Primary') : (ar ? 'متوسط' : 'Middle school')}</Text>
+              <Ionicons name={stage === item ? 'chevron-up' : 'chevron-down'} size={14} color={community.textMuted} />
+            </Pressable>
           ))}
         </View>
+        {stage && <View style={[styles.chipsRow, { flexDirection: row }]}>
+          {EDUCATIONAL_LEVELS.filter((item) => item.endsWith(stage)).map((item) => (
+            <Pressable key={item} accessibilityRole="checkbox" accessibilityState={{ checked: levels.includes(item) }}
+              onPress={() => toggleLevel(item)}
+              style={({ pressed }) => [styles.yearButton, { flexDirection: row, borderColor: levels.includes(item) ? '#479B90' : community.border, backgroundColor: levels.includes(item) ? (community.isDark ? '#163E3C' : '#E3F4EF') : community.surfaceRaised, opacity: pressed ? 0.8 : 1 }]}>
+              <Ionicons name={levels.includes(item) ? 'checkbox' : 'square-outline'} size={19} color={community.isDark ? '#8CD9CF' : '#176C64'} />
+              <Text style={[styles.stageLabel, { color: community.text }]}>{ar ? `السنة ${item[0]} ${stage === 'PS' ? 'ابتدائي' : 'متوسط'}` : `Year ${item[0]}`}</Text>
+            </Pressable>
+          ))}
+        </View>}
+        {levels.length > 0 && <View style={{ gap: 8 }}>
+          <Text style={[styles.hint, { color: community.textSecondary, textAlign: align }]}>{ar ? 'السنوات المختارة — اضغط للإزالة' : 'Selected years — tap to remove'}</Text>
+          <View style={[styles.chipsRow, { flexDirection: row }]}>
+            {EDUCATIONAL_LEVELS.filter((item) => levels.includes(item)).map((item) => (
+              <Pressable key={item} accessibilityRole="button" accessibilityLabel={`${ar ? 'إزالة' : 'Remove'} ${item}`}
+                onPress={() => toggleLevel(item)} style={[styles.selectedYear, { flexDirection: row, backgroundColor: community.primarySoft }]}>
+                <Text style={{ color: community.text, fontWeight: '700' }}>{item}</Text>
+                <Ionicons name="close-circle" size={17} color={community.textSecondary} />
+              </Pressable>
+            ))}
+          </View>
+        </View>}
       </Section>
 
       <Section title={copy.form.attachment} align={align}>
@@ -251,18 +305,20 @@ function CreateCommunityPostContent({ navigation }: any) {
       </Section>
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: busy, busy }}
         onPress={handlePublish}
         disabled={busy}
         style={({ pressed }) => [
           styles.publishButton,
           {
-            backgroundColor: community.primary,
+            backgroundColor: '#D4AF37',
             opacity: busy ? 0.55 : pressed ? 0.88 : 1,
             flexDirection: row
           }
         ]}
       >
-        {busy ? <ActivityIndicator color="#FFFFFF" /> : <Ionicons name="send-outline" size={19} color="#FFFFFF" />}
+        {busy ? <ActivityIndicator color="#0B1833" /> : <Ionicons name="send-outline" size={19} color="#0B1833" />}
         <Text style={styles.publishButtonText}>
           {busy ? (attachment ? copy.form.uploading : copy.form.publishing) : copy.form.publish}
         </Text>
@@ -325,6 +381,7 @@ function TextField({
       ]}
     >
       <TextInput
+        accessibilityLabel={placeholder}
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
@@ -357,17 +414,20 @@ function MediaButton({
   emphasized?: boolean;
 }) {
   const { colors } = useTheme();
+  const { isRTL } = useLanguage();
   const community = getCommunityTheme(colors);
-  const color = danger ? community.danger : community.primary;
+  const color = danger ? community.danger : community.isDark ? '#8CD9CF' : '#176C64';
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => [
         styles.mediaButton,
         {
+          flexDirection: isRTL ? 'row-reverse' : 'row',
           borderColor: danger ? `${community.danger}55` : community.border,
-          backgroundColor: emphasized ? community.primarySoft : community.surface,
+          backgroundColor: emphasized ? (community.isDark ? '#163E3C' : '#E3F4EF') : community.surface,
           opacity: pressed ? 0.72 : 1
         }
       ]}
@@ -381,10 +441,12 @@ function MediaButton({
 const styles = StyleSheet.create({
   page: {
     gap: 14,
+    paddingTop: 16,
     paddingBottom: 30
   },
   composerCard: {
     borderWidth: 1,
+    borderTopWidth: 3,
     borderRadius: 22,
     padding: 15,
     gap: 13,
@@ -435,6 +497,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: 8
   },
+  selectButton: { minHeight: 56, borderWidth: 1, borderRadius: 15, padding: 10, alignItems: 'center', gap: 10 },
+  selectIcon: { width: 36, height: 36, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  selectLabel: { flex: 1, fontSize: 14, fontWeight: '700' },
+  options: { borderWidth: 1, borderRadius: 15, overflow: 'hidden' },
+  option: { minHeight: 48, padding: 12, alignItems: 'center', gap: 10 },
+  stageRow: { gap: 10 },
+  stageButton: { flex: 1, borderWidth: 1, borderRadius: 15, padding: 12, alignItems: 'center', gap: 7 },
+  stageLabel: { fontSize: 13, fontWeight: '700', textAlign: 'center', flexShrink: 1 },
+  yearButton: { minHeight: 48, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderRadius: 12, alignItems: 'center', gap: 8 },
+  selectedYear: { minHeight: 44, paddingHorizontal: 12, borderRadius: 22, alignItems: 'center', gap: 8 },
+  hint: { fontSize: 12, lineHeight: 19 },
   input: {
     borderWidth: 1,
     borderRadius: 15,
@@ -520,6 +593,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10
   },
   mediaButtonText: {
+    flexShrink: 1,
+    textAlign: 'center',
     fontWeight: '800',
     fontSize: 12.5
   },
@@ -531,7 +606,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   publishButtonText: {
-    color: '#FFFFFF',
+    color: '#0B1833',
     fontWeight: '900',
     fontSize: 15.5
   }
