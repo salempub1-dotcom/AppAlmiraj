@@ -19,49 +19,51 @@ function isDarkHex(value?: string) {
   return luminance < 0.45;
 }
 
+// Teacher Space deliberately owns a separate social design system.
+// Al Miraj navy/gold branding remains reserved for the Store experience.
 export function getCommunityTheme(appColors: AppColors) {
   const dark = isDarkHex(appColors.background);
 
   return dark
     ? {
         isDark: true,
-        background: '#080F1D',
-        surface: '#111E32',
-        surfaceRaised: '#1A2A42',
-        primary: '#416EB0',
-        primaryStrong: '#B7D3FF',
-        primarySoft: '#1A3152',
-        text: '#F9FAFB',
-        textSecondary: '#CBD5E1',
-        textMuted: '#94A3B8',
-        border: '#27364D',
-        divider: '#27364D',
-        success: '#4ADE80',
-        warning: '#FBBF24',
-        danger: '#F87171',
-        gold: '#D4AF37',
-        imageBackdrop: '#0B1220',
+        background: '#000000',
+        surface: '#000000',
+        surfaceRaised: '#121212',
+        primary: '#5B8DEF',
+        primaryStrong: '#8AB4FF',
+        primarySoft: '#17233A',
+        text: '#F5F5F5',
+        textSecondary: '#D6D6D6',
+        textMuted: '#A8A8A8',
+        border: '#262626',
+        divider: '#262626',
+        success: '#47C78A',
+        warning: '#F5B942',
+        danger: '#FF6B6B',
+        gold: '#F5B942',
+        imageBackdrop: '#121212',
         shadow: '#000000'
       }
     : {
         isDark: false,
-        background: '#F5F6FA',
+        background: '#FAFAFA',
         surface: '#FFFFFF',
-        surfaceRaised: '#EEF2F7',
-        primary: '#234778',
-        primaryStrong: '#234778',
-        primarySoft: '#E9EFF8',
-        text: '#111827',
-        textSecondary: '#4B5563',
-        textMuted: '#637187',
-        border: '#E5E7EB',
-        divider: '#EEF2F7',
-        success: '#16A34A',
-        warning: '#F59E0B',
-        danger: '#DC2626',
-        gold: '#D4AF37',
-        imageBackdrop: '#EEF2F7',
-        shadow: '#0F172A'
+        surfaceRaised: '#F3F3F3',
+        primary: '#3975EA',
+        primaryStrong: '#2E64CE',
+        primarySoft: '#EEF4FF',
+        text: '#171717',
+        textSecondary: '#515151',
+        textMuted: '#737373',
+        border: '#DBDBDB',
+        divider: '#EDEDED',
+        success: '#2FA66D',
+        warning: '#E6A11E',
+        danger: '#E5484D',
+        gold: '#E6A11E',
+        imageBackdrop: '#F1F1F1',
+        shadow: '#000000'
       };
 }
 
@@ -72,37 +74,19 @@ export function getCommunityTypeTone(type: string, theme: CommunityTheme) {
 
   switch (type) {
     case 'question':
-      return {
-        foreground: dark ? '#C4B5FD' : '#7C3AED',
-        background: dark ? '#2E1065' : '#F3E8FF'
-      };
+      return { foreground: dark ? '#D5C7FF' : '#7650C8', background: dark ? '#2A2040' : '#F2EEFF' };
     case 'exam':
     case 'test':
-      return {
-        foreground: dark ? '#FCD34D' : '#B45309',
-        background: dark ? '#451A03' : '#FEF3C7'
-      };
+      return { foreground: dark ? '#FFD978' : '#A86E00', background: dark ? '#382B13' : '#FFF4D6' };
     case 'idea':
     case 'tip':
-      return {
-        foreground: dark ? '#86EFAC' : '#15803D',
-        background: dark ? '#052E16' : '#DCFCE7'
-      };
+      return { foreground: dark ? '#8EE5B5' : '#248457', background: dark ? '#153325' : '#E8F8EF' };
     case 'classroom_experience':
-      return {
-        foreground: dark ? '#67E8F9' : '#0E7490',
-        background: dark ? '#164E63' : '#CFFAFE'
-      };
+      return { foreground: dark ? '#78DCEF' : '#147C91', background: dark ? '#14343A' : '#E4F8FB' };
     case 'resource':
     case 'pdf':
-      return {
-        foreground: dark ? '#93C5FD' : '#1D4ED8',
-        background: dark ? '#172554' : '#DBEAFE'
-      };
+      return { foreground: dark ? '#9AC1FF' : '#356FD4', background: dark ? '#172A49' : '#EAF1FF' };
     default:
-      return {
-        foreground: theme.primary,
-        background: theme.primarySoft
-      };
+      return { foreground: theme.primary, background: theme.primarySoft };
   }
 }
