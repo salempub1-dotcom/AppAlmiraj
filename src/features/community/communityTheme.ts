@@ -19,50 +19,50 @@ function isDarkHex(value?: string) {
   return luminance < 0.45;
 }
 
-// Teacher Space deliberately owns a separate social design system.
-// Al Miraj navy/gold branding remains reserved for the Store experience.
+// Teacher Space keeps a neutral social identity while borrowing the same
+// level of polish and spacing discipline as the rest of Al Miraj.
 export function getCommunityTheme(appColors: AppColors) {
   const dark = isDarkHex(appColors.background);
 
   return dark
     ? {
         isDark: true,
-        background: '#000000',
-        surface: '#000000',
-        surfaceRaised: '#121212',
-        primary: '#5B8DEF',
-        primaryStrong: '#8AB4FF',
-        primarySoft: '#17233A',
-        text: '#F5F5F5',
-        textSecondary: '#D6D6D6',
-        textMuted: '#A8A8A8',
-        border: '#262626',
-        divider: '#262626',
-        success: '#47C78A',
-        warning: '#F5B942',
-        danger: '#FF6B6B',
-        gold: '#F5B942',
-        imageBackdrop: '#121212',
+        background: '#0A0B0D',
+        surface: '#111317',
+        surfaceRaised: '#181B20',
+        primary: '#6E9BF5',
+        primaryStrong: '#9BBCFF',
+        primarySoft: '#18243A',
+        text: '#F7F8FA',
+        textSecondary: '#D2D7DE',
+        textMuted: '#8D96A3',
+        border: '#2A2F36',
+        divider: '#22262C',
+        success: '#4CC38A',
+        warning: '#F2B84B',
+        danger: '#FF7477',
+        gold: '#E6B94B',
+        imageBackdrop: '#171A1F',
         shadow: '#000000'
       }
     : {
         isDark: false,
-        background: '#FAFAFA',
+        background: '#F6F7F9',
         surface: '#FFFFFF',
-        surfaceRaised: '#F3F3F3',
-        primary: '#3975EA',
-        primaryStrong: '#2E64CE',
-        primarySoft: '#EEF4FF',
-        text: '#171717',
-        textSecondary: '#515151',
-        textMuted: '#737373',
-        border: '#DBDBDB',
-        divider: '#EDEDED',
-        success: '#2FA66D',
-        warning: '#E6A11E',
-        danger: '#E5484D',
-        gold: '#E6A11E',
-        imageBackdrop: '#F1F1F1',
+        surfaceRaised: '#F3F5F7',
+        primary: '#356FE5',
+        primaryStrong: '#245BC4',
+        primarySoft: '#EDF3FF',
+        text: '#16181D',
+        textSecondary: '#4E5663',
+        textMuted: '#7A8492',
+        border: '#DDE2E8',
+        divider: '#E9EDF1',
+        success: '#2D9D69',
+        warning: '#D99517',
+        danger: '#D94C52',
+        gold: '#D8A72F',
+        imageBackdrop: '#EFF2F5',
         shadow: '#000000'
       };
 }
