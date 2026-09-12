@@ -26,7 +26,9 @@ export function GoogleAuthButton({
         {loading ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
-          <FontAwesome name="google" size={22} color="#4285F4" />
+          <View style={styles.googleIconWrap}>
+            <FontAwesome name="google" size={20} color="#4285F4" />
+          </View>
         )}
       </View>
 
@@ -38,38 +40,46 @@ export function GoogleAuthButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 58,
-    borderRadius: 14,
+    minHeight: 54,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#DADCE0',
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     shadowColor: '#000000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
     elevation: 1
   },
   buttonPressed: {
-    backgroundColor: '#F7F8F8',
+    backgroundColor: '#F8F9FA',
     borderColor: '#C9CDD2'
   },
   buttonLoading: {
-    opacity: 0.78
+    opacity: 0.76
   },
   iconSlot: {
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  googleIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF'
   },
   title: {
     flex: 1,
     color: '#202124',
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: '700',
     textAlign: 'center'
   }
