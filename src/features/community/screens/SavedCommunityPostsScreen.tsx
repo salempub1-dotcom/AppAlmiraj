@@ -36,12 +36,10 @@ function SavedCommunityPostsList({ navigation }: any) {
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
-  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
 
   const saved = useSavedCommunityPosts();
   const rows = useMemo(() => saved.data?.pages.flat() ?? [], [saved.data]);
   const posts = useMemo(() => rows.map((item) => item.post), [rows]);
-
   const authorIds = useMemo(() => [...new Set(posts.map((post) => post.author_id))], [posts]);
   const authors = useTeacherPublicProfiles(authorIds);
   const authorById = useMemo(() => {
@@ -55,7 +53,6 @@ function SavedCommunityPostsList({ navigation }: any) {
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
-
   const visibilityMutation = useSetOwnCommunityPostVisibility();
   const deleteMutation = useDeleteCommunityPost();
 
@@ -76,26 +73,25 @@ function SavedCommunityPostsList({ navigation }: any) {
       {
         text: copy.owner.confirmDelete,
         style: 'destructive',
-        onPress: () =>
-          deleteMutation.mutate(
-            { postId: post.id, media: post.media },
-            {
-              onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
-              onError: () => Alert.alert(copy.owner.deleteError)
-            }
-          )
+        onPress: () => deleteMutation.mutate(
+          { postId: post.id, media: post.media },
+          {
+            onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
+            onError: () => Alert.alert(copy.owner.deleteError)
+          }
+        )
       }
     ]);
   };
 
   const header = (
     <View style={styles.header}>
-      <View style={[styles.headerCard, { backgroundColor: community.primary }]}>
-        <View style={styles.headerIcon}>
-          <Ionicons name="bookmark" size={22} color="#FFFFFF" />
+      <View style={styles.headerCard}>
+        <View style={styles.headerIcon}><Ionicons name="bookmark" size={21} color="#0B1833" /></View>
+        <View style={styles.headerCopy}>
+          <Text style={[styles.title, { textAlign: align }]}>{copy.savedPosts.title}</Text>
+          <Text style={[styles.subtitle, { textAlign: align }]}>{copy.savedPosts.subtitle}</Text>
         </View>
-        <Text style={[styles.title, { textAlign: align }]}>{copy.savedPosts.title}</Text>
-        <Text style={[styles.subtitle, { textAlign: align }]}>{copy.savedPosts.subtitle}</Text>
       </View>
     </View>
   );
@@ -103,7 +99,7 @@ function SavedCommunityPostsList({ navigation }: any) {
   if (saved.isLoading) {
     return (
       <Screen style={{ ...styles.center, backgroundColor: community.background }}>
-        <ActivityIndicator color={community.primary} size="large" />
+        <ActivityIndicator color={community.gold} size="large" />
         <Text style={{ color: community.textMuted }}>{copy.savedPosts.loading}</Text>
       </Screen>
     );
@@ -112,12 +108,10 @@ function SavedCommunityPostsList({ navigation }: any) {
   if (saved.isError) {
     return (
       <Screen style={{ ...styles.center, backgroundColor: community.background }}>
-        <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
-          <Ionicons name="cloud-offline-outline" size={30} color={community.primary} />
-        </View>
+        <View style={styles.stateIcon}><Ionicons name="cloud-offline-outline" size={29} color="#D4AF37" /></View>
         <Text style={[styles.emptyTitle, { color: community.text }]}>{copy.savedPosts.loadError}</Text>
         <Text style={[styles.emptyText, { color: community.textSecondary }]}>{copy.savedPosts.loadErrorText}</Text>
-        <Pressable onPress={() => saved.refetch()} style={[styles.retryButton, { backgroundColor: community.primary }]}>
+        <Pressable onPress={() => saved.refetch()} style={styles.retryButton}>
           <Text style={styles.retryButtonText}>{copy.savedPosts.retry}</Text>
         </Pressable>
       </Screen>
@@ -137,19 +131,8 @@ function SavedCommunityPostsList({ navigation }: any) {
           if (saved.hasNextPage && !saved.isFetchingNextPage) saved.fetchNextPage();
         }}
         ListEmptyComponent={
-          <View
-            style={[
-              styles.emptyCard,
-              {
-                backgroundColor: community.surface,
-                borderColor: community.border,
-                shadowColor: community.shadow
-              }
-            ]}
-          >
-            <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}>
-              <Ionicons name="bookmark-outline" size={28} color={community.primary} />
-            </View>
+          <View style={[styles.emptyCard, { backgroundColor: community.surface, borderColor: community.border }]}>
+            <View style={styles.stateIcon}><Ionicons name="bookmark-outline" size={27} color="#D4AF37" /></View>
             <Text style={[styles.emptyTitle, { color: community.text }]}>{copy.savedPosts.emptyTitle}</Text>
             <Text style={[styles.emptyText, { color: community.textSecondary }]}>{copy.savedPosts.emptyText}</Text>
           </View>
@@ -184,13 +167,7 @@ function SavedCommunityPostsList({ navigation }: any) {
           );
         }}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        ListFooterComponent={
-          saved.isFetchingNextPage ? (
-            <View style={styles.footerLoading}>
-              <ActivityIndicator color={community.primary} />
-            </View>
-          ) : null
-        }
+        ListFooterComponent={saved.isFetchingNextPage ? <View style={styles.footerLoading}><ActivityIndicator color={community.gold} /></View> : null}
       />
     </Screen>
   );
@@ -201,34 +178,16 @@ const styles = StyleSheet.create({
   listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listContent: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 40 },
   header: { marginBottom: 14 },
-  headerCard: { borderRadius: 22, padding: 18, gap: 5 },
-  headerIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 7
-  },
-  title: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
-  subtitle: { color: 'rgba(255,255,255,0.82)', fontSize: 12.5, lineHeight: 19 },
-  stateIcon: { width: 54, height: 54, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  headerCard: { backgroundColor: '#0B1833', borderRadius: 24, padding: 18, flexDirection: 'row-reverse', alignItems: 'center', gap: 13 },
+  headerIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#D4AF37', alignItems: 'center', justifyContent: 'center' },
+  headerCopy: { flex: 1 },
+  title: { color: '#FFFFFF', fontSize: 22, fontWeight: '900' },
+  subtitle: { color: '#C7D0DF', fontSize: 12.5, lineHeight: 19, marginTop: 3 },
+  stateIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: '#0B1833', alignItems: 'center', justifyContent: 'center' },
   emptyTitle: { fontWeight: '900', fontSize: 18, textAlign: 'center' },
   emptyText: { lineHeight: 21, fontSize: 13, textAlign: 'center' },
-  retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center' },
-  retryButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
-  emptyCard: {
-    borderWidth: 1,
-    borderRadius: 20,
-    padding: 24,
-    gap: 9,
-    alignItems: 'center',
-    marginTop: 6,
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 1
-  },
+  retryButton: { minHeight: 44, borderRadius: 14, paddingHorizontal: 20, backgroundColor: '#0B1833', alignItems: 'center', justifyContent: 'center' },
+  retryButtonText: { color: '#FFFFFF', fontWeight: '900', fontSize: 13 },
+  emptyCard: { borderWidth: 1, borderRadius: 20, padding: 24, gap: 9, alignItems: 'center', marginTop: 6 },
   footerLoading: { paddingVertical: 18, alignItems: 'center' }
 });
