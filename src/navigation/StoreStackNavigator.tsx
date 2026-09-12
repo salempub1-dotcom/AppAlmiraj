@@ -23,7 +23,10 @@ export function StoreStackNavigator() {
         headerTintColor: colors.text,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        contentStyle: { backgroundColor: colors.background }
+        headerBackTitleVisible: false,
+        headerTitleStyle: { fontSize: 16, fontWeight: '800' },
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'slide_from_right'
       }}
     >
       <Stack.Screen name="StoreHome" component={StoreScreen} options={{ headerShown: false }} />
