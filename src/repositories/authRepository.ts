@@ -48,7 +48,6 @@ async function signInWithGoogle() {
       redirectTo: GOOGLE_REDIRECT_URL,
       skipBrowserRedirect: true,
       queryParams: {
-        prompt: 'select_account',
         access_type: 'offline'
       }
     }
