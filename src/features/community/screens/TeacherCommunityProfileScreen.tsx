@@ -21,6 +21,12 @@ import { CommunityPostCard } from '../components/CommunityPostCard';
 import { TeacherSpaceGate } from '../components/TeacherSpaceGate';
 import { getCommunityTheme } from '../communityTheme';
 
+function getInitials(name?: string | null) {
+  const clean = name?.trim();
+  if (!clean) return '';
+  return clean.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+}
+
 export function TeacherCommunityProfileScreen({ route, navigation }: any) {
   return (
     <TeacherSpaceGate navigation={navigation}>
@@ -110,6 +116,7 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   const teacher = profile.data;
   const levels = (teacher.level ?? []).join('، ');
   const following = isFollowing.data ?? false;
+  const initials = getInitials(teacher.full_name);
 
   const handleToggleFollow = () => {
     followMutation.mutate(
@@ -138,6 +145,8 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
         <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.surface }]}>
           {teacher.avatar_url ? (
             <Image source={{ uri: teacher.avatar_url }} style={styles.avatarImg} />
+          ) : initials ? (
+            <Text style={[styles.avatarInitials, { color: community.primaryStrong }]}>{initials}</Text>
           ) : (
             <Ionicons name="person" size={40} color={community.primary} />
           )}
@@ -219,70 +228,44 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
         </View>
       </View>
 
-      {posts.isLoading && <ActivityIndicator color={community.primary} />}
-
-      {!posts.isLoading && postRows.length === 0 && (
-        <View
-          style={[
-            styles.emptyCard,
-            {
-              backgroundColor: community.surface,
-              borderColor: community.border
-            }
-          ]}
-        >
-          <View style={[styles.emptyIcon, { backgroundColor: community.primarySoft }]}>
-            <Ionicons name="document-text-outline" size={25} color={community.primary} />
-          </View>
-          <Text style={{ color: community.textMuted, textAlign: 'center' }}>{copy.profile.noPosts}</Text>
+      {posts.isLoading ? (
+        <View style={styles.center}><ActivityIndicator color={community.primary} /></View>
+      ) : postRows.length === 0 ? (
+        <View style={[styles.emptyPosts, { backgroundColor: community.surface, borderColor: community.border }]}>
+          <Ionicons name="newspaper-outline" size={27} color={community.textMuted} />
+          <Text style={[styles.emptyPostsText, { color: community.textMuted }]}>{copy.profile.noPosts}</Text>
         </View>
-      )}
+      ) : (
+        <View style={styles.postsList}>
+          {postRows.map((post) => {
+            const liked = likedIds.data?.has(post.id) ?? false;
+            const saved = savedIds.data?.has(post.id) ?? false;
+            const ownerBusy =
+              (visibilityMutation.isPending && visibilityMutation.variables?.postId === post.id) ||
+              (deleteMutation.isPending && deleteMutation.variables?.postId === post.id);
 
-      <View style={styles.list}>
-        {postRows.map((post) => {
-          const liked = likedIds.data?.has(post.id) ?? false;
-          const saved = savedIds.data?.has(post.id) ?? false;
-          const ownerBusy =
-            (visibilityMutation.isPending && visibilityMutation.variables?.postId === post.id) ||
-            (deleteMutation.isPending && deleteMutation.variables?.postId === post.id);
-
-          return (
-            <CommunityPostCard
-              key={post.id}
-              post={post}
-              author={teacher}
-              onPress={() => navigation.navigate('CommunityPostDetail', { postId: post.id })}
-              liked={liked}
-              saved={saved}
-              onToggleLike={() => likeMutation.mutate({ postId: post.id, liked })}
-              onToggleSave={() => saveMutation.mutate({ postId: post.id, saved })}
-              likePending={likeMutation.isPending && likeMutation.variables?.postId === post.id}
-              savePending={saveMutation.isPending && saveMutation.variables?.postId === post.id}
-              isOwner={isOwnProfile}
-              onEdit={() => navigation.navigate('EditCommunityPost', { postId: post.id })}
-              onDeletePost={() => handleDeletePost(post)}
-              onToggleVisibility={() => handleToggleVisibility(post)}
-              ownerBusy={ownerBusy}
-              showHiddenBadge={isOwnProfile && post.status === 'hidden'}
-            />
-          );
-        })}
-      </View>
-
-      {posts.hasNextPage && (
-        <Pressable
-          onPress={() => posts.fetchNextPage()}
-          style={styles.loadMoreButton}
-          disabled={posts.isFetchingNextPage}
-        >
-          {posts.isFetchingNextPage ? (
-            <ActivityIndicator color={community.primary} />
-          ) : (
-            <Text style={{ color: community.primary, fontWeight: '800', fontSize: 13 }}>
-              {copy.profile.loadingMore}
-            </Text>
-          )}
-        </Pressable>
+            return (
+              <CommunityPostCard
+                key={post.id}
+                post={post}
+                author={teacher}
+                onPress={() => navigation.navigate('CommunityPostDetail', { postId: post.id })}
+                liked={liked}
+                saved={saved}
+                onToggleLike={() => likeMutation.mutate({ postId: post.id, liked })}
+                onToggleSave={() => saveMutation.mutate({ postId: post.id, saved })}
+                likePending={likeMutation.isPending && likeMutation.variables?.postId === post.id}
+                savePending={saveMutation.isPending && saveMutation.variables?.postId === post.id}
+                isOwner={isOwnProfile}
+                onEdit={() => navigation.navigate('EditCommunityPost', { postId: post.id })}
+                onDeletePost={() => handleDeletePost(post)}
+                onToggleVisibility={() => handleToggleVisibility(post)}
+                ownerBusy={ownerBusy}
+                showHiddenBadge={isOwnProfile && post.status === 'hidden'}
+              />
+            );
+          })}
+        </View>
       )}
     </Screen>
   );
@@ -291,7 +274,6 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 function Stat({ value, label }: { value: number; label: string }) {
   const { colors } = useTheme();
   const community = getCommunityTheme(colors);
-
   return (
     <View style={styles.stat}>
       <Text style={[styles.statValue, { color: community.text }]}>{value}</Text>
@@ -301,83 +283,33 @@ function Stat({ value, label }: { value: number; label: string }) {
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 16, paddingBottom: 28 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 24 },
-  stateIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  hero: {
-    borderWidth: 1,
-    borderRadius: 24,
-    paddingBottom: 18,
-    alignItems: 'center',
-    overflow: 'hidden',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2
-  },
-  cover: { width: '100%', height: 96, overflow: 'hidden' },
-  coverBubbleOne: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: 'rgba(255,255,255,0.10)',
-    top: -55,
-    right: 20
-  },
-  coverBubbleTwo: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.09)',
-    bottom: -42,
-    left: 28
-  },
-  avatar: {
-    width: 86,
-    height: 86,
-    borderRadius: 43,
-    borderWidth: 4,
-    marginTop: -43,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden'
-  },
-  avatarImg: { width: 78, height: 78, borderRadius: 39 },
-  name: { fontSize: 21, fontWeight: '900', marginTop: 10, paddingHorizontal: 16 },
-  subMeta: { fontSize: 12.5, marginTop: 3, paddingHorizontal: 18 },
-  wilayaRow: { alignItems: 'center', justifyContent: 'center', gap: 5, marginTop: 6 },
-  bio: { fontSize: 14, lineHeight: 22, width: '100%', marginTop: 12, paddingHorizontal: 18 },
-  followButton: {
-    minHeight: 44,
-    borderRadius: 14,
-    borderWidth: 1,
-    paddingHorizontal: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 7,
-    marginTop: 14
-  },
-  followButtonText: { fontWeight: '900', fontSize: 13.5 },
-  statsRow: {
-    width: '100%',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    marginTop: 16,
-    paddingTop: 14,
-    justifyContent: 'space-around'
-  },
-  stat: { alignItems: 'center', gap: 3, minWidth: 74 },
-  statValue: { fontWeight: '900', fontSize: 17 },
-  statLabel: { fontSize: 11.5, fontWeight: '600' },
-  statDivider: { width: StyleSheet.hairlineWidth, height: 34 },
-  sectionHeader: { alignItems: 'center', justifyContent: 'space-between' },
-  sectionTitle: { fontSize: 18, fontWeight: '900' },
-  sectionIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  emptyCard: { borderWidth: 1, borderRadius: 20, padding: 22, gap: 9, alignItems: 'center' },
-  emptyIcon: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
-  list: { gap: 12 },
-  loadMoreButton: { paddingVertical: 16, alignItems: 'center' },
+  page: { gap: 18, paddingBottom: 28 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  stateIcon: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   errorTitle: { fontSize: 18, fontWeight: '900', textAlign: 'center' },
-  errorBody: { textAlign: 'center', lineHeight: 21 }
+  errorBody: { fontSize: 13, lineHeight: 20, textAlign: 'center' },
+  hero: { borderWidth: 1, borderRadius: 26, overflow: 'hidden', paddingBottom: 18 },
+  cover: { height: 116, position: 'relative', overflow: 'hidden' },
+  coverBubbleOne: { position: 'absolute', width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,255,255,0.10)', right: -25, top: -45 },
+  coverBubbleTwo: { position: 'absolute', width: 95, height: 95, borderRadius: 48, backgroundColor: 'rgba(255,255,255,0.08)', left: 12, bottom: -32 },
+  avatar: { width: 86, height: 86, borderRadius: 43, borderWidth: 5, alignSelf: 'center', marginTop: -43, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImg: { width: '100%', height: '100%' },
+  avatarInitials: { fontSize: 28, fontWeight: '900', letterSpacing: 0.5 },
+  name: { marginTop: 11, paddingHorizontal: 18, fontSize: 22, fontWeight: '900' },
+  subMeta: { paddingHorizontal: 18, marginTop: 4, fontSize: 12.5, fontWeight: '600' },
+  wilayaRow: { alignSelf: 'center', alignItems: 'center', gap: 4, marginTop: 6 },
+  bio: { marginTop: 12, paddingHorizontal: 20, fontSize: 13, lineHeight: 20 },
+  followButton: { alignSelf: 'center', marginTop: 14, borderWidth: 1, minHeight: 42, borderRadius: 14, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', gap: 7 },
+  followButtonText: { fontSize: 13, fontWeight: '800' },
+  statsRow: { marginTop: 18, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14, marginHorizontal: 16, alignItems: 'center' },
+  stat: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 16, fontWeight: '900' },
+  statLabel: { marginTop: 2, fontSize: 10.5, fontWeight: '600' },
+  statDivider: { width: StyleSheet.hairlineWidth, height: 28 },
+  sectionHeader: { alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  sectionTitle: { flex: 1, fontSize: 18, fontWeight: '900' },
+  sectionIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  postsList: { gap: 12 },
+  emptyPosts: { borderWidth: 1, borderRadius: 18, minHeight: 120, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 18 },
+  emptyPostsText: { fontSize: 13, fontWeight: '600', textAlign: 'center' }
 });
