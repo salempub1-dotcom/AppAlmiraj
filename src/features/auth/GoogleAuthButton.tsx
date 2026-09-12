@@ -1,3 +1,4 @@
+import { FontAwesome } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export function GoogleAuthButton({
@@ -25,7 +26,7 @@ export function GoogleAuthButton({
         {loading ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
-          <Text style={styles.googleMark}>G</Text>
+          <FontAwesome name="google" size={22} color="#4285F4" />
         )}
       </View>
 
@@ -47,9 +48,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     shadowColor: '#000000',
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 1
   },
   buttonPressed: {
@@ -64,11 +65,6 @@ const styles = StyleSheet.create({
     height: 32,
     alignItems: 'center',
     justifyContent: 'center'
-  },
-  googleMark: {
-    color: '#4285F4',
-    fontSize: 24,
-    fontWeight: '900'
   },
   title: {
     flex: 1,
