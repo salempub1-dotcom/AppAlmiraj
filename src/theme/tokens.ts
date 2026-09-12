@@ -3,12 +3,12 @@ export const palette = {
   navySoft: '#132443',
   gold: '#D4AF37',
   goldSoft: '#F2E4B7',
-  lightBg: '#F5F6FA',
+  lightBg: '#F7F8FA',
   lightCard: '#FFFFFF',
-  darkBg: '#080F1D',
-  darkCard: '#111E32',
-  text: '#121722',
-  muted: '#59677D',
+  darkBg: '#090F1B',
+  darkCard: '#111B2D',
+  text: '#151922',
+  muted: '#637083',
   white: '#FFFFFF',
   danger: '#B42318'
 };
@@ -28,23 +28,23 @@ export type AppColors = {
 export const lightColors: AppColors = {
   background: palette.lightBg,
   card: palette.lightCard,
-  surface: '#EEF2F7',
+  surface: '#F0F3F7',
   text: palette.text,
   muted: palette.muted,
   primary: palette.gold,
   onPrimary: palette.navy,
-  border: '#E2E7EF',
+  border: '#E3E7ED',
   danger: palette.danger
 };
 
 export const darkColors: AppColors = {
   background: palette.darkBg,
   card: palette.darkCard,
-  surface: '#1A2A42',
+  surface: '#1A2639',
   text: '#F7F9FC',
-  muted: '#A9B4C5',
+  muted: '#A9B3C2',
   primary: '#E1B94F',
   onPrimary: palette.navy,
-  border: '#27364D',
+  border: '#29364A',
   danger: '#FF8A80'
 };
