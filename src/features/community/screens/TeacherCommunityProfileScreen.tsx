@@ -44,22 +44,20 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   const copy = getCommunityCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
+  const ar = language === 'ar';
   const teacherId = String(route.params?.teacherId ?? '');
   const isOwnProfile = Boolean(viewerId) && viewerId === teacherId;
 
   const profile = useTeacherPublicProfile(teacherId);
   const posts = useTeacherCommunityPosts(teacherId);
   const postRows = useMemo(() => posts.data?.pages.flat() ?? [], [posts.data]);
-
   const isFollowing = useIsFollowing(isOwnProfile ? '' : teacherId);
   const followMutation = useFollowTeacher();
-
   const postIds = useMemo(() => postRows.map((post) => post.id), [postRows]);
   const likedIds = useCommunityLikedIds(postIds);
   const savedIds = useCommunitySavedIds(postIds);
   const likeMutation = useCommunityLike();
   const saveMutation = useCommunitySave();
-
   const visibilityMutation = useSetOwnCommunityPostVisibility();
   const deleteMutation = useDeleteCommunityPost();
 
@@ -80,14 +78,13 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
       {
         text: copy.owner.confirmDelete,
         style: 'destructive',
-        onPress: () =>
-          deleteMutation.mutate(
-            { postId: post.id, media: post.media },
-            {
-              onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
-              onError: () => Alert.alert(copy.owner.deleteError)
-            }
-          )
+        onPress: () => deleteMutation.mutate(
+          { postId: post.id, media: post.media },
+          {
+            onSuccess: () => Alert.alert(copy.owner.deleteSuccess),
+            onError: () => Alert.alert(copy.owner.deleteError)
+          }
+        )
       }
     ]);
   };
@@ -127,104 +124,80 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
 
   return (
     <Screen scroll style={{ ...styles.page, backgroundColor: community.background }}>
-      <View
-        style={[
-          styles.hero,
-          {
-            backgroundColor: community.surface,
-            borderColor: community.border,
-            shadowColor: community.shadow
-          }
-        ]}
-      >
-        <View style={[styles.cover, { backgroundColor: community.primary }]}>
-          <View style={styles.coverBubbleOne} />
-          <View style={styles.coverBubbleTwo} />
+      <View style={[styles.profileCard, { backgroundColor: community.surface, borderColor: community.border }]}>
+        <View style={styles.cover}>
+          <View style={styles.mountainBack} />
+          <View style={styles.mountainFront} />
+          <View style={styles.sun} />
         </View>
 
-        <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.surface }]}>
-          {teacher.avatar_url ? (
-            <Image source={{ uri: teacher.avatar_url }} style={styles.avatarImg} />
-          ) : initials ? (
-            <Text style={[styles.avatarInitials, { color: community.primaryStrong }]}>{initials}</Text>
-          ) : (
-            <Ionicons name="person" size={40} color={community.primary} />
-          )}
-        </View>
-
-        <Text style={[styles.name, { color: community.text, textAlign: 'center' }]}>{teacher.full_name ?? ''}</Text>
-
-        {(!!teacher.subject || !!levels) && (
-          <Text style={[styles.subMeta, { color: community.textSecondary, textAlign: 'center' }]}>
-            {[teacher.subject, levels].filter(Boolean).join('  •  ')}
-          </Text>
-        )}
-
-        {!!teacher.wilaya && (
-          <View style={[styles.wilayaRow, { flexDirection: row }]}>
-            <Ionicons name="location-outline" size={14} color={community.textMuted} />
-            <Text style={{ color: community.textMuted, fontSize: 12.5 }}>{teacher.wilaya}</Text>
+        <View style={styles.profileBody}>
+          <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.surface }]}>
+            {teacher.avatar_url ? (
+              <Image source={{ uri: teacher.avatar_url }} style={styles.avatarImg} />
+            ) : initials ? (
+              <Text style={[styles.avatarInitials, { color: '#0B1833' }]}>{initials}</Text>
+            ) : (
+              <Ionicons name="person" size={38} color="#0B1833" />
+            )}
           </View>
-        )}
 
-        {!!teacher.bio && (
-          <Text
-            style={[
-              styles.bio,
-              {
-                color: community.textSecondary,
-                textAlign: align,
-                writingDirection: isRTL ? 'rtl' : 'ltr'
-              }
-            ]}
-          >
-            {teacher.bio}
-          </Text>
-        )}
+          <View style={[styles.identityRow, { flexDirection: row }]}>
+            <View style={styles.identityCopy}>
+              <Text style={[styles.name, { color: community.text, textAlign: align }]}>{teacher.full_name ?? ''}</Text>
+              <Text style={[styles.role, { color: community.textSecondary, textAlign: align }]}>
+                {[teacher.subject, levels].filter(Boolean).join('  •  ') || (ar ? 'أستاذ' : 'Teacher')}
+              </Text>
+              {!!teacher.wilaya && (
+                <View style={[styles.locationRow, { flexDirection: row }]}>
+                  <Ionicons name="location-outline" size={14} color={community.textMuted} />
+                  <Text style={[styles.locationText, { color: community.textMuted }]}>{teacher.wilaya}</Text>
+                </View>
+              )}
+            </View>
 
-        {!isOwnProfile && (
-          <Pressable
-            onPress={handleToggleFollow}
-            disabled={followMutation.isPending && followMutation.variables?.teacherId === teacherId}
-            style={({ pressed }) => [
-              styles.followButton,
-              {
-                backgroundColor: following ? community.surface : community.primary,
-                borderColor: following ? community.border : community.primary,
-                flexDirection: row,
-                opacity:
-                  followMutation.isPending && followMutation.variables?.teacherId === teacherId
-                    ? 0.55
-                    : pressed
-                      ? 0.82
-                      : 1
-              }
-            ]}
-          >
-            <Ionicons
-              name={following ? 'checkmark' : 'person-add-outline'}
-              size={17}
-              color={following ? community.text : '#FFFFFF'}
-            />
-            <Text style={[styles.followButtonText, { color: following ? community.text : '#FFFFFF' }]}>
-              {following ? copy.follow.following : copy.follow.follow}
+            {!isOwnProfile ? (
+              <Pressable
+                onPress={handleToggleFollow}
+                disabled={followMutation.isPending && followMutation.variables?.teacherId === teacherId}
+                style={({ pressed }) => [
+                  styles.followButton,
+                  {
+                    backgroundColor: following ? community.surface : '#0B1833',
+                    borderColor: following ? community.border : '#0B1833',
+                    opacity: pressed ? 0.82 : 1
+                  }
+                ]}
+              >
+                <Text style={[styles.followText, { color: following ? community.text : '#FFFFFF' }]}>
+                  {following ? copy.follow.following : copy.follow.follow}
+                </Text>
+              </Pressable>
+            ) : (
+              <View style={[styles.ownBadge, { borderColor: community.border }]}>
+                <Ionicons name="checkmark-circle" size={16} color="#C89522" />
+                <Text style={[styles.ownBadgeText, { color: community.text }]}>{ar ? 'ملفك' : 'Your profile'}</Text>
+              </View>
+            )}
+          </View>
+
+          {!!teacher.bio && (
+            <Text style={[styles.bio, { color: community.textSecondary, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>
+              {teacher.bio}
             </Text>
-          </Pressable>
-        )}
+          )}
 
-        <View style={[styles.statsRow, { flexDirection: row, borderColor: community.divider }]}>
-          <Stat value={teacher.followers_count} label={copy.profile.followers} />
-          <View style={[styles.statDivider, { backgroundColor: community.divider }]} />
-          <Stat value={teacher.following_count} label={copy.profile.following} />
-          <View style={[styles.statDivider, { backgroundColor: community.divider }]} />
-          <Stat value={teacher.posts_count} label={copy.profile.posts} />
-        </View>
-      </View>
+          <View style={[styles.statsRow, { flexDirection: row }]}> 
+            <Stat value={teacher.posts_count} label={copy.profile.posts} community={community} />
+            <Stat value={teacher.followers_count} label={copy.profile.followers} community={community} />
+            <Stat value={teacher.following_count} label={copy.profile.following} community={community} />
+          </View>
 
-      <View style={[styles.sectionHeader, { flexDirection: row }]}>
-        <Text style={[styles.sectionTitle, { color: community.text, textAlign: align }]}>{copy.profile.postsTitle}</Text>
-        <View style={[styles.sectionIcon, { backgroundColor: community.primarySoft }]}>
-          <Ionicons name="newspaper-outline" size={17} color={community.primary} />
+          <View style={[styles.tabsRow, { flexDirection: row, borderTopColor: community.divider }]}> 
+            <ProfileTab active icon="grid-outline" label={copy.profile.postsTitle} community={community} />
+            <ProfileTab icon="bookmark-outline" label={ar ? 'المحفوظات' : 'Saved'} community={community} />
+            <ProfileTab icon="information-circle-outline" label={ar ? 'حول' : 'About'} community={community} />
+          </View>
         </View>
       </View>
 
@@ -271,9 +244,7 @@ function TeacherCommunityProfileContent({ route, navigation }: any) {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  const { colors } = useTheme();
-  const community = getCommunityTheme(colors);
+function Stat({ value, label, community }: { value: number; label: string; community: ReturnType<typeof getCommunityTheme> }) {
   return (
     <View style={styles.stat}>
       <Text style={[styles.statValue, { color: community.text }]}>{value}</Text>
@@ -282,34 +253,50 @@ function Stat({ value, label }: { value: number; label: string }) {
   );
 }
 
+function ProfileTab({ active = false, icon, label, community }: { active?: boolean; icon: keyof typeof Ionicons.glyphMap; label: string; community: ReturnType<typeof getCommunityTheme> }) {
+  return (
+    <View style={[styles.profileTab, active && styles.profileTabActive]}>
+      <Ionicons name={icon} size={18} color={active ? '#C89522' : community.textMuted} />
+      <Text style={[styles.profileTabText, { color: active ? community.text : community.textMuted }]}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  page: { gap: 18, paddingBottom: 28 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  page: { gap: 12, paddingHorizontal: 0, paddingTop: 0, paddingBottom: 24 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, minHeight: 180 },
   stateIcon: { width: 58, height: 58, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   errorTitle: { fontSize: 18, fontWeight: '900', textAlign: 'center' },
   errorBody: { fontSize: 13, lineHeight: 20, textAlign: 'center' },
-  hero: { borderWidth: 1, borderRadius: 26, overflow: 'hidden', paddingBottom: 18 },
-  cover: { height: 116, position: 'relative', overflow: 'hidden' },
-  coverBubbleOne: { position: 'absolute', width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,255,255,0.10)', right: -25, top: -45 },
-  coverBubbleTwo: { position: 'absolute', width: 95, height: 95, borderRadius: 48, backgroundColor: 'rgba(255,255,255,0.08)', left: 12, bottom: -32 },
-  avatar: { width: 86, height: 86, borderRadius: 43, borderWidth: 5, alignSelf: 'center', marginTop: -43, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  profileCard: { borderBottomWidth: 1, overflow: 'hidden' },
+  cover: { height: 132, backgroundColor: '#F3AA88', position: 'relative', overflow: 'hidden' },
+  sun: { position: 'absolute', width: 48, height: 48, borderRadius: 24, backgroundColor: '#FFD889', right: 34, top: 26 },
+  mountainBack: { position: 'absolute', width: 280, height: 180, backgroundColor: '#6179A0', transform: [{ rotate: '18deg' }], left: -25, top: 78 },
+  mountainFront: { position: 'absolute', width: 320, height: 190, backgroundColor: '#334F75', transform: [{ rotate: '-12deg' }], right: -60, top: 92 },
+  profileBody: { paddingHorizontal: 16, paddingBottom: 0 },
+  avatar: { width: 92, height: 92, borderRadius: 46, borderWidth: 5, marginTop: -46, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', backgroundColor: '#D9E6F2' },
   avatarImg: { width: '100%', height: '100%' },
-  avatarInitials: { fontSize: 28, fontWeight: '900', letterSpacing: 0.5 },
-  name: { marginTop: 11, paddingHorizontal: 18, fontSize: 22, fontWeight: '900' },
-  subMeta: { paddingHorizontal: 18, marginTop: 4, fontSize: 12.5, fontWeight: '600' },
-  wilayaRow: { alignSelf: 'center', alignItems: 'center', gap: 4, marginTop: 6 },
-  bio: { marginTop: 12, paddingHorizontal: 20, fontSize: 13, lineHeight: 20 },
-  followButton: { alignSelf: 'center', marginTop: 14, borderWidth: 1, minHeight: 42, borderRadius: 14, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center', gap: 7 },
-  followButtonText: { fontSize: 13, fontWeight: '800' },
-  statsRow: { marginTop: 18, borderTopWidth: StyleSheet.hairlineWidth, paddingTop: 14, marginHorizontal: 16, alignItems: 'center' },
+  avatarInitials: { fontSize: 27, fontWeight: '900' },
+  identityRow: { marginTop: 10, alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
+  identityCopy: { flex: 1 },
+  name: { fontSize: 22, fontWeight: '900' },
+  role: { marginTop: 3, fontSize: 12.5, fontWeight: '600' },
+  locationRow: { alignItems: 'center', gap: 4, marginTop: 5 },
+  locationText: { fontSize: 11.5 },
+  followButton: { minHeight: 38, minWidth: 86, borderRadius: 10, borderWidth: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14 },
+  followText: { fontSize: 12.5, fontWeight: '900' },
+  ownBadge: { minHeight: 38, borderRadius: 10, borderWidth: 1, paddingHorizontal: 11, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  ownBadgeText: { fontSize: 12, fontWeight: '800' },
+  bio: { marginTop: 12, fontSize: 13, lineHeight: 20 },
+  statsRow: { marginTop: 18, alignItems: 'center', justifyContent: 'space-around', paddingVertical: 12 },
   stat: { flex: 1, alignItems: 'center' },
-  statValue: { fontSize: 16, fontWeight: '900' },
-  statLabel: { marginTop: 2, fontSize: 10.5, fontWeight: '600' },
-  statDivider: { width: StyleSheet.hairlineWidth, height: 28 },
-  sectionHeader: { alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  sectionTitle: { flex: 1, fontSize: 18, fontWeight: '900' },
-  sectionIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  postsList: { gap: 12 },
-  emptyPosts: { borderWidth: 1, borderRadius: 18, minHeight: 120, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 18 },
+  statValue: { fontSize: 17, fontWeight: '900' },
+  statLabel: { marginTop: 2, fontSize: 10.5, fontWeight: '700' },
+  tabsRow: { borderTopWidth: 1, marginTop: 2 },
+  profileTab: { flex: 1, minHeight: 48, alignItems: 'center', justifyContent: 'center', gap: 3 },
+  profileTabActive: { borderBottomWidth: 2, borderBottomColor: '#C89522' },
+  profileTabText: { fontSize: 10.5, fontWeight: '800' },
+  postsList: { gap: 10 },
+  emptyPosts: { marginHorizontal: 16, borderWidth: 1, borderRadius: 18, minHeight: 120, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 18 },
   emptyPostsText: { fontSize: 13, fontWeight: '600', textAlign: 'center' }
 });
