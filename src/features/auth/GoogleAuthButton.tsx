@@ -1,5 +1,6 @@
 import { FontAwesome } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ui } from '../../theme/ui';
 
 export function GoogleAuthButton({
   title,
@@ -26,12 +27,9 @@ export function GoogleAuthButton({
         {loading ? (
           <ActivityIndicator size="small" color="#4285F4" />
         ) : (
-          <View style={styles.googleIconWrap}>
-            <FontAwesome name="google" size={20} color="#4285F4" />
-          </View>
+          <FontAwesome name="google" size={20} color="#4285F4" />
         )}
       </View>
-
       <Text style={styles.title}>{loading ? 'جارٍ فتح Google…' : title}</Text>
       <View style={styles.iconSlot} />
     </Pressable>
@@ -40,8 +38,8 @@ export function GoogleAuthButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 54,
-    borderRadius: 12,
+    minHeight: ui.controlHeight,
+    borderRadius: ui.radius.md,
     borderWidth: 1,
     borderColor: '#DADCE0',
     backgroundColor: '#FFFFFF',
@@ -51,30 +49,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     shadowColor: '#000000',
     shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
     elevation: 1
   },
   buttonPressed: {
-    backgroundColor: '#F8F9FA',
-    borderColor: '#C9CDD2'
+    backgroundColor: '#F7F8FA',
+    borderColor: '#C7CCD2',
+    transform: [{ scale: 0.985 }]
   },
-  buttonLoading: {
-    opacity: 0.76
-  },
+  buttonLoading: { opacity: 0.76 },
   iconSlot: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center'
-  },
-  googleIconWrap: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFFFFF'
   },
   title: {
     flex: 1,
