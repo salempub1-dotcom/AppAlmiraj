@@ -14,12 +14,23 @@ export function SignUpScreen({ navigation }: any) {
   const [password, setPassword] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const goToTeacherSpace = () => {
+    const tabs = navigation.getParent?.();
+    if (tabs?.navigate) tabs.navigate('Community');
+    else navigation.popToTop();
+  };
+
   const submit = async () => {
     if (password.length < 6) return Alert.alert('كلمة المرور', 'استعمل 6 أحرف على الأقل.');
     const { data, error } = await authRepository.signUp(email.trim(), password, name.trim());
     if (error) return Alert.alert('تعذر إنشاء الحساب', error.message);
-    Alert.alert('تم إنشاء الحساب', data.session ? 'تم تسجيل الدخول بنجاح.' : 'تحقق من بريدك الإلكتروني لتأكيد الحساب.');
-    navigation.popToTop();
+
+    if (data.session) {
+      goToTeacherSpace();
+      return;
+    }
+
+    Alert.alert('تم إنشاء الحساب', 'تحقق من بريدك الإلكتروني لتأكيد الحساب.');
   };
 
   const continueWithGoogle = async () => {
@@ -27,6 +38,7 @@ export function SignUpScreen({ navigation }: any) {
     setGoogleLoading(true);
     try {
       await authRepository.signInWithGoogle();
+      goToTeacherSpace();
     } catch (error: any) {
       Alert.alert('تعذر إنشاء الحساب بحساب Google', error?.message ?? 'حاول مرة أخرى.');
     } finally {
