@@ -1,7 +1,7 @@
 import { Linking } from 'react-native';
 import { supabase } from '../services/supabase';
 
-const GOOGLE_REDIRECT_URL = 'almiraj://google-auth';
+export const GOOGLE_REDIRECT_URL = 'almiraj://google-auth';
 
 function extractOAuthParams(url: string) {
   const parsed = new URL(url);
@@ -18,8 +18,9 @@ function extractOAuthParams(url: string) {
 }
 
 async function finishOAuthFromUrl(url: string) {
-  const params = extractOAuthParams(url);
+  if (!url.startsWith(GOOGLE_REDIRECT_URL)) return null;
 
+  const params = extractOAuthParams(url);
   if (params.error) throw new Error(params.error);
 
   if (params.accessToken && params.refreshToken) {
@@ -46,50 +47,21 @@ async function signInWithGoogle() {
     options: {
       redirectTo: GOOGLE_REDIRECT_URL,
       skipBrowserRedirect: true,
-      queryParams: { prompt: 'select_account' }
+      queryParams: {
+        prompt: 'select_account',
+        access_type: 'offline'
+      }
     }
   });
 
   if (error) throw error;
   if (!data.url) throw new Error('تعذر فتح صفحة تسجيل الدخول بحساب Google.');
 
-  return new Promise<Awaited<ReturnType<typeof finishOAuthFromUrl>>>((resolve, reject) => {
-    let settled = false;
+  const canOpen = await Linking.canOpenURL(data.url);
+  if (!canOpen) throw new Error('تعذر فتح صفحة Google على هذا الجهاز.');
 
-    const cleanup = () => {
-      subscription.remove();
-      clearTimeout(timeout);
-    };
-
-    const complete = async (url: string) => {
-      if (settled || !url.startsWith(GOOGLE_REDIRECT_URL)) return;
-      settled = true;
-      cleanup();
-      try {
-        resolve(await finishOAuthFromUrl(url));
-      } catch (oauthError) {
-        reject(oauthError);
-      }
-    };
-
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      void complete(url);
-    });
-
-    const timeout = setTimeout(() => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(new Error('انتهت مهلة تسجيل الدخول. حاول مرة أخرى.'));
-    }, 120000);
-
-    Linking.openURL(data.url!).catch((openError) => {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      reject(openError);
-    });
-  });
+  await Linking.openURL(data.url);
+  return { opened: true };
 }
 
 export const authRepository = {
