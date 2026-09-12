@@ -24,7 +24,6 @@ export function SignInScreen({ navigation }: any) {
     setGoogleLoading(true);
     try {
       await authRepository.signInWithGoogle();
-      navigation.popToTop();
     } catch (error: any) {
       Alert.alert('تعذر تسجيل الدخول بحساب Google', error?.message ?? 'حاول مرة أخرى.');
     } finally {
@@ -35,7 +34,7 @@ export function SignInScreen({ navigation }: any) {
   return (
     <Screen scroll style={styles.page}>
       <Text style={[styles.title, { color: colors.text }]}>تسجيل الدخول</Text>
-      <Text style={[styles.subtitle, { color: colors.muted }]}>ادخل بسرعة بحساب Google أو استعمل بريدك الإلكتروني.</Text>
+      <Text style={[styles.subtitle, { color: colors.muted }]}>اختر حساب Google للدخول مباشرة، أو استعمل بريدك الإلكتروني.</Text>
 
       <GoogleAuthButton title="المتابعة باستخدام Google" loading={googleLoading} onPress={signInWithGoogle} />
 
