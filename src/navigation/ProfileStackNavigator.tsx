@@ -1,15 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SignInScreen } from '../features/auth/screens/SignInScreen';
-import { SignUpScreen } from '../features/auth/screens/SignUpScreen';
-import { EditProfileScreen } from '../features/profile/screens/EditProfileScreen';
-import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { CommunityModerationScreen } from '../features/admin/screens/CommunityModerationScreen';
 import { ContentFormScreen } from '../features/admin/screens/ContentFormScreen';
 import { ContentManagerScreen } from '../features/admin/screens/ContentManagerScreen';
 import { ContentPreviewScreen } from '../features/admin/screens/ContentPreviewScreen';
-import { useTheme } from '../context/ThemeProvider';
-import { useLanguage } from '../context/LanguageProvider';
+import { SignInScreen } from '../features/auth/screens/SignInScreen';
+import { SignUpScreen } from '../features/auth/screens/SignUpScreen';
+import { EditProfileScreen } from '../features/profile/screens/EditProfileScreen';
+import { ProfileScreen } from '../features/profile/screens/ProfileScreen';
 import { useAuth } from '../context/AuthProvider';
+import { useLanguage } from '../context/LanguageProvider';
+import { useTheme } from '../context/ThemeProvider';
 import { getAdminCopy } from '../i18n/adminCopy';
 
 const Stack = createNativeStackNavigator();
@@ -24,7 +24,16 @@ export function ProfileStackNavigator() {
     <Stack.Navigator
       key={session ? `authenticated-${session.user.id}` : 'guest'}
       initialRouteName="ProfileHome"
-      screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.card },
+        headerTintColor: colors.text,
+        headerTitleAlign: 'center',
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+        headerTitleStyle: { fontSize: 16, fontWeight: '800' },
+        contentStyle: { backgroundColor: colors.background },
+        animation: 'slide_from_right'
+      }}
     >
       <Stack.Screen name="ProfileHome" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'تسجيل الدخول' }} />
