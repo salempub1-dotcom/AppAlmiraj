@@ -9,6 +9,7 @@ import { ContentManagerScreen } from '../features/admin/screens/ContentManagerSc
 import { ContentPreviewScreen } from '../features/admin/screens/ContentPreviewScreen';
 import { useTheme } from '../context/ThemeProvider';
 import { useLanguage } from '../context/LanguageProvider';
+import { useAuth } from '../context/AuthProvider';
 import { getAdminCopy } from '../i18n/adminCopy';
 
 const Stack = createNativeStackNavigator();
@@ -16,10 +17,15 @@ const Stack = createNativeStackNavigator();
 export function ProfileStackNavigator() {
   const { colors } = useTheme();
   const { language } = useLanguage();
+  const { session } = useAuth();
   const nav = getAdminCopy(language).nav;
 
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}>
+    <Stack.Navigator
+      key={session ? `authenticated-${session.user.id}` : 'guest'}
+      initialRouteName="ProfileHome"
+      screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}
+    >
       <Stack.Screen name="ProfileHome" component={ProfileScreen} options={{ headerShown: false }} />
       <Stack.Screen name="SignIn" component={SignInScreen} options={{ title: 'تسجيل الدخول' }} />
       <Stack.Screen name="SignUp" component={SignUpScreen} options={{ title: 'إنشاء حساب' }} />
