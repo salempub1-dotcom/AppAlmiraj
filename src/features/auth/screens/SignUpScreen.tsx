@@ -27,7 +27,6 @@ export function SignUpScreen({ navigation }: any) {
     setGoogleLoading(true);
     try {
       await authRepository.signInWithGoogle();
-      navigation.popToTop();
     } catch (error: any) {
       Alert.alert('تعذر إنشاء الحساب بحساب Google', error?.message ?? 'حاول مرة أخرى.');
     } finally {
@@ -38,9 +37,9 @@ export function SignUpScreen({ navigation }: any) {
   return (
     <Screen scroll style={styles.page}>
       <Text style={[styles.title, { color: colors.text }]}>إنشاء حساب</Text>
-      <Text style={[styles.subtitle, { color: colors.muted }]}>أنشئ حسابك مباشرة باستخدام Google بدون كتابة كلمة مرور جديدة.</Text>
+      <Text style={[styles.subtitle, { color: colors.muted }]}>اختر حساب Google وسيتم إنشاء الحساب وتسجيل الدخول مباشرة بدون كلمة مرور جديدة.</Text>
 
-      <GoogleAuthButton title="إنشاء الحساب باستخدام Google" loading={googleLoading} onPress={continueWithGoogle} />
+      <GoogleAuthButton title="المتابعة باستخدام Google" loading={googleLoading} onPress={continueWithGoogle} />
 
       <View style={styles.dividerRow}>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
