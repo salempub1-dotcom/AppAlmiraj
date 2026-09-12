@@ -30,7 +30,12 @@ export function RootNavigator() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: colors.text,
-          headerTitleAlign: 'center'
+          headerTitleAlign: 'center',
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
+          headerTitleStyle: { fontSize: 16, fontWeight: '800' },
+          contentStyle: { backgroundColor: colors.background },
+          animation: 'slide_from_right'
         }}
       >
         <Stack.Screen name="Main" component={BottomTabs} options={{ headerShown: false }} />
