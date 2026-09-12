@@ -19,6 +19,26 @@ import { formatRelativeTime } from '../../../utils/formatRelativeTime';
 import { communityTypeIcons } from '../contentTypeIcons';
 import { getCommunityTheme, getCommunityTypeTone } from '../communityTheme';
 
+function getInitials(name?: string | null) {
+  const clean = name?.trim();
+  if (!clean) return '';
+  const parts = clean.split(/\s+/).filter(Boolean);
+  return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+}
+
+function getAvatarColors(seed: string) {
+  const palettes = [
+    { bg: '#E8F0FE', fg: '#1A73E8' },
+    { bg: '#FCE8E6', fg: '#C5221F' },
+    { bg: '#E6F4EA', fg: '#137333' },
+    { bg: '#FEF7E0', fg: '#B06000' },
+    { bg: '#F3E8FD', fg: '#8430CE' },
+    { bg: '#E0F2F1', fg: '#00796B' }
+  ];
+  const score = [...seed].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return palettes[score % palettes.length];
+}
+
 export function CommunityPostCard({
   post,
   author,
@@ -64,6 +84,8 @@ export function CommunityPostCard({
   const typeTone = getCommunityTypeTone(post.type, community);
   const meta = [post.subject, ...(post.level ?? [])].filter(Boolean) as string[];
   const ar = language === 'ar';
+  const initials = getInitials(author?.full_name);
+  const avatarColors = getAvatarColors(author?.id ?? post.author_id);
 
   const handleOwnerMenu = () => {
     Alert.alert(copy.card.moreOptions, undefined, [
@@ -108,11 +130,13 @@ export function CommunityPostCard({
       <View style={[styles.authorRow, { flexDirection: row }]}> 
         <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: row }]}> 
           <View style={[styles.avatarRing, { borderColor: typeTone.foreground }]}> 
-            <View style={[styles.avatar, { backgroundColor: community.primarySoft }]}> 
+            <View style={[styles.avatar, { backgroundColor: author?.avatar_url ? community.primarySoft : avatarColors.bg }]}> 
               {author?.avatar_url ? (
                 <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
+              ) : initials ? (
+                <Text style={[styles.avatarInitials, { color: avatarColors.fg }]}>{initials}</Text>
               ) : (
-                <Ionicons name="person" size={20} color={community.primary} />
+                <Ionicons name="person" size={20} color={avatarColors.fg} />
               )}
             </View>
           </View>
@@ -290,6 +314,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   avatarImg: { width: 37, height: 37, borderRadius: 19 },
+  avatarInitials: { fontSize: 13.5, fontWeight: '900', letterSpacing: 0.2 },
   authorText: { flex: 1, minWidth: 0 },
   authorName: { fontWeight: '800', fontSize: 14.5 },
   authorMetaRow: { marginTop: 2, alignItems: 'center', gap: 4 },
