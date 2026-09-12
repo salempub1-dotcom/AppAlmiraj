@@ -63,6 +63,7 @@ export function CommunityPostCard({
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
   const typeTone = getCommunityTypeTone(post.type, community);
   const meta = [post.subject, ...(post.level ?? [])].filter(Boolean) as string[];
+  const ar = language === 'ar';
 
   const handleOwnerMenu = () => {
     Alert.alert(copy.card.moreOptions, undefined, [
@@ -237,11 +238,15 @@ export function CommunityPostCard({
         </Pressable>
       </View>
 
-      <View style={styles.engagementBlock}>
-        <Text style={[styles.likesText, { color: community.text }]}>{post.likes_count} likes</Text>
+      <View style={[styles.engagementBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}> 
+        <Text style={[styles.likesText, { color: community.text }]}>
+          {ar ? `${post.likes_count} إعجاب` : `${post.likes_count} likes`}
+        </Text>
         {post.comments_count > 0 && (
           <Pressable onPress={handleComment}>
-            <Text style={[styles.commentsText, { color: community.textMuted }]}>View all {post.comments_count} comments</Text>
+            <Text style={[styles.commentsText, { color: community.textMuted, textAlign: align }]}> 
+              {ar ? `عرض كل التعليقات (${post.comments_count})` : `View all ${post.comments_count} comments`}
+            </Text>
           </Pressable>
         )}
       </View>
