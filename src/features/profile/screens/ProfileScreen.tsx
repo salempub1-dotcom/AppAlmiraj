@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { useAuth } from '../../../context/AuthProvider';
-import { AppLanguage, useLanguage } from '../../../context/LanguageProvider';
+import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { useIsAdmin } from '../../../hooks/useAdminAccess';
 import { getAdminCopy } from '../../../i18n/adminCopy';
 import { getCommunityCopy } from '../../../i18n/communityCopy';
+import { profileRepository } from '../../../repositories/profileRepository';
 
 export function ProfileScreen({ navigation }: any) {
   const { session, isGuest, signOut } = useAuth();
@@ -15,20 +17,24 @@ export function ProfileScreen({ navigation }: any) {
   const { isAdmin } = useIsAdmin();
   const adminCopy = getAdminCopy(language);
   const communityCopy = getCommunityCopy(language);
-  const align = isRTL ? ('right' as const) : ('left' as const);
   const row = isRTL ? ('row-reverse' as const) : ('row' as const);
-  const fullName = session?.user.user_metadata?.full_name?.trim?.() || session?.user.email?.split('@')[0] || '';
+
+  const { data: profileResult } = useQuery({
+    queryKey: ['profile', 'me', session?.user.id],
+    queryFn: () => profileRepository.getMyProfile(),
+    enabled: !!session
+  });
+  const profile = profileResult?.data;
+  const fullName = profile?.full_name?.trim?.() || session?.user.user_metadata?.full_name?.trim?.() || session?.user.email?.split('@')[0] || '';
+  const avatarUrl = profile?.avatar_url || session?.user.user_metadata?.avatar_url || null;
   const initial = fullName ? fullName[0]?.toUpperCase() : 'أ';
 
-  const languages: { key: AppLanguage; label: string }[] = [
-    { key: 'ar', label: t('common.arabic') },
-    { key: 'en', label: t('common.english') }
-  ];
-  const themes = [
-    { key: 'system' as const, label: t('profile.system'), icon: 'phone-portrait-outline' as const },
-    { key: 'light' as const, label: t('profile.light'), icon: 'sunny-outline' as const },
-    { key: 'dark' as const, label: t('profile.dark'), icon: 'moon-outline' as const }
-  ];
+  const appearanceLabel = preference === 'dark' ? 'داكن' : preference === 'light' ? 'فاتح' : 'النظام';
+  const cycleAppearance = () => {
+    if (preference === 'system') setPreference('light');
+    else if (preference === 'light') setPreference('dark');
+    else setPreference('system');
+  };
 
   if (isGuest) {
     return (
@@ -55,7 +61,10 @@ export function ProfileScreen({ navigation }: any) {
       </View>
 
       <View style={styles.profileHeader}>
-        <View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View>
+        <Pressable onPress={() => navigation.navigate('EditProfile')} style={styles.avatarWrap}>
+          {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View>}
+          <View style={styles.editAvatarBadge}><Ionicons name="camera" size={14} color="#0B1833" /></View>
+        </Pressable>
         <Text style={[styles.name, { color: colors.text }]}>{fullName}</Text>
         <Text style={[styles.email, { color: colors.muted }]}>{session?.user.email}</Text>
         <View style={styles.teacherBadge}><Ionicons name="school-outline" size={14} color="#0B1833" /><Text style={styles.teacherBadgeText}>{t('profile.teacherAccount')}</Text></View>
@@ -67,28 +76,12 @@ export function ProfileScreen({ navigation }: any) {
         <MenuItem icon="bag-handle-outline" title={t('profile.orders')} onPress={() => navigation.getParent?.()?.navigate?.('Store', { screen: 'MyOrders' })} colors={colors} row={row} />
         <Divider color={colors.border} />
         <MenuItem icon="people-outline" title={communityCopy.entry.title} onPress={() => navigation.getParent?.()?.navigate?.('Community')} colors={colors} row={row} />
+        <Divider color={colors.border} />
+        <SettingMenuItem icon="language-outline" title="اللغة" value={language === 'ar' ? 'العربية' : 'English'} onPress={() => setLanguage(language === 'ar' ? 'en' : 'ar')} colors={colors} row={row} />
+        <Divider color={colors.border} />
+        <SettingMenuItem icon="color-palette-outline" title="المظهر" value={appearanceLabel} onPress={cycleAppearance} colors={colors} row={row} />
         {isAdmin ? <><Divider color={colors.border} /><MenuItem icon="library-outline" title={adminCopy.entry.title} onPress={() => navigation.navigate('ContentManager')} colors={colors} row={row} /></> : null}
         {isAdmin ? <><Divider color={colors.border} /><MenuItem icon="shield-checkmark-outline" title={adminCopy.communityModerationEntry.title} onPress={() => navigation.navigate('CommunityModeration')} colors={colors} row={row} /></> : null}
-      </View>
-
-      <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{t('profile.language')}</Text>
-        <View style={[styles.segment, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
-          {languages.map((item) => {
-            const active = language === item.key;
-            return <Pressable key={item.key} onPress={() => setLanguage(item.key)} style={[styles.segmentItem, active && styles.segmentActive]}><Text style={[styles.segmentText, { color: active ? '#0B1833' : colors.text }]}>{item.label}</Text></Pressable>;
-          })}
-        </View>
-      </View>
-
-      <View style={styles.sectionBlock}>
-        <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{t('profile.appearance')}</Text>
-        <View style={[styles.segment, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
-          {themes.map((item) => {
-            const active = preference === item.key;
-            return <Pressable key={item.key} onPress={() => setPreference(item.key)} style={[styles.segmentItem, active && styles.segmentActive]}><Ionicons name={item.icon} size={16} color={active ? '#0B1833' : colors.muted} /><Text style={[styles.segmentText, { color: active ? '#0B1833' : colors.text }]}>{item.label}</Text></Pressable>;
-          })}
-        </View>
       </View>
 
       <Pressable onPress={() => signOut()} style={[styles.signOut, { borderColor: colors.border, backgroundColor: colors.card, flexDirection: row }]}>
@@ -109,6 +102,19 @@ function MenuItem({ icon, title, onPress, colors, row }: any) {
   );
 }
 
+function SettingMenuItem({ icon, title, value, onPress, colors, row }: any) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.menuItem, { flexDirection: row, opacity: pressed ? 0.6 : 1 }]}>
+      <View style={styles.settingValueWrap}>
+        <Text style={[styles.settingValue, { color: colors.muted }]}>{value}</Text>
+        <Ionicons name="chevron-back" size={16} color={colors.muted} />
+      </View>
+      <Text style={[styles.menuTitle, { color: colors.text }]}>{title}</Text>
+      <View style={[styles.menuIcon, { backgroundColor: colors.surface }]}><Ionicons name={icon} size={20} color={colors.text} /></View>
+    </Pressable>
+  );
+}
+
 function Divider({ color }: { color: string }) { return <View style={[styles.divider, { backgroundColor: color }]} />; }
 
 const styles = StyleSheet.create({
@@ -117,8 +123,11 @@ const styles = StyleSheet.create({
   title: { fontSize: 27, fontWeight: '900' },
   settingsButton: { width: 40, height: 40, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   profileHeader: { alignItems: 'center', gap: 5, paddingVertical: 3 },
-  avatar: { width: 82, height: 82, borderRadius: 41, backgroundColor: '#AFC4D7', alignItems: 'center', justifyContent: 'center', marginBottom: 5, borderWidth: 4, borderColor: '#FFFFFF' },
-  avatarText: { color: '#FFFFFF', fontSize: 30, fontWeight: '900' },
+  avatarWrap: { width: 88, height: 88, position: 'relative', marginBottom: 5 },
+  avatar: { width: 88, height: 88, borderRadius: 44, backgroundColor: '#AFC4D7', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#FFFFFF' },
+  avatarImage: { width: 88, height: 88, borderRadius: 44, borderWidth: 4, borderColor: '#FFFFFF' },
+  avatarText: { color: '#FFFFFF', fontSize: 32, fontWeight: '900' },
+  editAvatarBadge: { position: 'absolute', right: 0, bottom: 0, width: 29, height: 29, borderRadius: 15, backgroundColor: '#D4AF37', borderWidth: 2, borderColor: '#0B1833', alignItems: 'center', justifyContent: 'center' },
   name: { fontSize: 20, fontWeight: '900' },
   email: { fontSize: 12.5 },
   teacherBadge: { flexDirection: 'row-reverse', alignItems: 'center', gap: 5, backgroundColor: '#F3E3A8', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6, marginTop: 5 },
@@ -127,13 +136,9 @@ const styles = StyleSheet.create({
   menuItem: { minHeight: 58, paddingHorizontal: 14, alignItems: 'center', gap: 11 },
   menuTitle: { flex: 1, textAlign: 'right', fontSize: 14, fontWeight: '800' },
   menuIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  settingValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  settingValue: { fontSize: 12, fontWeight: '700' },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 14 },
-  sectionBlock: { gap: 8 },
-  sectionTitle: { fontSize: 16, fontWeight: '900' },
-  segment: { borderWidth: 1, borderRadius: 16, padding: 4, gap: 4 },
-  segmentItem: { flex: 1, minHeight: 42, borderRadius: 12, flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 5 },
-  segmentActive: { backgroundColor: '#D4AF37' },
-  segmentText: { fontSize: 12, fontWeight: '800' },
   signOut: { minHeight: 52, borderWidth: 1, borderRadius: 16, alignItems: 'center', justifyContent: 'center', gap: 8 },
   signOutText: { fontWeight: '900' },
   guestCard: { backgroundColor: '#0B1833', borderRadius: 24, padding: 22, gap: 11, alignItems: 'center' },
