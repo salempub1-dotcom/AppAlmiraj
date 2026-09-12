@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from 'react';
-import { authRepository } from '../repositories/authRepository';
+import { Linking } from 'react-native';
+import { authRepository, GOOGLE_REDIRECT_URL } from '../repositories/authRepository';
 
 type AuthValue = {
   session: Session | null;
@@ -16,14 +17,37 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     authRepository.getSession().then(({ data }) => {
+      if (!mounted) return;
       setSession(data.session);
       setLoading(false);
     });
-    const { data } = authRepository.onAuthStateChange(async (_event, nextSession) => {
-      setSession(nextSession);
+
+    const handleOAuthUrl = async (url: string | null) => {
+      if (!url || !url.startsWith(GOOGLE_REDIRECT_URL)) return;
+      try {
+        await authRepository.finishOAuthFromUrl(url);
+      } catch (error) {
+        console.warn('Google OAuth callback failed', error);
+      }
+    };
+
+    Linking.getInitialURL().then((url) => void handleOAuthUrl(url));
+    const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+      void handleOAuthUrl(url);
     });
-    return () => data.subscription.unsubscribe();
+
+    const { data } = authRepository.onAuthStateChange(async (_event, nextSession) => {
+      if (mounted) setSession(nextSession);
+    });
+
+    return () => {
+      mounted = false;
+      linkingSubscription.remove();
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   const value = useMemo<AuthValue>(() => ({
