@@ -8,18 +8,29 @@ import { EditCommunityPostScreen } from '../features/community/screens/EditCommu
 import { SavedCommunityPostsScreen } from '../features/community/screens/SavedCommunityPostsScreen';
 import { TeacherCommunityProfileScreen } from '../features/community/screens/TeacherCommunityProfileScreen';
 import { getCommunityCopy } from '../i18n/communityCopy';
+import { getCommunityTheme } from '../features/community/communityTheme';
 
 const Stack = createNativeStackNavigator();
 
-// Teacher Space is the initial bottom tab, with its own stack for community
-// screens. Official content remains separate from teacher-generated content.
 export function CommunityStackNavigator() {
   const { colors } = useTheme();
+  const community = getCommunityTheme(colors);
   const { language } = useLanguage();
   const nav = getCommunityCopy(language).nav;
 
   return (
-    <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.card }, headerTintColor: colors.text, headerTitleAlign: 'center' }}>
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: community.surface },
+        headerTintColor: community.text,
+        headerTitleAlign: 'center',
+        headerShadowVisible: false,
+        headerBackTitleVisible: false,
+        headerTitleStyle: { fontSize: 16, fontWeight: '800' },
+        contentStyle: { backgroundColor: community.background },
+        animation: 'slide_from_right'
+      }}
+    >
       <Stack.Screen name="CommunityFeed" component={CommunityFeedScreen} options={{ title: nav.feed, headerShown: false }} />
       <Stack.Screen name="CommunityPostDetail" component={CommunityPostDetailScreen} options={{ title: nav.detail }} />
       <Stack.Screen name="CreateCommunityPost" component={CreateCommunityPostScreen} options={{ title: nav.create }} />
