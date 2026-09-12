@@ -98,7 +98,7 @@ export function CommunityPostCard({
 
   const pulseLike = () => {
     Animated.sequence([
-      Animated.spring(likeScale, { toValue: 1.28, useNativeDriver: true, speed: 45, bounciness: 9 }),
+      Animated.spring(likeScale, { toValue: 1.25, useNativeDriver: true, speed: 45, bounciness: 9 }),
       Animated.spring(likeScale, { toValue: 1, useNativeDriver: true, speed: 35, bounciness: 8 })
     ]).start();
   };
@@ -121,22 +121,22 @@ export function CommunityPostCard({
     try {
       await Share.share({ message });
     } catch {
-      // Native share sheets can be dismissed by the user; no error UI is needed.
+      // Native share sheets may be dismissed by the user.
     }
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.divider }]}> 
+    <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.border, shadowColor: community.shadow }]}> 
       <View style={[styles.authorRow, { flexDirection: row }]}> 
         <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: row }]}> 
-          <View style={[styles.avatarRing, { borderColor: typeTone.foreground }]}> 
+          <View style={[styles.avatarRing, { borderColor: '#D4AF37' }]}> 
             <View style={[styles.avatar, { backgroundColor: author?.avatar_url ? community.primarySoft : avatarColors.bg }]}> 
               {author?.avatar_url ? (
                 <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
               ) : initials ? (
                 <Text style={[styles.avatarInitials, { color: avatarColors.fg }]}>{initials}</Text>
               ) : (
-                <Ionicons name="person" size={20} color={avatarColors.fg} />
+                <Ionicons name="person" size={19} color={avatarColors.fg} />
               )}
             </View>
           </View>
@@ -161,16 +161,16 @@ export function CommunityPostCard({
           onPress={isOwner ? handleOwnerMenu : undefined}
           disabled={!isOwner || ownerBusy}
           hitSlop={12}
-          style={({ pressed }) => [styles.moreButton, { opacity: pressed ? 0.55 : 1 }]}
+          style={({ pressed }) => [styles.moreButton, { backgroundColor: pressed ? community.surfaceRaised : 'transparent' }]}
         >
-          <Ionicons name="ellipsis-horizontal" size={22} color={community.text} />
+          <Ionicons name="ellipsis-horizontal" size={21} color={community.textSecondary} />
         </Pressable>
       </View>
 
       {(showHiddenBadge || post.type) && (
         <View style={[styles.badgesRow, { flexDirection: row }]}> 
           <View style={[styles.typeBadge, { backgroundColor: typeTone.background, flexDirection: row }]}> 
-            <Ionicons name={communityTypeIcons[post.type]} size={13} color={typeTone.foreground} />
+            <Ionicons name={communityTypeIcons[post.type]} size={12} color={typeTone.foreground} />
             <Text style={[styles.typeText, { color: typeTone.foreground }]}>{copy.types[post.type]}</Text>
           </View>
           {showHiddenBadge && (
@@ -184,19 +184,12 @@ export function CommunityPostCard({
 
       <Pressable onPress={onPress} style={styles.contentArea}>
         {!!post.title && (
-          <Text
-            numberOfLines={3}
-            style={[styles.title, { color: community.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}
-          >
+          <Text numberOfLines={3} style={[styles.title, { color: community.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}> 
             {post.title}
           </Text>
         )}
-
         {!!post.body && (
-          <Text
-            numberOfLines={5}
-            style={[styles.body, { color: community.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}
-          >
+          <Text numberOfLines={5} style={[styles.body, { color: community.textSecondary, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}> 
             {post.body}
           </Text>
         )}
@@ -210,8 +203,8 @@ export function CommunityPostCard({
 
       {post.media?.type === 'pdf' && !!post.media.url && (
         <Pressable onPress={onPress} style={[styles.pdfCard, { backgroundColor: community.surfaceRaised, borderColor: community.border, flexDirection: row }]}> 
-          <View style={[styles.pdfIcon, { backgroundColor: community.primarySoft }]}> 
-            <Ionicons name="document-text-outline" size={22} color={community.primary} />
+          <View style={[styles.pdfIcon, { backgroundColor: '#FFF7E2' }]}> 
+            <Ionicons name="document-text-outline" size={21} color="#B98000" />
           </View>
           <View style={styles.pdfTextWrap}>
             <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>
@@ -226,24 +219,30 @@ export function CommunityPostCard({
       {meta.length > 0 && (
         <View style={[styles.metaWrap, { flexDirection: row }]}> 
           {meta.map((item) => (
-            <Text key={item} style={[styles.metaText, { color: community.primaryStrong }]}>#{item.replace(/\s+/g, '')}</Text>
+            <View key={item} style={[styles.metaChip, { backgroundColor: community.surfaceRaised }]}> 
+              <Text style={[styles.metaText, { color: community.textSecondary }]}>#{item.replace(/\s+/g, '')}</Text>
+            </View>
           ))}
         </View>
       )}
 
+      <View style={[styles.footerDivider, { backgroundColor: community.divider }]} />
+
       <View style={[styles.actionsRow, { flexDirection: row }]}> 
-        <Pressable onPress={handleLike} disabled={!onToggleLike || likePending} hitSlop={10} style={styles.iconButton}>
+        <Pressable onPress={handleLike} disabled={!onToggleLike || likePending} hitSlop={10} style={styles.actionButton}>
           <Animated.View style={{ transform: [{ scale: likeScale }] }}>
-            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={27} color={liked ? '#ED4956' : community.text} />
+            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={24} color={liked ? '#ED4956' : community.textSecondary} />
           </Animated.View>
+          <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.likes_count}</Text>
         </Pressable>
 
-        <Pressable onPress={handleComment} hitSlop={10} style={styles.iconButton}>
-          <Ionicons name="chatbubble-outline" size={25} color={community.text} />
+        <Pressable onPress={handleComment} hitSlop={10} style={styles.actionButton}>
+          <Ionicons name="chatbubble-outline" size={22} color={community.textSecondary} />
+          <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.comments_count}</Text>
         </Pressable>
 
-        <Pressable onPress={handleShare} hitSlop={10} style={styles.iconButton}>
-          <Ionicons name="paper-plane-outline" size={25} color={community.text} />
+        <Pressable onPress={handleShare} hitSlop={10} style={styles.iconOnlyButton}>
+          <Ionicons name="paper-plane-outline" size={22} color={community.textSecondary} />
         </Pressable>
 
         <View style={styles.actionsSpacer} />
@@ -256,93 +255,74 @@ export function CommunityPostCard({
           }}
           disabled={!onToggleSave || savePending}
           hitSlop={10}
-          style={styles.iconButton}
+          style={styles.iconOnlyButton}
         >
-          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={26} color={community.text} />
+          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={23} color={saved ? '#D4AF37' : community.textSecondary} />
         </Pressable>
       </View>
 
-      <View style={[styles.engagementBlock, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}> 
-        <Text style={[styles.likesText, { color: community.text }]}>
-          {ar ? `${post.likes_count} إعجاب` : `${post.likes_count} likes`}
-        </Text>
-        {post.comments_count > 0 && (
-          <Pressable onPress={handleComment}>
-            <Text style={[styles.commentsText, { color: community.textMuted, textAlign: align }]}> 
-              {ar ? `عرض كل التعليقات (${post.comments_count})` : `View all ${post.comments_count} comments`}
-            </Text>
-          </Pressable>
-        )}
-      </View>
+      {post.comments_count > 0 && (
+        <Pressable onPress={handleComment} style={styles.commentsLink}>
+          <Text style={[styles.commentsText, { color: community.textMuted, textAlign: align }]}> 
+            {ar ? `عرض كل التعليقات (${post.comments_count})` : `View all ${post.comments_count} comments`}
+          </Text>
+        </Pressable>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingTop: 12,
-    paddingBottom: 14,
-    overflow: 'hidden'
-  },
-  authorRow: {
-    minHeight: 52,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  authorLockup: {
-    flex: 1,
-    minWidth: 0,
-    alignItems: 'center',
-    gap: 10
-  },
-  avatarRing: {
-    width: 43,
-    height: 43,
+    marginHorizontal: 12,
+    marginTop: 12,
+    borderWidth: 1,
     borderRadius: 22,
-    borderWidth: 1.6,
-    alignItems: 'center',
-    justifyContent: 'center'
+    paddingTop: 12,
+    paddingBottom: 10,
+    overflow: 'hidden',
+    shadowOpacity: 0.035,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 1
   },
-  avatar: {
-    width: 37,
-    height: 37,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden'
-  },
-  avatarImg: { width: 37, height: 37, borderRadius: 19 },
-  avatarInitials: { fontSize: 13.5, fontWeight: '900', letterSpacing: 0.2 },
+  authorRow: { minHeight: 48, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'space-between' },
+  authorLockup: { flex: 1, minWidth: 0, alignItems: 'center', gap: 10 },
+  avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImg: { width: 36, height: 36, borderRadius: 18 },
+  avatarInitials: { fontSize: 13, fontWeight: '900' },
   authorText: { flex: 1, minWidth: 0 },
-  authorName: { fontWeight: '800', fontSize: 14.5 },
+  authorName: { fontWeight: '900', fontSize: 14.5 },
   authorMetaRow: { marginTop: 2, alignItems: 'center', gap: 4 },
-  authorMeta: { fontSize: 11.5, fontWeight: '500', maxWidth: 150 },
-  dot: { fontSize: 12 },
-  time: { fontSize: 11, fontWeight: '500' },
-  moreButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  authorMeta: { fontSize: 11.5, fontWeight: '600', maxWidth: 155 },
+  dot: { fontSize: 11 },
+  time: { fontSize: 10.5, fontWeight: '600' },
+  moreButton: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   badgesRow: { paddingHorizontal: 14, paddingTop: 7, gap: 7, flexWrap: 'wrap' },
-  typeBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 4 },
-  typeText: { fontWeight: '700', fontSize: 10.5 },
+  typeBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
+  typeText: { fontWeight: '800', fontSize: 10.5 },
   hiddenBadge: { alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
-  hiddenBadgeText: { fontWeight: '700', fontSize: 10 },
+  hiddenBadgeText: { fontWeight: '800', fontSize: 10 },
   contentArea: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 11, gap: 5 },
-  title: { fontWeight: '800', fontSize: 16, lineHeight: 22 },
+  title: { fontWeight: '900', fontSize: 16.5, lineHeight: 23 },
   body: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
-  imageShell: { width: '100%', overflow: 'hidden' },
-  imagePreview: { width: '100%', aspectRatio: 1 },
-  pdfCard: { marginHorizontal: 14, borderWidth: 1, borderRadius: 14, minHeight: 68, paddingHorizontal: 11, paddingVertical: 9, alignItems: 'center', gap: 10 },
-  pdfIcon: { width: 42, height: 42, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  imageShell: { marginHorizontal: 10, borderRadius: 16, overflow: 'hidden' },
+  imagePreview: { width: '100%', aspectRatio: 1.18 },
+  pdfCard: { marginHorizontal: 14, borderWidth: 1, borderRadius: 15, minHeight: 66, paddingHorizontal: 11, paddingVertical: 9, alignItems: 'center', gap: 10 },
+  pdfIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   pdfTextWrap: { flex: 1, minWidth: 0 },
-  pdfName: { fontWeight: '700', fontSize: 13 },
-  pdfMeta: { marginTop: 2, fontSize: 10.5, fontWeight: '600' },
-  metaWrap: { paddingHorizontal: 14, paddingTop: 9, gap: 8, flexWrap: 'wrap' },
-  metaText: { fontSize: 12, fontWeight: '600' },
-  actionsRow: { paddingHorizontal: 8, paddingTop: 10, alignItems: 'center' },
-  iconButton: { width: 43, height: 40, alignItems: 'center', justifyContent: 'center' },
+  pdfName: { fontWeight: '800', fontSize: 13 },
+  pdfMeta: { marginTop: 2, fontSize: 10.5, fontWeight: '700' },
+  metaWrap: { paddingHorizontal: 14, paddingTop: 9, gap: 6, flexWrap: 'wrap' },
+  metaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
+  metaText: { fontSize: 10.5, fontWeight: '700' },
+  footerDivider: { height: StyleSheet.hairlineWidth, marginTop: 11, marginHorizontal: 14 },
+  actionsRow: { paddingHorizontal: 10, paddingTop: 6, alignItems: 'center' },
+  actionButton: { minWidth: 50, height: 40, paddingHorizontal: 7, flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center' },
+  iconOnlyButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  actionCount: { fontSize: 11.5, fontWeight: '700' },
   actionsSpacer: { flex: 1 },
-  engagementBlock: { paddingHorizontal: 14, gap: 5 },
-  likesText: { fontSize: 13, fontWeight: '800' },
-  commentsText: { fontSize: 13, fontWeight: '500' }
+  commentsLink: { paddingHorizontal: 14, paddingTop: 1, paddingBottom: 2 },
+  commentsText: { fontSize: 11.5, fontWeight: '600' }
 });
