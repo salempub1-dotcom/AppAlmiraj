@@ -28,19 +28,28 @@ export function BottomTabs() {
       initialRouteName="Community"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.text,
+        tabBarActiveTintColor: route.name === 'Store' ? colors.text : '#111827',
         tabBarInactiveTintColor: colors.muted,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '700', marginTop: 4, marginBottom: 2 },
         tabBarIcon: ({ color, focused }) => {
           const icon = icons[route.name as keyof typeof icons];
+          const isStore = route.name === 'Store';
+          const activeBackground = isStore ? colors.primary : '#111827';
+          const activeIcon = isStore ? '#0B1833' : '#FFFFFF';
+
           return (
-            <View style={{ width: 56, height: 34, borderRadius: 17, backgroundColor: focused ? colors.primary : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons
-              name={focused ? icon.active : icon.inactive}
-              color={focused ? '#0B1833' : color}
-              size={23}
-            />
+            <View
+              style={{
+                width: 56,
+                height: 34,
+                borderRadius: 17,
+                backgroundColor: focused ? activeBackground : 'transparent',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Ionicons name={focused ? icon.active : icon.inactive} color={focused ? activeIcon : color} size={23} />
             </View>
           );
         },
