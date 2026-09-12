@@ -28,7 +28,11 @@ export function AuthProvider({ children }: PropsWithChildren) {
     const handleOAuthUrl = async (url: string | null) => {
       if (!url || !url.startsWith(GOOGLE_REDIRECT_URL)) return;
       try {
-        await authRepository.finishOAuthFromUrl(url);
+        const result = await authRepository.finishOAuthFromUrl(url);
+        if (mounted && result?.session) {
+          setSession(result.session);
+          setLoading(false);
+        }
       } catch (error) {
         console.warn('Google OAuth callback failed', error);
       }
@@ -40,7 +44,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
     });
 
     const { data } = authRepository.onAuthStateChange(async (_event, nextSession) => {
-      if (mounted) setSession(nextSession);
+      if (mounted) {
+        setSession(nextSession);
+        setLoading(false);
+      }
     });
 
     return () => {
