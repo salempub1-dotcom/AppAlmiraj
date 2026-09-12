@@ -48,8 +48,15 @@ export function SignUpScreen({ navigation }: any) {
 
   return (
     <Screen scroll style={styles.page}>
-      <Text style={[styles.title, { color: colors.text }]}>إنشاء حساب</Text>
-      <Text style={[styles.subtitle, { color: colors.muted }]}>اختر حساب Google وسيتم إنشاء الحساب وتسجيل الدخول مباشرة بدون كلمة مرور جديدة.</Text>
+      <View style={styles.brandRow}>
+        <View style={styles.brandDot} />
+        <Text style={styles.brandText}>Al Miraj Education</Text>
+      </View>
+
+      <View style={styles.introBlock}>
+        <Text style={[styles.title, { color: colors.text }]}>إنشاء حساب</Text>
+        <Text style={[styles.subtitle, { color: colors.muted }]}>أنشئ حسابك بسرعة وادخل مباشرة إلى فضاء الأستاذ.</Text>
+      </View>
 
       <GoogleAuthButton title="المتابعة باستخدام Google" loading={googleLoading} onPress={continueWithGoogle} />
 
@@ -59,20 +66,31 @@ export function SignUpScreen({ navigation }: any) {
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
       </View>
 
-      <TextField label="الاسم الكامل" value={name} onChangeText={setName} />
-      <TextField label="البريد الإلكتروني" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <TextField label="كلمة المرور" value={password} onChangeText={setPassword} secureTextEntry />
-      <Button title="إنشاء حساب بالبريد الإلكتروني" onPress={submit} />
-      <Button title="لديك حساب بالفعل؟ تسجيل الدخول" secondary onPress={() => navigation.navigate('SignIn')} />
+      <View style={styles.formBlock}>
+        <TextField compact label="الاسم الكامل" value={name} onChangeText={setName} />
+        <TextField compact label="البريد الإلكتروني" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+        <TextField compact label="كلمة المرور" value={password} onChangeText={setPassword} secureTextEntry />
+      </View>
+
+      <View style={styles.actionsBlock}>
+        <Button title="إنشاء حساب بالبريد الإلكتروني" onPress={submit} />
+        <Button title="لديك حساب بالفعل؟ تسجيل الدخول" secondary onPress={() => navigation.navigate('SignIn')} />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { gap: 16 },
-  title: { fontSize: 30, fontWeight: '800', textAlign: 'right' },
-  subtitle: { fontSize: 14, lineHeight: 22, textAlign: 'right', marginBottom: 8 },
+  page: { gap: 14, paddingTop: 18, paddingBottom: 34 },
+  brandRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, alignSelf: 'flex-end', marginBottom: 2 },
+  brandDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#D4AF37' },
+  brandText: { color: '#0B1833', fontSize: 12.5, fontWeight: '800', letterSpacing: 0.2 },
+  introBlock: { gap: 5, marginBottom: 2 },
+  title: { fontSize: 26, fontWeight: '900', textAlign: 'right' },
+  subtitle: { fontSize: 13.5, lineHeight: 21, textAlign: 'right' },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 2 },
   divider: { flex: 1, height: StyleSheet.hairlineWidth },
-  dividerText: { fontSize: 12.5, fontWeight: '700' }
+  dividerText: { fontSize: 12, fontWeight: '700' },
+  formBlock: { gap: 12 },
+  actionsBlock: { gap: 10, marginTop: 2 }
 });
