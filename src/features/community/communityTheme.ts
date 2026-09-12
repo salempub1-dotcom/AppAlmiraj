@@ -19,51 +19,51 @@ function isDarkHex(value?: string) {
   return luminance < 0.45;
 }
 
-// Teacher Space keeps a neutral social identity while borrowing the same
-// level of polish and spacing discipline as the rest of Al Miraj.
+// Teacher Space follows the approved visual reference: clean social surfaces,
+// deep navy structure and restrained Al Miraj gold accents.
 export function getCommunityTheme(appColors: AppColors) {
   const dark = isDarkHex(appColors.background);
 
   return dark
     ? {
         isDark: true,
-        background: '#0A0B0D',
-        surface: '#111317',
-        surfaceRaised: '#181B20',
-        primary: '#6E9BF5',
-        primaryStrong: '#9BBCFF',
-        primarySoft: '#18243A',
-        text: '#F7F8FA',
-        textSecondary: '#D2D7DE',
-        textMuted: '#8D96A3',
-        border: '#2A2F36',
-        divider: '#22262C',
-        success: '#4CC38A',
-        warning: '#F2B84B',
-        danger: '#FF7477',
-        gold: '#E6B94B',
-        imageBackdrop: '#171A1F',
+        background: '#08111F',
+        surface: '#0E1A2C',
+        surfaceRaised: '#17253A',
+        primary: '#D4AF37',
+        primaryStrong: '#F0CA59',
+        primarySoft: '#2C2A22',
+        text: '#F7F9FC',
+        textSecondary: '#D0D8E3',
+        textMuted: '#97A5B7',
+        border: '#26364B',
+        divider: '#213146',
+        success: '#47C78A',
+        warning: '#F5B942',
+        danger: '#FF6B6B',
+        gold: '#D4AF37',
+        imageBackdrop: '#152033',
         shadow: '#000000'
       }
     : {
         isDark: false,
-        background: '#F6F7F9',
+        background: '#F7F9FC',
         surface: '#FFFFFF',
-        surfaceRaised: '#F3F5F7',
-        primary: '#356FE5',
-        primaryStrong: '#245BC4',
-        primarySoft: '#EDF3FF',
-        text: '#16181D',
-        textSecondary: '#4E5663',
-        textMuted: '#7A8492',
-        border: '#DDE2E8',
-        divider: '#E9EDF1',
-        success: '#2D9D69',
-        warning: '#D99517',
-        danger: '#D94C52',
-        gold: '#D8A72F',
-        imageBackdrop: '#EFF2F5',
-        shadow: '#000000'
+        surfaceRaised: '#F2F5F8',
+        primary: '#0B1833',
+        primaryStrong: '#163767',
+        primarySoft: '#EDF2F8',
+        text: '#101827',
+        textSecondary: '#526071',
+        textMuted: '#7B8797',
+        border: '#DCE3EB',
+        divider: '#E9EDF2',
+        success: '#2FA66D',
+        warning: '#C89522',
+        danger: '#E5484D',
+        gold: '#C89522',
+        imageBackdrop: '#EEF2F6',
+        shadow: '#0B1833'
       };
 }
 
@@ -77,7 +77,7 @@ export function getCommunityTypeTone(type: string, theme: CommunityTheme) {
       return { foreground: dark ? '#D5C7FF' : '#7650C8', background: dark ? '#2A2040' : '#F2EEFF' };
     case 'exam':
     case 'test':
-      return { foreground: dark ? '#FFD978' : '#A86E00', background: dark ? '#382B13' : '#FFF4D6' };
+      return { foreground: dark ? '#FFD978' : '#986700', background: dark ? '#382B13' : '#FFF4D6' };
     case 'idea':
     case 'tip':
       return { foreground: dark ? '#8EE5B5' : '#248457', background: dark ? '#153325' : '#E8F8EF' };
@@ -85,7 +85,7 @@ export function getCommunityTypeTone(type: string, theme: CommunityTheme) {
       return { foreground: dark ? '#78DCEF' : '#147C91', background: dark ? '#14343A' : '#E4F8FB' };
     case 'resource':
     case 'pdf':
-      return { foreground: dark ? '#9AC1FF' : '#356FD4', background: dark ? '#172A49' : '#EAF1FF' };
+      return { foreground: dark ? '#9AC1FF' : '#245B9B', background: dark ? '#172A49' : '#EAF1FF' };
     default:
       return { foreground: theme.primary, background: theme.primarySoft };
   }
