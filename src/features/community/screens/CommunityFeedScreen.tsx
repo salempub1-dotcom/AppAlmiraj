@@ -155,7 +155,7 @@ function CommunityFeedList({ navigation }: any) {
           styles.composerCard,
           {
             opacity: pressed ? 0.94 : 1,
-            shadowColor: community.isDark ? '#000000' : '#799BC1'
+            shadowColor: community.isDark ? '#000000' : '#F2C94C'
           }
         ]}
       >
@@ -171,8 +171,13 @@ function CommunityFeedList({ navigation }: any) {
           </View>
 
           <View style={styles.composerPromptBox}>
-            <Text numberOfLines={2} style={[styles.composerPrompt, { textAlign: align }]}>
-              {social.composerPrompt}
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.72}
+              style={[styles.composerPrompt, { textAlign: 'center' }]}
+            >
+              {language === 'ar' ? 'ماذا ستشارك مع زملائك اليوم' : social.composerPrompt}
             </Text>
           </View>
 
@@ -253,7 +258,7 @@ function CommunityFeedList({ navigation }: any) {
   }
 
   return (
-    <Screen style={{ ...styles.listPage, backgroundColor: community.isDark ? community.background : '#D7E9FC' }}>
+    <Screen style={{ ...styles.listPage, backgroundColor: community.isDark ? community.background : '#BFDFFF' }}>
       <FlatList
         data={visiblePosts}
         keyExtractor={(item) => item.id}
@@ -336,11 +341,11 @@ const styles = StyleSheet.create({
   loadingPage: { flex: 1, padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listContent: { paddingBottom: 0 },
-  header: { width: '100%', paddingBottom: 0, backgroundColor: '#EAF4FF' },
+  header: { width: '100%', paddingBottom: 0, backgroundColor: '#D9ECFF' },
   hero: { minHeight: 154, backgroundColor: '#0B1833', overflow: 'hidden', paddingTop: 10, paddingBottom: 22 },
-  heroOrbA: { position: 'absolute', width: 210, height: 210, borderRadius: 105, backgroundColor: 'rgba(21,76,143,0.40)', top: -138, right: -58 },
-  heroOrbB: { position: 'absolute', width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(21,67,126,0.25)', left: -102, bottom: -178 },
-  heroGlow: { position: 'absolute', width: 150, height: 170, borderRadius: 80, backgroundColor: 'rgba(46,106,188,0.10)', left: '38%', top: -36 },
+  heroOrbA: { position: 'absolute', width: 210, height: 210, borderRadius: 105, backgroundColor: 'rgba(24,96,190,0.52)', top: -138, right: -58 },
+  heroOrbB: { position: 'absolute', width: 230, height: 230, borderRadius: 115, backgroundColor: 'rgba(34,111,207,0.34)', left: -102, bottom: -178 },
+  heroGlow: { position: 'absolute', width: 180, height: 190, borderRadius: 95, backgroundColor: 'rgba(61,142,238,0.15)', left: '34%', top: -42 },
   heroBook: { position: 'absolute', right: 86, bottom: -26, transform: [{ rotate: '-8deg' }] },
   topBar: { paddingHorizontal: 18, alignItems: 'flex-start', justifyContent: 'space-between', flexDirection: 'row', gap: 10 },
   brandLockup: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 1, minWidth: 0 },
@@ -348,34 +353,34 @@ const styles = StyleSheet.create({
   spaceTitle: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', letterSpacing: -0.35, maxWidth: '82%' },
   spaceSubtitle: { color: '#D6E0EC', fontSize: 12.2, fontWeight: '700', marginTop: 7, textAlign: 'center', width: '100%' },
   headerIcon: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.09)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
-  composerCard: { marginHorizontal: 13, marginTop: -34, borderWidth: 1.25, borderColor: '#E3BC4D', borderRadius: 28, minHeight: 154, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: '#FFFDF9', overflow: 'hidden', shadowOpacity: 0.22, shadowRadius: 19, shadowOffset: { width: 0, height: 9 }, elevation: 8, gap: 10 },
-  composerGlowTop: { position: 'absolute', top: -52, left: 64, right: 26, height: 96, borderRadius: 50, backgroundColor: 'rgba(232,244,255,0.68)' },
-  composerGoldShape: { position: 'absolute', width: 160, height: 82, borderRadius: 82, left: -58, bottom: -45, backgroundColor: 'rgba(244,205,91,0.18)', transform: [{ rotate: '12deg' }] },
-  composerTopRow: { alignItems: 'center', gap: 9 },
-  composerAvatarOuter: { width: 52, height: 52, borderRadius: 27, borderWidth: 2, borderColor: '#D8E8FB', backgroundColor: '#F7FBFF', alignItems: 'center', justifyContent: 'center' },
-  composerAvatarInner: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#E8F1FD', alignItems: 'center', justifyContent: 'center' },
+  composerCard: { marginHorizontal: 24, marginTop: -34, borderWidth: 1.5, borderColor: '#E8BE4C', borderRadius: 28, minHeight: 142, paddingHorizontal: 13, paddingVertical: 11, backgroundColor: '#FFFDF9', overflow: 'visible', shadowOpacity: 0.58, shadowRadius: 18, shadowOffset: { width: 0, height: 5 }, elevation: 12, gap: 9 },
+  composerGlowTop: { position: 'absolute', top: -24, left: 18, right: 18, height: 40, borderRadius: 28, backgroundColor: 'rgba(250,213,79,0.22)' },
+  composerGoldShape: { position: 'absolute', width: 150, height: 76, borderRadius: 76, left: -52, bottom: -38, backgroundColor: 'rgba(244,205,91,0.16)', transform: [{ rotate: '12deg' }] },
+  composerTopRow: { alignItems: 'center', gap: 8 },
+  composerAvatarOuter: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: '#D8E8FB', backgroundColor: '#F7FBFF', alignItems: 'center', justifyContent: 'center' },
+  composerAvatarInner: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F1FD', alignItems: 'center', justifyContent: 'center' },
   onlineDot: { position: 'absolute', width: 13, height: 13, borderRadius: 7, backgroundColor: '#7ABD3A', borderWidth: 2, borderColor: '#FFFFFF', right: -1, bottom: 1 },
-  composerPromptBox: { flex: 1, minHeight: 66, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, justifyContent: 'center', backgroundColor: '#F3F7FC', borderWidth: 1, borderColor: '#DEE8F3', shadowColor: '#B4C8DD', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1, transform: [{ translateY: -4 }] },
-  composerPrompt: { color: '#294363', fontSize: 15.2, lineHeight: 21.5, fontWeight: '800' },
-  publishButtonOuter: { width: 58, height: 58, borderRadius: 29, borderWidth: 2, borderColor: '#E7B837', padding: 4, backgroundColor: '#FFF7DE', alignItems: 'center', justifyContent: 'center', transform: [{ translateY: -3 }] },
-  publishButton: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#17396A', alignItems: 'center', justifyContent: 'center', shadowColor: '#17396A', shadowOpacity: 0.23, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  composerPromptBox: { flex: 1, minHeight: 58, borderRadius: 20, paddingHorizontal: 10, paddingVertical: 8, justifyContent: 'center', backgroundColor: '#F3F7FC', borderWidth: 1, borderColor: '#DEE8F3', shadowColor: '#B4C8DD', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1, transform: [{ translateY: -2 }] },
+  composerPrompt: { color: '#17396A', fontSize: 15.8, lineHeight: 21, fontWeight: '900', width: '100%' },
+  publishButtonOuter: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderColor: '#E7B837', padding: 4, backgroundColor: '#FFF7DE', alignItems: 'center', justifyContent: 'center', transform: [{ translateY: -2 }] },
+  publishButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#17396A', alignItems: 'center', justifyContent: 'center', shadowColor: '#17396A', shadowOpacity: 0.23, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
   quickKinds: { gap: 8, alignItems: 'center', justifyContent: 'center' },
   quickKind: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 7, minHeight: 34, flex: 1 },
   quickKindImage: { backgroundColor: '#E8F2FF' },
   quickKindQuestion: { backgroundColor: '#F2ECFF' },
   quickKindFile: { backgroundColor: '#FFF4D9' },
   quickKindText: { fontSize: 11, fontWeight: '900' },
-  filtersWrap: { paddingTop: 12, paddingBottom: 14, backgroundColor: '#EAF4FF' },
+  filtersWrap: { paddingTop: 12, paddingBottom: 14, backgroundColor: '#D2E8FF' },
   filtersContent: { paddingHorizontal: 13, gap: 9 },
-  filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, minHeight: 39, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 6, shadowColor: '#7898BA', shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 3 },
+  filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 8, minHeight: 39, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 6, shadowColor: '#5D85AE', shadowOpacity: 0.18, shadowRadius: 9, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
   filterText: { fontSize: 11.2, fontWeight: '900' },
-  feedBackdropTop: { height: 16, backgroundColor: '#DCEEFF' },
+  feedBackdropTop: { height: 16, backgroundColor: '#BFDFFF' },
   postStage: { position: 'relative', paddingVertical: 8, overflow: 'hidden' },
-  postStageA: { backgroundColor: '#DCEEFF' },
-  postStageB: { backgroundColor: '#CFE4FA' },
-  postGlowOne: { position: 'absolute', width: 280, height: 280, borderRadius: 140, right: -118, top: -82, backgroundColor: 'rgba(92,151,218,0.24)' },
-  postGlowTwo: { position: 'absolute', width: 230, height: 230, borderRadius: 115, left: -128, bottom: -66, backgroundColor: 'rgba(185,218,250,0.58)' },
-  postGlowThree: { position: 'absolute', width: 170, height: 170, borderRadius: 85, left: '31%', top: 24, backgroundColor: 'rgba(247,251,255,0.38)' },
+  postStageA: { backgroundColor: '#BFDFFF' },
+  postStageB: { backgroundColor: '#AFCFF3' },
+  postGlowOne: { position: 'absolute', width: 310, height: 310, borderRadius: 155, right: -132, top: -102, backgroundColor: 'rgba(54,126,213,0.36)' },
+  postGlowTwo: { position: 'absolute', width: 260, height: 260, borderRadius: 130, left: -136, bottom: -78, backgroundColor: 'rgba(220,239,255,0.72)' },
+  postGlowThree: { position: 'absolute', width: 190, height: 190, borderRadius: 95, left: '28%', top: 18, backgroundColor: 'rgba(247,252,255,0.46)' },
   stateIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   stateTitle: { fontWeight: '900', fontSize: 18 },
   stateText: { lineHeight: 21, fontSize: 13 },
