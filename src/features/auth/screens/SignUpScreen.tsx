@@ -1,15 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../components/Button';
 import { Screen } from '../../../components/Screen';
 import { TextField } from '../../../components/TextField';
+import { useAuth } from '../../../context/AuthProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { authRepository } from '../../../repositories/authRepository';
 import { GoogleAuthButton } from '../GoogleAuthButton';
 
 export function SignUpScreen({ navigation }: any) {
   const { colors } = useTheme();
+  const { session, loading } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,12 @@ export function SignUpScreen({ navigation }: any) {
     if (tabs?.navigate) tabs.navigate('Community');
     else navigation.popToTop();
   };
+
+  useEffect(() => {
+    if (!loading && session) goToTeacherSpace();
+  }, [loading, session]);
+
+  if (loading || session) return null;
 
   const submit = async () => {
     if (password.length < 6) return Alert.alert('كلمة المرور', 'استعمل 6 أحرف على الأقل.');
@@ -78,7 +86,6 @@ export function SignUpScreen({ navigation }: any) {
       </View>
 
       <Button title="إنشاء حساب" onPress={submit} />
-
       <Text style={[styles.terms, { color: colors.muted }]}>بإنشاء حسابك، أنت توافق على شروط الاستخدام وسياسة الخصوصية.</Text>
 
       <View style={styles.bottomPrompt}>
