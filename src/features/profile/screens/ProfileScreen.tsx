@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { AL_MIRAJ_LOGO_DATA_URI } from '../../../assets/alMirajLogo';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../../components/Screen';
 import { useAuth } from '../../../context/AuthProvider';
 import { useLanguage } from '../../../context/LanguageProvider';
@@ -32,24 +31,30 @@ export function ProfileScreen({ navigation }: any) {
   const avatarUrl = profile?.avatar_url || session?.user.user_metadata?.avatar_url || null;
   const subject = profile?.subject?.trim?.() || t('profile.teacherAccount');
   const initial = fullName ? fullName[0]?.toUpperCase() : 'أ';
+  const appearance = preference === 'dark' ? t('profile.dark') : preference === 'light' ? t('profile.light') : t('profile.system');
 
-  const appearanceLabel = preference === 'dark' ? 'داكن' : preference === 'light' ? 'فاتح' : 'النظام';
-  const cycleAppearance = () => {
-    if (preference === 'system') setPreference('light');
-    else if (preference === 'light') setPreference('dark');
-    else setPreference('system');
-  };
+  const chooseLanguage = () => Alert.alert(t('profile.language'), t('profile.languageText'), [
+    { text: t('common.arabic'), onPress: () => void setLanguage('ar') },
+    { text: t('common.english'), onPress: () => void setLanguage('en') },
+    { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' }
+  ]);
+
+  const chooseAppearance = () => Alert.alert(t('profile.appearance'), t('profile.appearanceText'), [
+    { text: t('profile.system'), onPress: () => void setPreference('system') },
+    { text: t('profile.light'), onPress: () => void setPreference('light') },
+    { text: t('profile.dark'), onPress: () => void setPreference('dark') },
+    { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' }
+  ]);
 
   if (isGuest) {
     return (
       <Screen scroll style={styles.page}>
-        <View style={styles.heroGuest}>
-          <EducationalBackdrop />
-          <Image source={{ uri: AL_MIRAJ_LOGO_DATA_URI }} style={styles.guestLogo} resizeMode="contain" />
-          <Text style={styles.guestTitle}>{t('profile.welcome')}</Text>
-          <Text style={styles.guestText}>{t('profile.guestText')}</Text>
+        <View style={[styles.guestCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.guestIcon}><Ionicons name="school" size={34} color={palette.navy} /></View>
+          <Text style={[styles.guestTitle, { color: colors.text }]}>{t('profile.welcome')}</Text>
+          <Text style={[styles.guestText, { color: colors.muted }]}>{t('profile.guestText')}</Text>
           <Pressable onPress={() => navigation.navigate('SignIn')} style={styles.primaryButton}><Text style={styles.primaryText}>{t('profile.signIn')}</Text></Pressable>
-          <Pressable onPress={() => navigation.navigate('SignUp')} style={styles.outlineButton}><Text style={styles.outlineText}>{t('profile.signUp')}</Text></Pressable>
+          <Pressable onPress={() => navigation.navigate('SignUp')} style={[styles.secondaryButton, { borderColor: colors.border }]}><Text style={[styles.secondaryText, { color: colors.text }]}>{t('profile.signUp')}</Text></Pressable>
         </View>
       </Screen>
     );
@@ -57,154 +62,98 @@ export function ProfileScreen({ navigation }: any) {
 
   return (
     <Screen scroll style={styles.page}>
-      <View style={styles.heroCard}>
-        <EducationalBackdrop />
-
-        <View style={[styles.heroTopRow, { flexDirection: row }]}>
-          <Text style={styles.heroTitle}>حسابي</Text>
-          <View style={styles.brandMini}>
-            <Image source={{ uri: AL_MIRAJ_LOGO_DATA_URI }} style={styles.brandLogo} resizeMode="contain" />
-          </View>
+      <View style={styles.header}>
+        <View style={styles.glowA} /><View style={styles.glowB} />
+        <View style={[styles.headerTop, { flexDirection: row }]}>
+          <Text style={styles.headerTitle}>{t('profile.title')}</Text>
+          <View style={styles.headerIcon}><Ionicons name="school-outline" size={20} color="#E1BD4F" /></View>
         </View>
 
-        <View style={styles.profileHero}>
+        <View style={styles.identity}>
           <Pressable onPress={() => navigation.navigate('EditProfile')} style={styles.avatarWrap}>
-            {avatarUrl ? (
-              <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
-            ) : (
-              <View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View>
-            )}
-            <View style={styles.editAvatarBadge}><Ionicons name="camera" size={15} color={palette.navy} /></View>
+            {avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatar} /> : <View style={[styles.avatar, styles.avatarFallback]}><Text style={styles.avatarText}>{initial}</Text></View>}
+            <View style={styles.camera}><Ionicons name="camera" size={14} color={palette.navy} /></View>
           </Pressable>
-          <Text style={styles.heroName}>{fullName}</Text>
-          <Text style={styles.heroSubject}>{subject}</Text>
-        </View>
-
-        <View style={styles.quoteCard}>
-          <View style={styles.quoteSide}>
-            <Ionicons name="book-outline" size={24} color={palette.amberSoft} />
-            <Text style={styles.quoteSmall}>مستمرون معًا{`\n`}في رحلة التعليم</Text>
-          </View>
-          <View style={styles.quoteDivider} />
-          <View style={styles.quoteMain}>
-            <Text style={styles.quoteText}>بالعلم نصنع{`\n`}مستقبلًا أفضل</Text>
-            <View style={styles.quoteLine} />
-          </View>
+          <Text style={styles.name}>{fullName}</Text>
+          <Text style={styles.subject}>{subject}</Text>
+          <Pressable onPress={() => navigation.navigate('EditProfile')} style={styles.editButton}>
+            <Ionicons name="create-outline" size={15} color="#FFF" />
+            <Text style={styles.editText}>{t('profile.editProfile')}</Text>
+          </Pressable>
         </View>
       </View>
 
-      <View style={[styles.menuCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <MenuItem icon="person-outline" iconBg="#E5F0FF" iconColor="#2458A6" title={t('profile.editProfile')} onPress={() => navigation.navigate('EditProfile')} colors={colors} row={row} />
-        <Divider color={colors.divider} />
+      <View style={[styles.menu, { backgroundColor: colors.card, borderColor: colors.border }]}>
         <MenuItem icon="bag-handle-outline" iconBg="#FFF3DC" iconColor="#9A661E" title={t('profile.orders')} onPress={() => navigation.getParent?.()?.navigate?.('Store', { screen: 'MyOrders' })} colors={colors} row={row} />
         <Divider color={colors.divider} />
         <MenuItem icon="school-outline" iconBg="#EEF0FF" iconColor="#3E4BB0" title={communityCopy.entry.title} onPress={() => navigation.getParent?.()?.navigate?.('Community')} colors={colors} row={row} />
         <Divider color={colors.divider} />
-        <SettingMenuItem icon="language-outline" iconBg="#E5F5F4" iconColor="#19706B" title="اللغة" value={language === 'ar' ? 'العربية' : 'English'} onPress={() => setLanguage(language === 'ar' ? 'en' : 'ar')} colors={colors} row={row} />
+        <SettingItem icon="language-outline" iconBg="#E5F5F4" iconColor="#19706B" title={t('profile.language')} value={language === 'ar' ? t('common.arabic') : t('common.english')} onPress={chooseLanguage} colors={colors} row={row} />
         <Divider color={colors.divider} />
-        <SettingMenuItem icon="moon-outline" iconBg="#EEEAFE" iconColor="#5B50B5" title="المظهر" value={appearanceLabel} onPress={cycleAppearance} colors={colors} row={row} />
+        <SettingItem icon="moon-outline" iconBg="#EEEAFE" iconColor="#5B50B5" title={t('profile.appearance')} value={appearance} onPress={chooseAppearance} colors={colors} row={row} />
         {isAdmin ? <><Divider color={colors.divider} /><MenuItem icon="library-outline" iconBg="#EAF1F8" iconColor={colors.secondary} title={adminCopy.entry.title} onPress={() => navigation.navigate('ContentManager')} colors={colors} row={row} /></> : null}
         {isAdmin ? <><Divider color={colors.divider} /><MenuItem icon="shield-checkmark-outline" iconBg="#E8F5EE" iconColor={colors.success} title={adminCopy.communityModerationEntry.title} onPress={() => navigation.navigate('CommunityModeration')} colors={colors} row={row} /></> : null}
-        <Divider color={colors.divider} />
-        <Pressable onPress={() => signOut()} style={({ pressed }) => [styles.logoutRow, { opacity: pressed ? 0.7 : 1 }]}>
-          <Ionicons name="chevron-back" size={18} color="#C76B6B" />
-          <Text style={styles.logoutTitle}>{t('profile.signOut')}</Text>
-          <View style={styles.logoutIcon}><Ionicons name="log-out-outline" size={20} color="#C94A4A" /></View>
-        </Pressable>
       </View>
+
+      <Pressable onPress={() => signOut()} style={({ pressed }) => [styles.logout, { opacity: pressed ? 0.7 : 1 }]}>
+        <Ionicons name="log-out-outline" size={21} color="#C94A4A" />
+        <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
+      </Pressable>
     </Screen>
   );
 }
 
-function EducationalBackdrop() {
-  return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFillObject}>
-      <View style={styles.heroLayerOne} />
-      <View style={styles.heroLayerTwo} />
-      <View style={styles.bookshelf}>
-        <View style={styles.bookTall} /><View style={styles.bookShort} /><View style={styles.bookMid} />
-      </View>
-      <View style={styles.boardHint} />
-      <View style={styles.deskHint} />
-      <View style={styles.warmGlow} />
-    </View>
-  );
-}
-
 function MenuItem({ icon, iconBg, iconColor, title, onPress, colors, row }: any) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.menuItem, { flexDirection: row, opacity: pressed ? 0.65 : 1 }]}>
-      <Ionicons name="chevron-back" size={18} color={colors.muted} />
-      <Text style={[styles.menuTitle, { color: colors.text }]}>{title}</Text>
-      <View style={[styles.menuIcon, { backgroundColor: iconBg }]}><Ionicons name={icon} size={21} color={iconColor} /></View>
-    </Pressable>
-  );
+  return <Pressable onPress={onPress} style={({ pressed }) => [styles.item, { flexDirection: row, opacity: pressed ? 0.65 : 1 }]}>
+    <Ionicons name="chevron-back" size={18} color={colors.muted} />
+    <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
+    <View style={[styles.itemIcon, { backgroundColor: iconBg }]}><Ionicons name={icon} size={21} color={iconColor} /></View>
+  </Pressable>;
 }
 
-function SettingMenuItem({ icon, iconBg, iconColor, title, value, onPress, colors, row }: any) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.menuItem, { flexDirection: row, opacity: pressed ? 0.65 : 1 }]}>
-      <View style={styles.settingValueWrap}>
-        <Text style={[styles.settingValue, { color: colors.muted }]}>{value}</Text>
-        <Ionicons name="chevron-back" size={16} color={colors.muted} />
-      </View>
-      <Text style={[styles.menuTitle, { color: colors.text }]}>{title}</Text>
-      <View style={[styles.menuIcon, { backgroundColor: iconBg }]}><Ionicons name={icon} size={21} color={iconColor} /></View>
-    </Pressable>
-  );
+function SettingItem({ icon, iconBg, iconColor, title, value, onPress, colors, row }: any) {
+  return <Pressable onPress={onPress} style={({ pressed }) => [styles.item, { flexDirection: row, opacity: pressed ? 0.65 : 1 }]}>
+    <View style={styles.valueWrap}><Text style={[styles.value, { color: colors.muted }]}>{value}</Text><Ionicons name="chevron-back" size={16} color={colors.muted} /></View>
+    <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
+    <View style={[styles.itemIcon, { backgroundColor: iconBg }]}><Ionicons name={icon} size={21} color={iconColor} /></View>
+  </Pressable>;
 }
 
-function Divider({ color }: { color: string }) {
-  return <View style={[styles.divider, { backgroundColor: color }]} />;
-}
+function Divider({ color }: { color: string }) { return <View style={[styles.divider, { backgroundColor: color }]} />; }
 
 const styles = StyleSheet.create({
-  page: { gap: 14, paddingTop: 10, paddingBottom: 24 },
-  heroCard: { minHeight: 410, borderRadius: 30, overflow: 'hidden', backgroundColor: palette.navy, paddingHorizontal: 18, paddingTop: 17, paddingBottom: 18, borderWidth: 1, borderColor: '#1F3A62' },
-  heroLayerOne: { position: 'absolute', width: 360, height: 360, borderRadius: 180, backgroundColor: '#17345D', right: -125, top: -145, opacity: 0.92 },
-  heroLayerTwo: { position: 'absolute', width: 300, height: 300, borderRadius: 150, backgroundColor: palette.indigo, left: -155, bottom: -145, opacity: 0.35 },
-  bookshelf: { position: 'absolute', left: 18, top: 82, width: 70, height: 104, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)', borderRadius: 10, padding: 10, flexDirection: 'row', alignItems: 'flex-end', gap: 5, opacity: 0.28 },
-  bookTall: { width: 10, height: 63, borderRadius: 3, backgroundColor: '#DCE8F5' },
-  bookMid: { width: 10, height: 49, borderRadius: 3, backgroundColor: '#8EA8CC' },
-  bookShort: { width: 10, height: 38, borderRadius: 3, backgroundColor: '#E5C96A' },
-  boardHint: { position: 'absolute', right: 20, top: 70, width: 112, height: 72, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.09)', backgroundColor: 'rgba(255,255,255,0.018)', opacity: 0.7 },
-  deskHint: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 92, backgroundColor: 'rgba(8,17,31,0.34)' },
-  warmGlow: { position: 'absolute', right: -30, bottom: 22, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(229,201,106,0.13)' },
-  heroTopRow: { alignItems: 'center', justifyContent: 'space-between' },
-  heroTitle: { color: '#FFFFFF', fontSize: 27, fontWeight: '900' },
-  brandMini: { width: 72, height: 58, alignItems: 'center', justifyContent: 'center' },
-  brandLogo: { width: 70, height: 58 },
-  profileHero: { alignItems: 'center', marginTop: 4 },
-  avatarWrap: { width: 116, height: 116, position: 'relative', marginBottom: 11 },
-  avatar: { width: 116, height: 116, borderRadius: 58, backgroundColor: '#B6C8DD', alignItems: 'center', justifyContent: 'center', borderWidth: 4, borderColor: '#F5E7B3' },
-  avatarImage: { width: 116, height: 116, borderRadius: 58, borderWidth: 4, borderColor: '#F5E7B3' },
-  avatarText: { color: '#FFFFFF', fontSize: 38, fontWeight: '900' },
-  editAvatarBadge: { position: 'absolute', right: 2, bottom: 2, width: 36, height: 36, borderRadius: 18, backgroundColor: palette.amberSoft, borderWidth: 3, borderColor: palette.navy, alignItems: 'center', justifyContent: 'center' },
-  heroName: { color: '#FFFFFF', fontSize: 23, fontWeight: '900', textAlign: 'center' },
-  heroSubject: { color: '#BFCBE0', fontSize: 13, marginTop: 4, fontWeight: '700' },
-  quoteCard: { marginTop: 16, minHeight: 92, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(190,210,235,0.18)', backgroundColor: 'rgba(17,38,67,0.74)', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 },
-  quoteSide: { flex: 1, alignItems: 'center', gap: 5 },
-  quoteSmall: { color: '#D3DDEC', fontSize: 11.5, lineHeight: 17, textAlign: 'center', fontWeight: '700' },
-  quoteDivider: { width: 1, height: 52, backgroundColor: 'rgba(255,255,255,0.16)', marginHorizontal: 14 },
-  quoteMain: { flex: 1.15, alignItems: 'center' },
-  quoteText: { color: '#FFFFFF', fontSize: 18, lineHeight: 26, textAlign: 'center', fontWeight: '800' },
-  quoteLine: { marginTop: 8, width: 52, height: 2, borderRadius: 2, backgroundColor: palette.amberSoft },
-  menuCard: { borderWidth: 1, borderRadius: 24, overflow: 'hidden' },
-  menuItem: { minHeight: 61, paddingHorizontal: 14, alignItems: 'center', gap: 11 },
-  menuTitle: { flex: 1, textAlign: 'right', fontSize: 14.5, fontWeight: '800' },
-  menuIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  settingValueWrap: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  settingValue: { fontSize: 12.5, fontWeight: '700' },
+  page: { gap: 16, paddingTop: 10, paddingBottom: 28 },
+  header: { minHeight: 276, borderRadius: 28, overflow: 'hidden', backgroundColor: palette.navy, padding: 18, borderWidth: 1, borderColor: '#1F3A62' },
+  glowA: { position: 'absolute', width: 240, height: 240, borderRadius: 120, backgroundColor: '#17345D', right: -80, top: -105 },
+  glowB: { position: 'absolute', width: 190, height: 190, borderRadius: 95, backgroundColor: '#223D6B', left: -100, bottom: -110, opacity: 0.55 },
+  headerTop: { alignItems: 'center', justifyContent: 'space-between' },
+  headerTitle: { color: '#FFF', fontSize: 22, fontWeight: '900' },
+  headerIcon: { width: 38, height: 38, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.08)', alignItems: 'center', justifyContent: 'center' },
+  identity: { alignItems: 'center' },
+  avatarWrap: { width: 92, height: 92, marginBottom: 9, position: 'relative' },
+  avatar: { width: 92, height: 92, borderRadius: 46, borderWidth: 3, borderColor: '#E9CF78' },
+  avatarFallback: { backgroundColor: '#B6C8DD', alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: '#FFF', fontSize: 31, fontWeight: '900' },
+  camera: { position: 'absolute', right: -1, bottom: 1, width: 30, height: 30, borderRadius: 15, backgroundColor: '#E1BD4F', borderWidth: 3, borderColor: palette.navy, alignItems: 'center', justifyContent: 'center' },
+  name: { color: '#FFF', fontSize: 22, fontWeight: '900' },
+  subject: { color: '#C7D2E3', fontSize: 13, marginTop: 3, fontWeight: '700' },
+  editButton: { marginTop: 12, minHeight: 36, borderRadius: 18, paddingHorizontal: 15, flexDirection: 'row', gap: 7, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.10)' },
+  editText: { color: '#FFF', fontSize: 12.5, fontWeight: '800' },
+  menu: { borderWidth: 1, borderRadius: 24, overflow: 'hidden' },
+  item: { minHeight: 66, paddingHorizontal: 14, alignItems: 'center', gap: 11 },
+  itemTitle: { flex: 1, textAlign: 'right', fontSize: 15, fontWeight: '800' },
+  itemIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  valueWrap: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  value: { fontSize: 12.5, fontWeight: '700' },
   divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 14 },
-  logoutRow: { minHeight: 61, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', gap: 11, backgroundColor: 'rgba(201,74,74,0.06)' },
-  logoutTitle: { flex: 1, textAlign: 'right', fontSize: 14.5, fontWeight: '900', color: '#C94A4A' },
-  logoutIcon: { width: 39, height: 39, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FDECEC' },
-  heroGuest: { borderRadius: 28, overflow: 'hidden', backgroundColor: palette.navy, padding: 24, alignItems: 'center', gap: 12, minHeight: 390, justifyContent: 'center' },
-  guestLogo: { width: 125, height: 120, marginBottom: 4 },
-  guestTitle: { color: '#FFFFFF', fontSize: 23, fontWeight: '900' },
-  guestText: { color: '#C7D0DE', textAlign: 'center', lineHeight: 21 },
-  primaryButton: { width: '100%', minHeight: 50, borderRadius: 16, backgroundColor: palette.amberSoft, alignItems: 'center', justifyContent: 'center', marginTop: 4 },
-  primaryText: { color: palette.navy, fontWeight: '900' },
-  outlineButton: { width: '100%', minHeight: 48, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.20)', alignItems: 'center', justifyContent: 'center' },
-  outlineText: { color: '#FFFFFF', fontWeight: '800' }
+  logout: { minHeight: 56, borderRadius: 18, borderWidth: 1, borderColor: '#F1D3D3', backgroundColor: '#FFF8F8', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
+  logoutText: { color: '#C94A4A', fontSize: 15, fontWeight: '900' },
+  guestCard: { borderWidth: 1, borderRadius: 28, padding: 24, alignItems: 'center', gap: 13, minHeight: 370, justifyContent: 'center' },
+  guestIcon: { width: 72, height: 72, borderRadius: 24, backgroundColor: '#FFF3CF', alignItems: 'center', justifyContent: 'center' },
+  guestTitle: { fontSize: 24, fontWeight: '900' },
+  guestText: { fontSize: 13.5, lineHeight: 22, textAlign: 'center' },
+  primaryButton: { width: '100%', minHeight: 52, borderRadius: 17, backgroundColor: '#D9B73E', alignItems: 'center', justifyContent: 'center' },
+  primaryText: { color: palette.navy, fontSize: 15, fontWeight: '900' },
+  secondaryButton: { width: '100%', minHeight: 52, borderRadius: 17, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  secondaryText: { fontSize: 15, fontWeight: '800' }
 });
