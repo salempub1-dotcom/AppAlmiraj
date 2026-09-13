@@ -1,15 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../components/Button';
 import { Screen } from '../../../components/Screen';
 import { TextField } from '../../../components/TextField';
+import { useAuth } from '../../../context/AuthProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 import { authRepository } from '../../../repositories/authRepository';
 import { GoogleAuthButton } from '../GoogleAuthButton';
 
 export function SignInScreen({ navigation }: any) {
   const { colors } = useTheme();
+  const { session, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -19,6 +21,12 @@ export function SignInScreen({ navigation }: any) {
     if (tabs?.navigate) tabs.navigate('Community');
     else navigation.popToTop();
   };
+
+  useEffect(() => {
+    if (!loading && session) goToTeacherSpace();
+  }, [loading, session]);
+
+  if (loading || session) return null;
 
   const submit = async () => {
     const { error } = await authRepository.signIn(email.trim(), password);
@@ -61,7 +69,6 @@ export function SignInScreen({ navigation }: any) {
       </View>
 
       <Text style={styles.forgot}>نسيت كلمة المرور؟</Text>
-
       <Button title="تسجيل الدخول" onPress={submit} />
 
       <View style={styles.dividerRow}>
