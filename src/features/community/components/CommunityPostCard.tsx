@@ -80,7 +80,6 @@ export function CommunityPostCard({
   const copy = getCommunityCopy(language);
   const likeScale = useRef(new Animated.Value(1)).current;
   const align = isRTL ? ('right' as const) : ('left' as const);
-  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
   const typeTone = getCommunityTypeTone(post.type, community);
   const meta = [post.subject, ...(post.level ?? [])].filter(Boolean) as string[];
   const ar = language === 'ar';
@@ -127,9 +126,11 @@ export function CommunityPostCard({
 
   return (
     <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.border, shadowColor: community.shadow }]}> 
-      <View style={[styles.authorRow, { flexDirection: row }]}> 
-        <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: row }]}> 
-          <View style={[styles.avatarRing, { borderColor: '#D4AF37' }]}> 
+      <View style={[styles.cardAccent, { backgroundColor: community.isDark ? '#294979' : '#DCE8F5' }]} />
+
+      <View style={[styles.authorRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+        <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+          <View style={[styles.avatarRing, { borderColor: community.primary }]}> 
             <View style={[styles.avatar, { backgroundColor: author?.avatar_url ? community.primarySoft : avatarColors.bg }]}> 
               {author?.avatar_url ? (
                 <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
@@ -145,7 +146,7 @@ export function CommunityPostCard({
             <Text numberOfLines={1} style={[styles.authorName, { color: community.text, textAlign: align }]}>
               {author?.full_name ?? '…'}
             </Text>
-            <View style={[styles.authorMetaRow, { flexDirection: row }]}> 
+            <View style={[styles.authorMetaRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
               {!!author?.subject && (
                 <Text numberOfLines={1} style={[styles.authorMeta, { color: community.textSecondary, textAlign: align }]}>
                   {author.subject}
@@ -168,13 +169,13 @@ export function CommunityPostCard({
       </View>
 
       {(showHiddenBadge || post.type) && (
-        <View style={[styles.badgesRow, { flexDirection: row }]}> 
-          <View style={[styles.typeBadge, { backgroundColor: typeTone.background, flexDirection: row }]}> 
+        <View style={[styles.badgesRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+          <View style={[styles.typeBadge, { backgroundColor: typeTone.background, flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
             <Ionicons name={communityTypeIcons[post.type]} size={12} color={typeTone.foreground} />
             <Text style={[styles.typeText, { color: typeTone.foreground }]}>{copy.types[post.type]}</Text>
           </View>
           {showHiddenBadge && (
-            <View style={[styles.hiddenBadge, { backgroundColor: `${community.danger}12`, flexDirection: row }]}> 
+            <View style={[styles.hiddenBadge, { backgroundColor: `${community.danger}12`, flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
               <Ionicons name="eye-off-outline" size={12} color={community.danger} />
               <Text style={[styles.hiddenBadgeText, { color: community.danger }]}>{copy.card.hiddenBadge}</Text>
             </View>
@@ -202,9 +203,9 @@ export function CommunityPostCard({
       )}
 
       {post.media?.type === 'pdf' && !!post.media.url && (
-        <Pressable onPress={onPress} style={[styles.pdfCard, { backgroundColor: community.surfaceRaised, borderColor: community.border, flexDirection: row }]}> 
-          <View style={[styles.pdfIcon, { backgroundColor: '#FFF7E2' }]}> 
-            <Ionicons name="document-text-outline" size={21} color="#B98000" />
+        <Pressable onPress={onPress} style={[styles.pdfCard, { backgroundColor: community.surfaceRaised, borderColor: community.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+          <View style={[styles.pdfIcon, { backgroundColor: community.isDark ? '#382B13' : '#FFF4D6' }]}> 
+            <Ionicons name="document-text-outline" size={21} color={community.isDark ? '#FFD978' : '#986700'} />
           </View>
           <View style={styles.pdfTextWrap}>
             <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>
@@ -217,7 +218,7 @@ export function CommunityPostCard({
       )}
 
       {meta.length > 0 && (
-        <View style={[styles.metaWrap, { flexDirection: row }]}> 
+        <View style={[styles.metaWrap, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
           {meta.map((item) => (
             <View key={item} style={[styles.metaChip, { backgroundColor: community.surfaceRaised }]}> 
               <Text style={[styles.metaText, { color: community.textSecondary }]}>#{item.replace(/\s+/g, '')}</Text>
@@ -228,21 +229,21 @@ export function CommunityPostCard({
 
       <View style={[styles.footerDivider, { backgroundColor: community.divider }]} />
 
-      <View style={[styles.actionsRow, { flexDirection: row }]}> 
+      <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
         <Pressable onPress={handleLike} disabled={!onToggleLike || likePending} hitSlop={10} style={styles.actionButton}>
           <Animated.View style={{ transform: [{ scale: likeScale }] }}>
-            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={24} color={liked ? '#ED4956' : community.textSecondary} />
+            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={23} color={liked ? '#E85A68' : community.textSecondary} />
           </Animated.View>
           <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.likes_count}</Text>
         </Pressable>
 
         <Pressable onPress={handleComment} hitSlop={10} style={styles.actionButton}>
-          <Ionicons name="chatbubble-outline" size={22} color={community.textSecondary} />
+          <Ionicons name="chatbubble-outline" size={21} color={community.textSecondary} />
           <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.comments_count}</Text>
         </Pressable>
 
         <Pressable onPress={handleShare} hitSlop={10} style={styles.iconOnlyButton}>
-          <Ionicons name="paper-plane-outline" size={22} color={community.textSecondary} />
+          <Ionicons name="paper-plane-outline" size={21} color={community.textSecondary} />
         </Pressable>
 
         <View style={styles.actionsSpacer} />
@@ -257,7 +258,7 @@ export function CommunityPostCard({
           hitSlop={10}
           style={styles.iconOnlyButton}
         >
-          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={23} color={saved ? '#D4AF37' : community.textSecondary} />
+          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? community.primary : community.textSecondary} />
         </Pressable>
       </View>
 
@@ -281,14 +282,15 @@ const styles = StyleSheet.create({
     paddingTop: 12,
     paddingBottom: 10,
     overflow: 'hidden',
-    shadowOpacity: 0.035,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 1
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2
   },
+  cardAccent: { position: 'absolute', top: 0, right: 22, width: 36, height: 3, borderBottomLeftRadius: 6, borderBottomRightRadius: 6 },
   authorRow: { minHeight: 48, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'space-between' },
   authorLockup: { flex: 1, minWidth: 0, alignItems: 'center', gap: 10 },
-  avatarRing: { width: 42, height: 42, borderRadius: 21, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  avatarRing: { width: 43, height: 43, borderRadius: 22, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImg: { width: 36, height: 36, borderRadius: 18 },
   avatarInitials: { fontSize: 13, fontWeight: '900' },
@@ -300,16 +302,16 @@ const styles = StyleSheet.create({
   time: { fontSize: 10.5, fontWeight: '600' },
   moreButton: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   badgesRow: { paddingHorizontal: 14, paddingTop: 7, gap: 7, flexWrap: 'wrap' },
-  typeBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
+  typeBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
   typeText: { fontWeight: '800', fontSize: 10.5 },
   hiddenBadge: { alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
   hiddenBadgeText: { fontWeight: '800', fontSize: 10 },
   contentArea: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 11, gap: 5 },
   title: { fontWeight: '900', fontSize: 16.5, lineHeight: 23 },
   body: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
-  imageShell: { marginHorizontal: 10, borderRadius: 16, overflow: 'hidden' },
+  imageShell: { marginHorizontal: 10, borderRadius: 17, overflow: 'hidden' },
   imagePreview: { width: '100%', aspectRatio: 1.18 },
-  pdfCard: { marginHorizontal: 14, borderWidth: 1, borderRadius: 15, minHeight: 66, paddingHorizontal: 11, paddingVertical: 9, alignItems: 'center', gap: 10 },
+  pdfCard: { marginHorizontal: 14, borderWidth: 1, borderRadius: 16, minHeight: 66, paddingHorizontal: 11, paddingVertical: 9, alignItems: 'center', gap: 10 },
   pdfIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   pdfTextWrap: { flex: 1, minWidth: 0 },
   pdfName: { fontWeight: '800', fontSize: 13 },
