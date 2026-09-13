@@ -16,6 +16,10 @@ const config = {
   orientation: 'portrait',
   scheme: 'almiraj',
   userInterfaceStyle: 'automatic',
+  splash: {
+    backgroundColor: '#08111F',
+    resizeMode: 'contain'
+  },
   plugins: ['expo-font'],
   ios: {
     supportsTablet: true,
