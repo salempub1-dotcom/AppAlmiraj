@@ -100,7 +100,11 @@ function CreateCommunityPostContent({ navigation }: any) {
       Alert.alert(copy.form.validationMimeImage);
       return;
     }
-    setAttachment({ kind: 'image', file: { uri: asset.uri, name: asset.fileName ?? `image-${Date.now()}.jpg`, mimeType }, previewUri: asset.uri });
+    setAttachment({
+      kind: 'image',
+      file: { uri: asset.uri, name: asset.fileName ?? `image-${Date.now()}.jpg`, mimeType },
+      previewUri: asset.uri
+    });
   };
 
   const pickPdf = async () => {
@@ -129,6 +133,7 @@ function CreateCommunityPostContent({ navigation }: any) {
     const attachmentPayload: CreateCommunityPostAttachment | undefined = attachment
       ? { kind: attachment.kind, file: attachment.file }
       : undefined;
+
     createPost.mutate(
       {
         input: {
@@ -160,15 +165,18 @@ function CreateCommunityPostContent({ navigation }: any) {
   return (
     <Screen style={styles.page}>
       <View style={styles.background} pointerEvents="none">
-        <View style={styles.heroBackdrop} />
+        <View style={styles.heroBandDark} />
+        <View style={styles.heroBandMid} />
+        <View style={styles.heroBandSoft} />
         <View style={styles.heroCircleOne} />
         <View style={styles.heroCircleTwo} />
         <View style={styles.heroCircleThree} />
-        <Ionicons name="book-outline" size={132} color="rgba(255,255,255,0.08)" style={styles.bgBook} />
-        <Ionicons name="school-outline" size={86} color="rgba(212,175,55,0.18)" style={styles.bgCap} />
-        <View style={styles.lightBackdrop} />
-        <View style={styles.lightCircleOne} />
-        <View style={styles.lightCircleTwo} />
+        <Ionicons name="book-outline" size={150} color="rgba(255,255,255,0.075)" style={styles.bgBook} />
+        <View style={styles.contentBandOne} />
+        <View style={styles.contentBandTwo} />
+        <View style={styles.contentBandThree} />
+        <View style={styles.contentCircleOne} />
+        <View style={styles.contentCircleTwo} />
       </View>
 
       <KeyboardAvoidingView
@@ -188,13 +196,9 @@ function CreateCommunityPostContent({ navigation }: any) {
               accessibilityLabel={ar ? 'رجوع' : 'Back'}
               onPress={() => navigation.goBack()}
               hitSlop={10}
-              style={({ pressed }) => [
-                styles.backButton,
-                isRTL ? styles.backButtonRTL : styles.backButtonLTR,
-                pressed && styles.backButtonPressed
-              ]}
+              style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}
             >
-              <Ionicons name={isRTL ? 'arrow-forward' : 'arrow-back'} size={26} color="#FFFFFF" />
+              <Ionicons name="arrow-back" size={27} color="#FFFFFF" />
             </Pressable>
 
             <View style={styles.heroTextWrap}>
@@ -205,20 +209,22 @@ function CreateCommunityPostContent({ navigation }: any) {
               </Text>
             </View>
 
-            <View style={[styles.heroAccent, isRTL ? styles.heroAccentRTL : styles.heroAccentLTR]}>
-              <Ionicons name="school" size={44} color="#D4AF37" />
+            <View style={styles.heroRightNote}>
+              <Ionicons name="school" size={48} color="#D4AF37" />
+              <Text style={styles.heroNoteText}>{ar ? 'معاً\nنبني تعليماً أفضل' : 'Together\nwe build better learning'}</Text>
+            </View>
+
+            <View style={styles.heroLeftNote}>
+              <Ionicons name="book-outline" size={58} color="rgba(255,255,255,0.13)" />
+              <Text style={styles.heroNoteText}>{ar ? 'تبادل الخبرات\nيصنع الفرق' : 'Sharing experience\nmakes a difference'}</Text>
+              <View style={styles.heroNoteLine} />
             </View>
           </View>
 
           <View style={styles.contentArea}>
             <View style={[styles.composerCard, { backgroundColor: community.surface }]}>
               <View style={styles.composerArea}>
-                <View
-                  style={[
-                    styles.avatarFloating,
-                    isRTL ? styles.avatarFloatingRTL : styles.avatarFloatingLTR
-                  ]}
-                >
+                <View style={styles.avatarFloating}>
                   <View style={[styles.avatar, { backgroundColor: community.primarySoft }]}> 
                     {avatarUrl
                       ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
@@ -243,7 +249,7 @@ function CreateCommunityPostContent({ navigation }: any) {
                       { color: community.text, writingDirection: isRTL ? 'rtl' : 'ltr' }
                     ]}
                   />
-                  <Text style={[styles.counter, { color: community.textMuted }]}>{body.length}/2000</Text>
+                  <Text style={[styles.counter, isRTL ? styles.counterRTL : styles.counterLTR, { color: community.textMuted }]}>{body.length}/2000</Text>
                 </View>
               </View>
 
@@ -268,7 +274,7 @@ function CreateCommunityPostContent({ navigation }: any) {
                 </View>
               )}
 
-              <View style={[styles.mediaBar, { flexDirection: row }]}> 
+              <View style={styles.mediaBar}> 
                 <AttachmentAction
                   icon="image-outline"
                   label={copy.form.addImage}
@@ -295,9 +301,7 @@ function CreateCommunityPostContent({ navigation }: any) {
                 { flexDirection: row, backgroundColor: community.surface, opacity: pressed ? 0.78 : 1 }
               ]}
             >
-              <View style={styles.detailsIcon}>
-                <Ionicons name="options-outline" size={21} color="#173F78" />
-              </View>
+              <Ionicons name={detailsOpen ? 'chevron-up' : 'chevron-back'} size={22} color={community.textMuted} />
               <View style={styles.detailsCopy}>
                 <Text style={[styles.detailsTitle, { color: community.text, textAlign: align }]}>{ar ? 'تفاصيل المنشور' : 'Post details'}</Text>
                 <Text style={[styles.detailsSubtitle, { color: community.textMuted, textAlign: align }]}>{ar ? 'النوع، العنوان، المادة والمستوى' : 'Type, title, subject and level'}</Text>
@@ -307,7 +311,9 @@ function CreateCommunityPostContent({ navigation }: any) {
                   <Text style={styles.detailsBadgeText}>{detailsCount}</Text>
                 </View>
               )}
-              <Ionicons name={detailsOpen ? 'chevron-up' : 'chevron-down'} size={21} color={community.textMuted} />
+              <View style={styles.detailsIcon}>
+                <Ionicons name="options-outline" size={22} color="#173F78" />
+              </View>
             </Pressable>
 
             {detailsOpen && (
@@ -403,8 +409,8 @@ function CreateCommunityPostContent({ navigation }: any) {
             {busy
               ? <ActivityIndicator color="#FFFFFF" size="small" />
               : <>
-                  <Ionicons name="paper-plane" size={22} color={canPublish ? '#FFFFFF' : '#8A98AA'} />
                   <Text style={[styles.publishButtonText, { color: canPublish ? '#FFFFFF' : '#8A98AA' }]}>{copy.form.publish}</Text>
+                  <Ionicons name="paper-plane" size={23} color={canPublish ? '#FFFFFF' : '#8A98AA'} />
                 </>}
           </Pressable>
         </View>
@@ -433,8 +439,8 @@ function AttachmentAction({
       onPress={onPress}
       style={({ pressed }) => [styles.attachmentAction, { backgroundColor: background, opacity: pressed ? 0.72 : 1 }]}
     >
-      <Ionicons name={icon} size={23} color={color} />
       <Text style={[styles.attachmentActionText, { color }]}>{label}</Text>
+      <Ionicons name={icon} size={24} color={color} />
     </Pressable>
   );
 }
@@ -462,217 +468,72 @@ function SimpleInput({ value, onChangeText, placeholder, align, community }: { v
 }
 
 const styles = StyleSheet.create({
-  page: {
-    padding: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    backgroundColor: '#EAF4FF'
-  },
+  page: { padding: 0, paddingHorizontal: 0, paddingVertical: 0, backgroundColor: '#EAF4FF' },
   keyboardView: { flex: 1 },
   background: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
-  heroBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 350,
-    backgroundColor: '#0B1833'
-  },
-  heroCircleOne: {
-    position: 'absolute',
-    width: 310,
-    height: 310,
-    borderRadius: 155,
-    backgroundColor: '#123C72',
-    top: -145,
-    left: -110,
-    opacity: 0.95
-  },
-  heroCircleTwo: {
-    position: 'absolute',
-    width: 255,
-    height: 255,
-    borderRadius: 128,
-    backgroundColor: '#173F78',
-    top: 105,
-    right: -135,
-    opacity: 0.72
-  },
-  heroCircleThree: {
-    position: 'absolute',
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    backgroundColor: '#255CA4',
-    top: -38,
-    right: 72,
-    opacity: 0.22
-  },
-  bgBook: {
-    position: 'absolute',
-    top: 128,
-    left: -24,
-    transform: [{ rotate: '-7deg' }]
-  },
-  bgCap: {
-    position: 'absolute',
-    top: 66,
-    right: 18,
-    transform: [{ rotate: '2deg' }]
-  },
-  lightBackdrop: {
-    position: 'absolute',
-    top: 330,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#EAF4FF'
-  },
-  lightCircleOne: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#D7EAFF',
-    top: 360,
-    left: -155,
-    opacity: 0.75
-  },
-  lightCircleTwo: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: '#CFE6FF',
-    top: 590,
-    right: -120,
-    opacity: 0.68
-  },
+
+  heroBandDark: { position: 'absolute', top: 0, left: 0, right: 0, height: 185, backgroundColor: '#0B1833' },
+  heroBandMid: { position: 'absolute', top: 185, left: 0, right: 0, height: 125, backgroundColor: '#102C57' },
+  heroBandSoft: { position: 'absolute', top: 310, left: 0, right: 0, height: 105, backgroundColor: '#17477F' },
+  heroCircleOne: { position: 'absolute', width: 330, height: 330, borderRadius: 165, backgroundColor: '#17477F', top: -155, left: -120, opacity: 0.82 },
+  heroCircleTwo: { position: 'absolute', width: 285, height: 285, borderRadius: 143, backgroundColor: '#1F5C9D', top: 80, right: -145, opacity: 0.50 },
+  heroCircleThree: { position: 'absolute', width: 190, height: 190, borderRadius: 95, backgroundColor: '#286DB4', top: -72, right: 95, opacity: 0.25 },
+  bgBook: { position: 'absolute', top: 128, left: -28, transform: [{ rotate: '-7deg' }] },
+
+  contentBandOne: { position: 'absolute', top: 415, left: 0, right: 0, height: 210, backgroundColor: '#D9ECFF' },
+  contentBandTwo: { position: 'absolute', top: 625, left: 0, right: 0, height: 330, backgroundColor: '#E8F4FF' },
+  contentBandThree: { position: 'absolute', top: 955, left: 0, right: 0, bottom: 0, backgroundColor: '#F3F8FE' },
+  contentCircleOne: { position: 'absolute', width: 320, height: 320, borderRadius: 160, backgroundColor: '#BFDFFF', top: 560, left: -170, opacity: 0.62 },
+  contentCircleTwo: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: '#CBE5FF', top: 760, right: -140, opacity: 0.60 },
+
   scroll: { flex: 1 },
   scrollContent: { paddingBottom: 28 },
-  hero: {
-    minHeight: 245,
-    paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 38,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative'
-  },
-  backButton: {
-    position: 'absolute',
-    top: 22,
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.24)',
-    backgroundColor: 'rgba(255,255,255,0.09)',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  backButtonRTL: { left: 20 },
-  backButtonLTR: { right: 20 },
+  hero: { minHeight: 355, paddingHorizontal: 22, paddingTop: 42, paddingBottom: 66, alignItems: 'center', justifyContent: 'center', position: 'relative' },
+  backButton: { position: 'absolute', top: 26, left: 20, width: 58, height: 58, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.26)', backgroundColor: 'rgba(255,255,255,0.09)', alignItems: 'center', justifyContent: 'center' },
   backButtonPressed: { backgroundColor: 'rgba(255,255,255,0.16)' },
-  heroTextWrap: { alignItems: 'center', paddingHorizontal: 62 },
-  heroTitle: { color: '#FFFFFF', fontSize: 34, fontWeight: '900', textAlign: 'center' },
-  heroLine: { width: 58, height: 5, borderRadius: 3, marginTop: 12, backgroundColor: '#D4AF37' },
-  heroSubtitle: { color: 'rgba(255,255,255,0.90)', marginTop: 13, fontSize: 15.5, fontWeight: '700', textAlign: 'center' },
-  heroAccent: { position: 'absolute', top: 26, opacity: 0.95 },
-  heroAccentRTL: { right: 22 },
-  heroAccentLTR: { left: 22 },
-  contentArea: { paddingHorizontal: 14, marginTop: -26, gap: 13 },
-  composerCard: {
-    position: 'relative',
-    overflow: 'visible',
-    borderRadius: 30,
-    padding: 14,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.12,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 9 },
-    elevation: 5
-  },
+  heroTextWrap: { alignItems: 'center', paddingHorizontal: 80, marginTop: -4 },
+  heroTitle: { color: '#FFFFFF', fontSize: 36, fontWeight: '900', textAlign: 'center' },
+  heroLine: { width: 60, height: 5, borderRadius: 3, marginTop: 13, backgroundColor: '#D4AF37' },
+  heroSubtitle: { color: 'rgba(255,255,255,0.94)', marginTop: 14, fontSize: 16, fontWeight: '700', textAlign: 'center' },
+  heroRightNote: { position: 'absolute', top: 32, right: 18, width: 105, alignItems: 'center' },
+  heroLeftNote: { position: 'absolute', left: 26, bottom: 35, width: 115, alignItems: 'center' },
+  heroNoteText: { color: 'rgba(255,255,255,0.54)', fontSize: 11.5, lineHeight: 18, textAlign: 'center', fontWeight: '600' },
+  heroNoteLine: { width: 28, height: 3, borderRadius: 2, backgroundColor: '#D4AF37', marginTop: 7 },
+
+  contentArea: { paddingHorizontal: 16, marginTop: -50, gap: 14 },
+  composerCard: { position: 'relative', overflow: 'visible', borderRadius: 31, padding: 16, shadowColor: '#123C72', shadowOpacity: 0.14, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 6 },
   composerArea: { position: 'relative', width: '100%' },
-  avatarFloating: { position: 'absolute', top: -18, zIndex: 20, elevation: 8, width: 66, height: 66 },
-  avatarFloatingRTL: { right: -2 },
-  avatarFloatingLTR: { left: -2 },
-  avatar: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    borderWidth: 3,
-    borderColor: '#D4AF37',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden'
-  },
+  avatarFloating: { position: 'absolute', top: -18, left: -2, zIndex: 20, elevation: 8, width: 70, height: 70 },
+  avatar: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, borderColor: '#D4AF37', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImage: { width: '100%', height: '100%' },
-  avatarInitial: { fontSize: 23, fontWeight: '900' },
-  onlineDot: {
-    position: 'absolute',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#75BF35',
-    borderWidth: 3,
-    borderColor: '#FFFFFF',
-    right: -1,
-    bottom: 1
-  },
-  inputShell: {
-    width: '100%',
-    minHeight: 235,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: '#DCE9F7',
-    backgroundColor: '#F8FBFF',
-    paddingHorizontal: 17,
-    paddingTop: 18,
-    paddingBottom: 34,
-    position: 'relative'
-  },
-  bodyInput: { width: '100%', minHeight: 178, fontSize: 16.8, lineHeight: 28, padding: 0 },
-  bodyInputRTL: { paddingRight: 52, paddingLeft: 0 },
-  bodyInputLTR: { paddingLeft: 52, paddingRight: 0 },
-  counter: { position: 'absolute', bottom: 11, left: 15, fontSize: 12, fontWeight: '700' },
-  imagePreviewShell: { width: '100%', marginTop: 12, borderRadius: 20, overflow: 'hidden', position: 'relative' },
+  avatarInitial: { fontSize: 24, fontWeight: '900' },
+  onlineDot: { position: 'absolute', width: 17, height: 17, borderRadius: 9, backgroundColor: '#75BF35', borderWidth: 3, borderColor: '#FFFFFF', left: -1, bottom: 1 },
+  inputShell: { width: '100%', minHeight: 255, borderRadius: 25, borderWidth: 1, borderColor: '#D9E7F5', backgroundColor: '#F8FBFF', paddingHorizontal: 18, paddingTop: 22, paddingBottom: 38, position: 'relative' },
+  bodyInput: { width: '100%', minHeight: 190, fontSize: 17.5, lineHeight: 29, padding: 0 },
+  bodyInputRTL: { paddingLeft: 54, paddingRight: 0 },
+  bodyInputLTR: { paddingLeft: 54, paddingRight: 0 },
+  counter: { position: 'absolute', bottom: 12, fontSize: 12.5, fontWeight: '700' },
+  counterRTL: { right: 16 },
+  counterLTR: { left: 16 },
+  imagePreviewShell: { width: '100%', marginTop: 13, borderRadius: 20, overflow: 'hidden', position: 'relative' },
   imagePreview: { width: '100%', aspectRatio: 1.25 },
   removeMedia: { position: 'absolute', top: 9, right: 9, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.66)', alignItems: 'center', justifyContent: 'center' },
   pdfRow: { marginTop: 12, borderWidth: 1, borderColor: '#E2ECF6', borderRadius: 16, minHeight: 62, paddingHorizontal: 10, alignItems: 'center', gap: 9, backgroundColor: '#F8FBFF' },
   pdfIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF5D8' },
   pdfName: { flex: 1, fontSize: 13, fontWeight: '700' },
-  mediaBar: { marginTop: 14, gap: 10 },
-  attachmentAction: { flex: 1, minHeight: 62, borderRadius: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, paddingHorizontal: 10 },
-  attachmentActionText: { fontSize: 14, fontWeight: '900' },
-  detailsToggle: {
-    minHeight: 82,
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    gap: 10,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.08,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3
-  },
-  detailsIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EAF3FF' },
+  mediaBar: { marginTop: 14, flexDirection: 'row', gap: 11 },
+  attachmentAction: { flex: 1, minHeight: 66, borderRadius: 21, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingHorizontal: 10 },
+  attachmentActionText: { fontSize: 14.5, fontWeight: '900' },
+
+  detailsToggle: { minHeight: 88, borderRadius: 25, paddingHorizontal: 15, alignItems: 'center', gap: 11, shadowColor: '#123C72', shadowOpacity: 0.10, shadowRadius: 17, shadowOffset: { width: 0, height: 7 }, elevation: 4 },
+  detailsIcon: { width: 50, height: 50, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#EAF3FF' },
   detailsCopy: { flex: 1, minWidth: 0 },
-  detailsTitle: { fontSize: 15.5, fontWeight: '900' },
-  detailsSubtitle: { marginTop: 4, fontSize: 12, fontWeight: '600' },
-  detailsBadge: { minWidth: 25, height: 25, borderRadius: 13, paddingHorizontal: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#D4AF37' },
+  detailsTitle: { fontSize: 16, fontWeight: '900' },
+  detailsSubtitle: { marginTop: 4, fontSize: 12.3, fontWeight: '600' },
+  detailsBadge: { minWidth: 26, height: 26, borderRadius: 13, paddingHorizontal: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#D4AF37' },
   detailsBadgeText: { color: '#0B1833', fontSize: 11.5, fontWeight: '900' },
-  detailsCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    paddingHorizontal: 14,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 2
-  },
+  detailsCard: { borderRadius: 24, overflow: 'hidden', paddingHorizontal: 14, shadowColor: '#123C72', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
+
   section: { paddingVertical: 14, gap: 9, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: '#E6EDF5' },
   sectionTitle: { fontSize: 12.5, fontWeight: '900' },
   selector: { minHeight: 50, borderRadius: 15, borderWidth: 1, borderColor: '#DEE8F3', backgroundColor: '#F8FBFF', paddingHorizontal: 12, alignItems: 'center', gap: 9 },
@@ -686,17 +547,11 @@ const styles = StyleSheet.create({
   levelWrap: { flexWrap: 'wrap', gap: 8 },
   levelChip: { minHeight: 38, borderRadius: 999, borderWidth: 1, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
   levelChipText: { fontSize: 12.5, fontWeight: '800' },
-  publishFooter: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    paddingBottom: 10,
-    backgroundColor: 'rgba(255,255,255,0.97)',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(23,63,120,0.08)'
-  },
-  publishButton: { minHeight: 62, borderRadius: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+
+  publishFooter: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10, backgroundColor: 'rgba(255,255,255,0.97)', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: 'rgba(23,63,120,0.08)' },
+  publishButton: { minHeight: 66, borderRadius: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   publishButtonEnabled: { backgroundColor: '#123C72', shadowColor: '#123C72', shadowOpacity: 0.20, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
-  publishButtonDisabled: { backgroundColor: '#E5EDF7' },
+  publishButtonDisabled: { backgroundColor: '#DDE9F6' },
   publishButtonPressed: { opacity: 0.88 },
-  publishButtonText: { fontSize: 16.5, fontWeight: '900' }
+  publishButtonText: { fontSize: 17, fontWeight: '900' }
 });
