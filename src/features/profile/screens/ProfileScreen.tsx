@@ -106,8 +106,8 @@ export function ProfileScreen({ navigation }: any) {
         <View style={styles.heroOrbTop} />
         <View style={styles.heroOrbLeft} />
         <View style={styles.heroOrbBottom} />
-        <Ionicons name="book-outline" size={142} color="rgba(132,175,224,0.10)" style={styles.heroBook} />
-        <Ionicons name="school-outline" size={104} color="rgba(132,175,224,0.09)" style={styles.heroSchool} />
+        <Ionicons name="book-outline" size={112} color="rgba(132,175,224,0.09)" style={styles.heroBook} />
+        <Ionicons name="school-outline" size={82} color="rgba(132,175,224,0.08)" style={styles.heroSchool} />
 
         <View style={[styles.heroTop, { flexDirection: row }]}>
           <View style={styles.heroHeading}>
@@ -116,7 +116,7 @@ export function ProfileScreen({ navigation }: any) {
             <Text style={styles.heroIntro}>{copy.intro}</Text>
           </View>
           <View style={styles.brandIcon}>
-            <Ionicons name="school-outline" size={24} color={GOLD} />
+            <Ionicons name="school-outline" size={21} color={GOLD} />
           </View>
         </View>
 
@@ -130,12 +130,12 @@ export function ProfileScreen({ navigation }: any) {
               </View>
             )}
             <View style={styles.cameraBadge}>
-              <Ionicons name="camera" size={16} color={NAVY} />
+              <Ionicons name="camera" size={14} color={NAVY} />
             </View>
           </Pressable>
           <Text numberOfLines={1} style={styles.name}>{fullName}</Text>
           <View style={styles.accountType}>
-            <Ionicons name="school" size={14} color={GOLD} />
+            <Ionicons name="school" size={12} color={GOLD} />
             <Text style={styles.accountTypeText}>{t('profile.teacherAccount')}</Text>
           </View>
         </View>
@@ -147,7 +147,7 @@ export function ProfileScreen({ navigation }: any) {
         </View>
 
         <Pressable onPress={() => navigation.navigate('EditProfile')} style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}>
-          <Ionicons name="create-outline" size={20} color={NAVY} />
+          <Ionicons name="create-outline" size={17} color={NAVY} />
           <Text style={styles.editText}>{t('profile.editProfile')}</Text>
         </Pressable>
       </View>
@@ -156,7 +156,7 @@ export function ProfileScreen({ navigation }: any) {
         <View style={[styles.settingsHeader, { flexDirection: row }]}>
           <Text style={[styles.settingsTitle, { color: colors.text }]}>{copy.settings}</Text>
           <View style={styles.settingsHintWrap}>
-            <Ionicons name="settings-outline" size={17} color="#A77A19" />
+            <Ionicons name="settings-outline" size={15} color="#A77A19" />
             <Text style={[styles.settingsHint, { color: colors.muted }]}>{copy.settingsHint}</Text>
           </View>
         </View>
@@ -237,7 +237,7 @@ export function ProfileScreen({ navigation }: any) {
       </View>
 
       <Pressable onPress={() => signOut()} style={({ pressed }) => [styles.logout, pressed && styles.pressed]}>
-        <Ionicons name="log-out-outline" size={24} color="#C94A4A" />
+        <Ionicons name="log-out-outline" size={21} color="#C94A4A" />
         <View style={styles.logoutCopy}>
           <Text style={styles.logoutText}>{t('profile.signOut')}</Text>
           <Text style={styles.logoutSub}>{copy.signOutText}</Text>
@@ -275,10 +275,10 @@ export function ProfileScreen({ navigation }: any) {
 function QuickChip({ icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
   return (
     <View style={styles.quickChip}>
-      <Ionicons name={icon} size={20} color={GOLD} />
+      <Ionicons name={icon} size={16} color={GOLD} />
       <View style={styles.quickChipText}>
         <Text numberOfLines={1} style={styles.quickChipTitle}>{title}</Text>
-        <Text numberOfLines={2} style={styles.quickChipSubtitle}>{subtitle}</Text>
+        <Text numberOfLines={1} style={styles.quickChipSubtitle}>{subtitle}</Text>
       </View>
     </View>
   );
@@ -287,13 +287,13 @@ function QuickChip({ icon, title, subtitle }: { icon: any; title: string; subtit
 function MenuItem({ icon, iconBg, iconColor, title, subtitle, onPress, colors, row }: any) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.item, { flexDirection: row, opacity: pressed ? 0.62 : 1 }]}>
-      <Ionicons name="chevron-back" size={19} color={colors.muted} />
+      <Ionicons name="chevron-back" size={17} color={colors.muted} />
       <View style={styles.itemCopy}>
         <Text style={[styles.itemTitle, { color: colors.text }]}>{title}</Text>
         <Text numberOfLines={1} style={[styles.itemSubtitle, { color: colors.muted }]}>{subtitle}</Text>
       </View>
       <View style={[styles.itemIcon, { backgroundColor: iconBg }]}>
-        <Ionicons name={icon} size={23} color={iconColor} />
+        <Ionicons name={icon} size={20} color={iconColor} />
       </View>
     </Pressable>
   );
@@ -303,7 +303,7 @@ function SettingItem({ icon, iconBg, iconColor, title, subtitle, value, onPress,
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.item, { flexDirection: row, opacity: pressed ? 0.62 : 1 }]}>
       <View style={styles.settingLeading}>
-        <Ionicons name="chevron-back" size={18} color={colors.muted} />
+        <Ionicons name="chevron-back" size={16} color={colors.muted} />
         <View style={[styles.valuePill, { backgroundColor: colors.background }]}>
           <Text numberOfLines={1} style={[styles.value, { color: colors.muted }]}>{value}</Text>
         </View>
@@ -313,7 +313,7 @@ function SettingItem({ icon, iconBg, iconColor, title, subtitle, value, onPress,
         <Text numberOfLines={1} style={[styles.itemSubtitle, { color: colors.muted }]}>{subtitle}</Text>
       </View>
       <View style={[styles.itemIcon, { backgroundColor: iconBg }]}>
-        <Ionicons name={icon} size={23} color={iconColor} />
+        <Ionicons name={icon} size={20} color={iconColor} />
       </View>
     </Pressable>
   );
@@ -362,69 +362,69 @@ const NAVY = '#0B1833';
 const GOLD = '#D4AF37';
 
 const styles = StyleSheet.create({
-  page: { gap: 16, paddingTop: 10, paddingBottom: 28 },
+  page: { gap: 10, paddingBottom: 12 },
   hero: {
-    minHeight: 410,
-    borderRadius: 30,
+    minHeight: 292,
+    marginHorizontal: -18,
+    borderBottomLeftRadius: 34,
+    borderBottomRightRadius: 34,
     overflow: 'hidden',
     backgroundColor: NAVY,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 20,
-    borderWidth: 1,
-    borderColor: '#24446F',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 14,
     shadowColor: '#071426',
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 5
+    shadowOpacity: 0.15,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 4
   },
-  heroOrbTop: { position: 'absolute', width: 260, height: 260, borderRadius: 130, backgroundColor: '#173F72', right: -74, top: -132, opacity: 0.78 },
-  heroOrbLeft: { position: 'absolute', width: 180, height: 180, borderRadius: 90, backgroundColor: '#1E4E86', left: -92, top: 86, opacity: 0.35 },
-  heroOrbBottom: { position: 'absolute', width: 250, height: 250, borderRadius: 125, backgroundColor: '#123663', right: -105, bottom: -150, opacity: 0.8 },
-  heroBook: { position: 'absolute', right: -24, bottom: 96, transform: [{ rotate: '-8deg' }] },
-  heroSchool: { position: 'absolute', left: -12, bottom: 122, transform: [{ rotate: '8deg' }] },
+  heroOrbTop: { position: 'absolute', width: 230, height: 230, borderRadius: 115, backgroundColor: '#173F72', right: -72, top: -130, opacity: 0.72 },
+  heroOrbLeft: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: '#1E4E86', left: -82, top: 72, opacity: 0.28 },
+  heroOrbBottom: { position: 'absolute', width: 220, height: 220, borderRadius: 110, backgroundColor: '#123663', right: -108, bottom: -150, opacity: 0.72 },
+  heroBook: { position: 'absolute', right: -20, bottom: 54, transform: [{ rotate: '-8deg' }] },
+  heroSchool: { position: 'absolute', left: -12, bottom: 78, transform: [{ rotate: '8deg' }] },
   heroTop: { justifyContent: 'space-between', alignItems: 'flex-start' },
   heroHeading: { flex: 1 },
-  heroTitle: { color: '#FFF', fontSize: 28, fontWeight: '900', textAlign: 'left' },
-  goldDash: { width: 38, height: 4, borderRadius: 3, backgroundColor: GOLD, marginTop: 7, marginBottom: 8 },
-  heroIntro: { color: '#BFCDE1', fontSize: 12.5, fontWeight: '600', maxWidth: 230, lineHeight: 19, textAlign: 'left' },
-  brandIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.14)', alignItems: 'center', justifyContent: 'center' },
-  identity: { alignItems: 'center', marginTop: -4 },
-  avatarWrap: { width: 102, height: 102, marginBottom: 10, position: 'relative' },
-  avatar: { width: 102, height: 102, borderRadius: 51, borderWidth: 4, borderColor: '#E4C75C' },
+  heroTitle: { color: '#FFF', fontSize: 24, fontWeight: '900', textAlign: 'left' },
+  goldDash: { width: 34, height: 3, borderRadius: 3, backgroundColor: GOLD, marginTop: 5, marginBottom: 5 },
+  heroIntro: { color: '#BFCDE1', fontSize: 11, fontWeight: '600', maxWidth: 235, lineHeight: 16, textAlign: 'left' },
+  brandIcon: { width: 40, height: 40, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.07)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', alignItems: 'center', justifyContent: 'center' },
+  identity: { alignItems: 'center', marginTop: -1 },
+  avatarWrap: { width: 78, height: 78, marginBottom: 4, position: 'relative' },
+  avatar: { width: 78, height: 78, borderRadius: 39, borderWidth: 3, borderColor: '#E4C75C' },
   avatarFallback: { backgroundColor: '#AFC3DB', alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: '#FFF', fontSize: 36, fontWeight: '900' },
-  cameraBadge: { position: 'absolute', left: -2, bottom: 3, width: 35, height: 35, borderRadius: 18, backgroundColor: '#E4C75C', borderWidth: 3, borderColor: NAVY, alignItems: 'center', justifyContent: 'center' },
-  name: { maxWidth: '88%', color: '#FFF', fontSize: 24, fontWeight: '900', textAlign: 'center' },
-  accountType: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 3 },
-  accountTypeText: { color: '#C5D2E2', fontSize: 13, fontWeight: '700' },
-  quickInfo: { gap: 7, marginTop: 14 },
-  quickChip: { flex: 1, minHeight: 60, borderRadius: 17, borderWidth: 1, borderColor: 'rgba(255,255,255,0.13)', backgroundColor: 'rgba(255,255,255,0.055)', paddingHorizontal: 7, paddingVertical: 8, alignItems: 'center', justifyContent: 'center', gap: 4 },
+  avatarText: { color: '#FFF', fontSize: 29, fontWeight: '900' },
+  cameraBadge: { position: 'absolute', left: -1, bottom: 1, width: 29, height: 29, borderRadius: 15, backgroundColor: '#E4C75C', borderWidth: 2.5, borderColor: NAVY, alignItems: 'center', justifyContent: 'center' },
+  name: { maxWidth: '88%', color: '#FFF', fontSize: 20, fontWeight: '900', textAlign: 'center' },
+  accountType: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 1 },
+  accountTypeText: { color: '#C5D2E2', fontSize: 11.5, fontWeight: '700' },
+  quickInfo: { gap: 6, marginTop: 8 },
+  quickChip: { flex: 1, minHeight: 43, borderRadius: 14, borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', backgroundColor: 'rgba(255,255,255,0.05)', paddingHorizontal: 5, paddingVertical: 5, alignItems: 'center', justifyContent: 'center', gap: 2 },
   quickChipText: { alignItems: 'center' },
-  quickChipTitle: { color: '#FFF', fontSize: 11, fontWeight: '900', textAlign: 'center' },
-  quickChipSubtitle: { color: '#AFC0D7', fontSize: 8.8, lineHeight: 12, fontWeight: '600', textAlign: 'center', marginTop: 1 },
-  editButton: { alignSelf: 'center', marginTop: 14, minHeight: 46, minWidth: '72%', borderRadius: 24, paddingHorizontal: 24, flexDirection: 'row', gap: 9, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E0BF50', borderWidth: 1, borderColor: '#F0D878', shadowColor: '#000', shadowOpacity: 0.14, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 3 },
-  editText: { color: NAVY, fontSize: 14.5, fontWeight: '900' },
-  settingsSection: { gap: 10 },
-  settingsHeader: { paddingHorizontal: 4, alignItems: 'center', justifyContent: 'space-between' },
-  settingsTitle: { fontSize: 19, fontWeight: '900' },
-  settingsHintWrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  settingsHint: { fontSize: 11.5, fontWeight: '600' },
-  menu: { borderWidth: 1, borderRadius: 26, overflow: 'hidden', shadowColor: '#12213B', shadowOpacity: 0.08, shadowRadius: 15, shadowOffset: { width: 0, height: 7 }, elevation: 2 },
-  item: { minHeight: 78, paddingHorizontal: 13, alignItems: 'center', gap: 11 },
+  quickChipTitle: { color: '#FFF', fontSize: 9.6, fontWeight: '900', textAlign: 'center' },
+  quickChipSubtitle: { color: '#AFC0D7', fontSize: 7.6, lineHeight: 9, fontWeight: '600', textAlign: 'center' },
+  editButton: { alignSelf: 'center', marginTop: 8, minHeight: 38, minWidth: '64%', borderRadius: 20, paddingHorizontal: 20, flexDirection: 'row', gap: 7, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E0BF50', borderWidth: 1, borderColor: '#F0D878', shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  editText: { color: NAVY, fontSize: 13, fontWeight: '900' },
+  settingsSection: { gap: 7 },
+  settingsHeader: { paddingHorizontal: 2, alignItems: 'center', justifyContent: 'space-between' },
+  settingsTitle: { fontSize: 17, fontWeight: '900' },
+  settingsHintWrap: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  settingsHint: { fontSize: 10.5, fontWeight: '600' },
+  menu: { borderWidth: 1, borderRadius: 22, overflow: 'hidden', shadowColor: '#12213B', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
+  item: { minHeight: 59, paddingHorizontal: 11, alignItems: 'center', gap: 9 },
   itemCopy: { flex: 1, minWidth: 0 },
-  itemTitle: { textAlign: 'right', fontSize: 15, fontWeight: '900' },
-  itemSubtitle: { textAlign: 'right', fontSize: 10.8, fontWeight: '600', marginTop: 3 },
-  itemIcon: { width: 48, height: 48, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  settingLeading: { flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: 96 },
-  valuePill: { minHeight: 29, maxWidth: 74, borderRadius: 15, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' },
-  value: { fontSize: 10.5, fontWeight: '800' },
-  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 14 },
-  logout: { minHeight: 70, borderRadius: 22, borderWidth: 1, borderColor: '#F0C4C4', backgroundColor: '#FFF5F5', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 12, paddingHorizontal: 18 },
+  itemTitle: { textAlign: 'right', fontSize: 14, fontWeight: '900' },
+  itemSubtitle: { textAlign: 'right', fontSize: 9.6, fontWeight: '600', marginTop: 2 },
+  itemIcon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  settingLeading: { flexDirection: 'row', alignItems: 'center', gap: 5, maxWidth: 92 },
+  valuePill: { minHeight: 25, maxWidth: 70, borderRadius: 13, paddingHorizontal: 8, alignItems: 'center', justifyContent: 'center' },
+  value: { fontSize: 9.8, fontWeight: '800' },
+  divider: { height: StyleSheet.hairlineWidth, marginHorizontal: 12 },
+  logout: { minHeight: 52, borderRadius: 18, borderWidth: 1, borderColor: '#F0C4C4', backgroundColor: '#FFF5F5', alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 9, paddingHorizontal: 15 },
   logoutCopy: { alignItems: 'flex-start' },
-  logoutText: { color: '#C94A4A', fontSize: 16, fontWeight: '900' },
-  logoutSub: { color: '#D07B7B', fontSize: 10.5, fontWeight: '600', marginTop: 2 },
+  logoutText: { color: '#C94A4A', fontSize: 14, fontWeight: '900' },
+  logoutSub: { color: '#D07B7B', fontSize: 9.4, fontWeight: '600', marginTop: 1 },
   pressed: { opacity: 0.7, transform: [{ scale: 0.992 }] },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(5,14,30,0.52)', justifyContent: 'flex-end', paddingHorizontal: 14, paddingBottom: 16 },
   sheet: { borderWidth: 1, borderRadius: 28, padding: 18, shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 18, shadowOffset: { width: 0, height: -5 }, elevation: 8 },
