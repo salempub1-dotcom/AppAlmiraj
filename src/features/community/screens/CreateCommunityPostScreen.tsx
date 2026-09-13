@@ -193,8 +193,13 @@ function CreateCommunityPostContent({ navigation }: any) {
         </View>
 
         <View style={[styles.composerCard, { backgroundColor: community.surface, borderColor: 'rgba(23,63,120,0.10)' }]}>
-          <View style={[styles.authorComposer, { flexDirection: row }]}> 
-            <View style={styles.avatarWrap}>
+          <View style={styles.composerArea}>
+            <View
+              style={[
+                styles.avatarFloating,
+                isRTL ? styles.avatarFloatingRTL : styles.avatarFloatingLTR
+              ]}
+            >
               <View style={[styles.avatar, { backgroundColor: community.primarySoft, borderColor: community.gold }]}> 
                 {avatarUrl
                   ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} />
@@ -203,44 +208,46 @@ function CreateCommunityPostContent({ navigation }: any) {
               <View style={styles.onlineDot} />
             </View>
 
-            <View style={styles.composerBody}>
-              <View style={[styles.inputShell, { backgroundColor: '#F7FAFF', borderColor: 'rgba(23,63,120,0.08)' }]}>
-                <TextInput
-                  value={body}
-                  onChangeText={setBody}
-                  placeholder={ar ? 'اكتب فكرتك، سؤالك أو تجربتك مع بقية الأساتذة...' : copy.form.bodyPlaceholder}
-                  placeholderTextColor={community.textMuted}
-                  multiline
-                  maxLength={2000}
-                  textAlign={align}
-                  textAlignVertical="top"
-                  style={[styles.bodyInput, { color: community.text, writingDirection: isRTL ? 'rtl' : 'ltr' }]}
-                />
-                <Text style={[styles.counter, { color: community.textMuted }]}>{body.length}/2000</Text>
-              </View>
-
-              {attachment?.kind === 'image' && (
-                <View style={styles.imagePreviewShell}>
-                  <Image source={{ uri: attachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
-                  <Pressable accessibilityRole="button" accessibilityLabel={ar ? 'إزالة الصورة' : 'Remove image'} onPress={() => setAttachment(null)} style={styles.removeMedia}>
-                    <Ionicons name="close" size={18} color="#FFFFFF" />
-                  </Pressable>
-                </View>
-              )}
-
-              {attachment?.kind === 'pdf' && (
-                <View style={[styles.pdfRow, { backgroundColor: '#F7FAFF', borderColor: 'rgba(23,63,120,0.10)', flexDirection: row }]}> 
-                  <View style={[styles.pdfIcon, { backgroundColor: '#FFF5D8' }]}>
-                    <Ionicons name="document-text-outline" size={21} color="#9A6A00" />
-                  </View>
-                  <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>{attachment.file.name}</Text>
-                  <Pressable accessibilityRole="button" accessibilityLabel={ar ? 'إزالة الملف' : 'Remove file'} onPress={() => setAttachment(null)} hitSlop={8}>
-                    <Ionicons name="close-circle" size={20} color={community.textMuted} />
-                  </Pressable>
-                </View>
-              )}
+            <View style={[styles.inputShell, { backgroundColor: '#F7FAFF', borderColor: 'rgba(23,63,120,0.08)' }]}>
+              <TextInput
+                value={body}
+                onChangeText={setBody}
+                placeholder={ar ? 'اكتب فكرتك، سؤالك أو تجربتك مع بقية الأساتذة...' : copy.form.bodyPlaceholder}
+                placeholderTextColor={community.textMuted}
+                multiline
+                maxLength={2000}
+                textAlign={align}
+                textAlignVertical="top"
+                style={[
+                  styles.bodyInput,
+                  isRTL ? styles.bodyInputRTL : styles.bodyInputLTR,
+                  { color: community.text, writingDirection: isRTL ? 'rtl' : 'ltr' }
+                ]}
+              />
+              <Text style={[styles.counter, { color: community.textMuted }]}>{body.length}/2000</Text>
             </View>
           </View>
+
+          {attachment?.kind === 'image' && (
+            <View style={styles.imagePreviewShell}>
+              <Image source={{ uri: attachment.previewUri }} style={styles.imagePreview} resizeMode="cover" />
+              <Pressable accessibilityRole="button" accessibilityLabel={ar ? 'إزالة الصورة' : 'Remove image'} onPress={() => setAttachment(null)} style={styles.removeMedia}>
+                <Ionicons name="close" size={18} color="#FFFFFF" />
+              </Pressable>
+            </View>
+          )}
+
+          {attachment?.kind === 'pdf' && (
+            <View style={[styles.pdfRow, { backgroundColor: '#F7FAFF', borderColor: 'rgba(23,63,120,0.10)', flexDirection: row }]}> 
+              <View style={[styles.pdfIcon, { backgroundColor: '#FFF5D8' }]}>
+                <Ionicons name="document-text-outline" size={21} color="#9A6A00" />
+              </View>
+              <Text numberOfLines={1} style={[styles.pdfName, { color: community.text, textAlign: align }]}>{attachment.file.name}</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={ar ? 'إزالة الملف' : 'Remove file'} onPress={() => setAttachment(null)} hitSlop={8}>
+                <Ionicons name="close-circle" size={20} color={community.textMuted} />
+              </Pressable>
+            </View>
+          )}
 
           <View style={[styles.mediaBar, { flexDirection: row }]}> 
             <AttachmentAction
@@ -449,21 +456,24 @@ const styles = StyleSheet.create({
   heroTitle: { fontSize: 28, fontWeight: '900' },
   heroLine: { width: 52, height: 4, borderRadius: 2, marginTop: 10 },
   heroSubtitle: { marginTop: 10, fontSize: 14.5, fontWeight: '600', textAlign: 'center' },
-  composerCard: { borderWidth: 1, borderRadius: 28, padding: 14, shadowColor: '#163D6C', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 3 },
-  authorComposer: { alignItems: 'flex-start', gap: 11 },
-  avatarWrap: { width: 58, height: 58, position: 'relative' },
-  avatar: { width: 58, height: 58, borderRadius: 29, borderWidth: 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  composerCard: { position: 'relative', overflow: 'visible', borderWidth: 1, borderRadius: 28, padding: 14, shadowColor: '#163D6C', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 7 }, elevation: 3 },
+  composerArea: { position: 'relative', width: '100%' },
+  avatarFloating: { position: 'absolute', top: -18, zIndex: 20, elevation: 8, width: 62, height: 62 },
+  avatarFloatingRTL: { right: -4 },
+  avatarFloatingLTR: { left: -4 },
+  avatar: { width: 62, height: 62, borderRadius: 31, borderWidth: 2.5, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   avatarImage: { width: '100%', height: '100%' },
   avatarInitial: { fontSize: 22, fontWeight: '900' },
   onlineDot: { position: 'absolute', width: 15, height: 15, borderRadius: 8, backgroundColor: '#75BF35', borderWidth: 3, borderColor: '#FFFFFF', right: -1, bottom: 1 },
-  composerBody: { flex: 1, minWidth: 0, gap: 12 },
-  inputShell: { minHeight: 205, borderRadius: 22, borderWidth: 1, paddingHorizontal: 14, paddingTop: 14, paddingBottom: 30, position: 'relative' },
-  bodyInput: { minHeight: 150, fontSize: 16.5, lineHeight: 27, padding: 0 },
+  inputShell: { width: '100%', minHeight: 215, borderRadius: 22, borderWidth: 1, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 30, position: 'relative' },
+  bodyInput: { width: '100%', minHeight: 160, fontSize: 16.5, lineHeight: 27, padding: 0 },
+  bodyInputRTL: { paddingRight: 48, paddingLeft: 0 },
+  bodyInputLTR: { paddingLeft: 48, paddingRight: 0 },
   counter: { position: 'absolute', bottom: 10, left: 14, fontSize: 11.5, fontWeight: '600' },
-  imagePreviewShell: { width: '100%', borderRadius: 18, overflow: 'hidden', position: 'relative' },
+  imagePreviewShell: { width: '100%', marginTop: 12, borderRadius: 18, overflow: 'hidden', position: 'relative' },
   imagePreview: { width: '100%', aspectRatio: 1.25 },
   removeMedia: { position: 'absolute', top: 9, right: 9, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(0,0,0,0.66)', alignItems: 'center', justifyContent: 'center' },
-  pdfRow: { borderWidth: 1, borderRadius: 15, minHeight: 62, paddingHorizontal: 10, alignItems: 'center', gap: 9 },
+  pdfRow: { marginTop: 12, borderWidth: 1, borderRadius: 15, minHeight: 62, paddingHorizontal: 10, alignItems: 'center', gap: 9 },
   pdfIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   pdfName: { flex: 1, fontSize: 13, fontWeight: '700' },
   mediaBar: { marginTop: 14, gap: 10 },
