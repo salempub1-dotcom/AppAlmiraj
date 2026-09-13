@@ -170,23 +170,16 @@ function CreateCommunityPostContent({ navigation }: any) {
   return (
     <View style={styles.page}>
       <View style={styles.background} pointerEvents="none">
-        <View style={styles.heroBandDark} />
-        <View style={styles.heroBandMid} />
-        <View style={styles.heroBandSoft} />
-        <View style={styles.heroCircleOne} />
-        <View style={styles.heroCircleTwo} />
-        <View style={styles.heroCircleThree} />
+        <View style={styles.heroBase} />
+        <View style={styles.heroOrbA} />
+        <View style={styles.heroOrbB} />
         <View style={styles.heroGlow} />
-        <Ionicons name="book-outline" size={168} color="rgba(255,255,255,0.07)" style={styles.bgBook} />
-        <View style={styles.goldDotOne} />
-        <View style={styles.goldDotTwo} />
-        <View style={styles.goldDotThree} />
+        <Ionicons name="book-outline" size={132} color="rgba(255,255,255,0.055)" style={styles.heroBook} />
 
-        <View style={styles.contentBase} />
-        <View style={styles.contentWashOne} />
-        <View style={styles.contentWashTwo} />
-        <View style={styles.contentCircleOne} />
-        <View style={styles.contentCircleTwo} />
+        <View style={styles.stageBase} />
+        <View style={styles.stageGlowA} />
+        <View style={styles.stageGlowB} />
+        <View style={styles.stageGlowC} />
       </View>
 
       <KeyboardAvoidingView
@@ -201,25 +194,18 @@ function CreateCommunityPostContent({ navigation }: any) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.hero}>
-            <View style={styles.heroBrandMark}>
-              <Ionicons name="school" size={39} color="#E2BB42" />
-              <Text style={styles.heroBrandText}>{ar ? 'فضاء الأستاذ' : 'Teacher Space'}</Text>
-            </View>
-
-            <View style={styles.heroTextWrap}>
+            <View style={styles.heroTitleRow}>
+              <Ionicons name="school" size={31} color="#F0C343" />
               <Text style={styles.heroTitle}>{copy.feed.newPost}</Text>
-              <View style={styles.heroLine} />
-              <Text style={styles.heroSubtitle}>
-                {ar ? 'شارك فكرة أو مورداً مع زملائك' : 'Share an idea or resource with colleagues'}
-              </Text>
             </View>
-
-            <View style={styles.heroSideNote}>
-              <Text style={styles.heroSideNoteText}>{ar ? 'معاً\nنبني تعليماً أفضل' : 'Together\nwe build better learning'}</Text>
-            </View>
+            <View style={styles.heroLine} />
+            <Text style={styles.heroSubtitle}>
+              {ar ? 'شارك فكرة أو مورداً مع زملائك' : 'Share an idea or resource with colleagues'}
+            </Text>
           </View>
 
           <View style={styles.contentArea}>
+            <View style={styles.composerHalo} pointerEvents="none" />
             <View style={[styles.composerCard, { backgroundColor: community.surface }]}>
               <View style={styles.composerArea}>
                 <View style={[styles.avatarFloating, isRTL ? styles.avatarFloatingRTL : styles.avatarFloatingLTR]}>
@@ -295,16 +281,16 @@ function CreateCommunityPostContent({ navigation }: any) {
                   icon="image-outline"
                   label={copy.form.addImage}
                   onPress={pickImage}
-                  background="#EAF3FF"
-                  color="#1D5FA7"
+                  background="#E8F2FF"
+                  color="#2564C8"
                   reverse={isRTL}
                 />
                 <AttachmentAction
                   icon="document-text-outline"
                   label={copy.form.addPdf}
                   onPress={pickPdf}
-                  background="#FFF4D4"
-                  color="#946300"
+                  background="#FFF4D9"
+                  color="#966400"
                   reverse={isRTL}
                 />
               </View>
@@ -323,12 +309,12 @@ function CreateCommunityPostContent({ navigation }: any) {
                 {
                   flexDirection: isRTL ? 'row-reverse' : 'row',
                   backgroundColor: community.surface,
-                  opacity: pressed ? 0.78 : 1
+                  opacity: pressed ? 0.82 : 1
                 }
               ]}
             >
               <View style={styles.detailsIcon}>
-                <Ionicons name="options-outline" size={23} color="#173F78" />
+                <Ionicons name="options-outline" size={22} color="#17396A" />
               </View>
               <View style={styles.detailsCopy}>
                 <Text style={[styles.detailsTitle, { color: community.text, textAlign: align }]}>
@@ -345,7 +331,7 @@ function CreateCommunityPostContent({ navigation }: any) {
               )}
               <Ionicons
                 name={detailsOpen ? 'chevron-up' : isRTL ? 'chevron-back' : 'chevron-forward'}
-                size={22}
+                size={21}
                 color={community.textMuted}
               />
             </Pressable>
@@ -514,7 +500,7 @@ function AttachmentAction({
         { backgroundColor: background, opacity: pressed ? 0.72 : 1, flexDirection: reverse ? 'row-reverse' : 'row' }
       ]}
     >
-      <Ionicons name={icon} size={24} color={color} />
+      <Ionicons name={icon} size={23} color={color} />
       <Text style={[styles.attachmentActionText, { color }]}>{label}</Text>
     </Pressable>
   );
@@ -564,283 +550,183 @@ function SimpleInput({
 }
 
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: '#EAF3FC'
-  },
+  page: { flex: 1, backgroundColor: '#2F96E5' },
   keyboardView: { flex: 1 },
-  background: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden'
-  },
+  background: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
 
-  heroBandDark: {
+  heroBase: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 165,
-    backgroundColor: '#081A3A'
+    height: 236,
+    backgroundColor: '#0B1833'
   },
-  heroBandMid: {
+  heroOrbA: {
     position: 'absolute',
-    top: 165,
-    left: 0,
-    right: 0,
-    height: 105,
-    backgroundColor: '#103A73'
+    width: 238,
+    height: 238,
+    borderRadius: 119,
+    backgroundColor: 'rgba(26,104,212,0.58)',
+    top: -142,
+    right: -72
   },
-  heroBandSoft: {
+  heroOrbB: {
     position: 'absolute',
-    top: 270,
-    left: 0,
-    right: 0,
-    height: 90,
-    backgroundColor: '#1C5EA4'
-  },
-  heroCircleOne: {
-    position: 'absolute',
-    width: 320,
-    height: 320,
-    borderRadius: 160,
-    backgroundColor: '#15549A',
-    top: -170,
-    left: -120,
-    opacity: 0.8
-  },
-  heroCircleTwo: {
-    position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#246FC0',
-    top: 65,
-    right: -165,
-    opacity: 0.42
-  },
-  heroCircleThree: {
-    position: 'absolute',
-    width: 170,
-    height: 170,
-    borderRadius: 85,
-    backgroundColor: '#3A82CA',
-    top: -58,
-    right: 80,
-    opacity: 0.21
+    width: 250,
+    height: 250,
+    borderRadius: 125,
+    backgroundColor: 'rgba(37,128,223,0.34)',
+    left: -110,
+    top: 92
   },
   heroGlow: {
     position: 'absolute',
-    width: 210,
-    height: 210,
-    borderRadius: 105,
-    backgroundColor: '#FFFFFF',
-    top: 120,
-    left: 105,
-    opacity: 0.035
+    width: 220,
+    height: 180,
+    borderRadius: 100,
+    backgroundColor: 'rgba(48,136,235,0.14)',
+    left: '29%',
+    top: -26
   },
-  bgBook: {
+  heroBook: {
     position: 'absolute',
-    top: 128,
-    right: -12,
-    transform: [{ rotate: '7deg' }]
-  },
-  goldDotOne: {
-    position: 'absolute',
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-    top: 115,
-    left: 52,
-    backgroundColor: '#D4AF37',
-    opacity: 0.65
-  },
-  goldDotTwo: {
-    position: 'absolute',
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    top: 205,
-    left: 82,
-    backgroundColor: '#D4AF37',
-    opacity: 0.55
-  },
-  goldDotThree: {
-    position: 'absolute',
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    top: 150,
-    right: 35,
-    backgroundColor: '#D4AF37',
-    opacity: 0.55
+    right: 54,
+    top: 106,
+    transform: [{ rotate: '-8deg' }]
   },
 
-  contentBase: {
+  stageBase: {
     position: 'absolute',
-    top: 360,
+    top: 236,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#EAF3FC'
+    backgroundColor: '#3F9EE8'
   },
-  contentWashOne: {
+  stageGlowA: {
     position: 'absolute',
-    top: 360,
-    left: 0,
-    right: 0,
-    height: 340,
-    backgroundColor: '#DDEEFF',
-    opacity: 0.72
+    width: 390,
+    height: 390,
+    borderRadius: 195,
+    right: -190,
+    top: 230,
+    backgroundColor: 'rgba(11,94,185,0.30)'
   },
-  contentWashTwo: {
-    position: 'absolute',
-    top: 700,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#F3F8FD',
-    opacity: 0.92
-  },
-  contentCircleOne: {
+  stageGlowB: {
     position: 'absolute',
     width: 330,
     height: 330,
     borderRadius: 165,
-    backgroundColor: '#B8DAFA',
-    top: 510,
-    left: -190,
-    opacity: 0.44
+    left: -185,
+    top: 540,
+    backgroundColor: 'rgba(198,230,255,0.48)'
   },
-  contentCircleTwo: {
+  stageGlowC: {
     position: 'absolute',
-    width: 270,
-    height: 270,
-    borderRadius: 135,
-    backgroundColor: '#C6E2FC',
-    top: 800,
-    right: -150,
-    opacity: 0.4
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    left: '22%',
+    top: 790,
+    backgroundColor: 'rgba(112,189,245,0.24)'
   },
 
   scroll: { flex: 1 },
-  scrollContent: {
-    paddingBottom: 30
-  },
+  scrollContent: { paddingBottom: 30 },
   hero: {
-    minHeight: 325,
+    minHeight: 236,
     paddingHorizontal: 22,
-    paddingTop: 24,
-    paddingBottom: 62,
+    paddingTop: 28,
+    paddingBottom: 54,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  heroTitleRow: {
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative'
-  },
-  heroBrandMark: {
-    position: 'absolute',
-    top: 22,
-    left: 18,
-    alignItems: 'center',
-    gap: 4
-  },
-  heroBrandText: {
-    color: '#E2BB42',
-    fontSize: 11.5,
-    fontWeight: '800'
-  },
-  heroTextWrap: {
-    alignItems: 'center',
-    paddingHorizontal: 58,
-    marginTop: 10
+    gap: 9
   },
   heroTitle: {
     color: '#FFFFFF',
-    fontSize: 34,
+    fontSize: 30,
     fontWeight: '900',
-    textAlign: 'center'
+    textAlign: 'center',
+    letterSpacing: -0.35
   },
   heroLine: {
-    width: 58,
-    height: 5,
+    width: 54,
+    height: 4,
     borderRadius: 3,
-    marginTop: 12,
-    backgroundColor: '#D4AF37'
+    marginTop: 11,
+    backgroundColor: '#F0C343'
   },
   heroSubtitle: {
-    color: 'rgba(255,255,255,0.94)',
-    marginTop: 13,
-    fontSize: 15.5,
-    lineHeight: 23,
+    color: '#E4EDF7',
+    marginTop: 11,
+    fontSize: 14,
+    lineHeight: 21,
     fontWeight: '700',
     textAlign: 'center'
   },
-  heroSideNote: {
-    position: 'absolute',
-    top: 28,
-    right: 17,
-    width: 90,
-    alignItems: 'center'
-  },
-  heroSideNoteText: {
-    color: 'rgba(255,255,255,0.52)',
-    fontSize: 10.5,
-    lineHeight: 17,
-    textAlign: 'center',
-    fontWeight: '600'
-  },
 
   contentArea: {
-    paddingHorizontal: 16,
-    marginTop: -46,
+    position: 'relative',
+    paddingHorizontal: 18,
+    marginTop: -36,
     gap: 14
+  },
+  composerHalo: {
+    position: 'absolute',
+    top: -7,
+    left: 12,
+    right: 12,
+    height: 420,
+    borderRadius: 34,
+    backgroundColor: 'rgba(255,197,42,0.16)'
   },
   composerCard: {
     position: 'relative',
     overflow: 'visible',
-    borderRadius: 30,
-    padding: 16,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.15,
-    shadowRadius: 22,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 7
+    borderWidth: 1.5,
+    borderColor: '#E8BE4C',
+    borderRadius: 28,
+    padding: 14,
+    shadowColor: '#114F88',
+    shadowOpacity: 0.23,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 8
   },
-  composerArea: {
-    position: 'relative',
-    width: '100%'
-  },
+  composerArea: { position: 'relative', width: '100%' },
   avatarFloating: {
     position: 'absolute',
-    top: -20,
+    top: -18,
     zIndex: 20,
     elevation: 8,
-    width: 72,
-    height: 72
+    width: 68,
+    height: 68
   },
-  avatarFloatingRTL: { right: -2 },
-  avatarFloatingLTR: { left: -2 },
+  avatarFloatingRTL: { right: -1 },
+  avatarFloatingLTR: { left: -1 },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     borderWidth: 3,
     borderColor: '#D4AF37',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden'
   },
-  avatarImage: {
-    width: '100%',
-    height: '100%'
-  },
-  avatarInitial: {
-    fontSize: 24,
-    fontWeight: '900'
-  },
+  avatarImage: { width: '100%', height: '100%' },
+  avatarInitial: { fontSize: 23, fontWeight: '900' },
   onlineDot: {
     position: 'absolute',
-    width: 17,
-    height: 17,
-    borderRadius: 9,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: '#75BF35',
     borderWidth: 3,
     borderColor: '#FFFFFF',
@@ -850,39 +736,29 @@ const styles = StyleSheet.create({
   onlineDotLTR: { left: -1 },
   inputShell: {
     width: '100%',
-    minHeight: 252,
+    minHeight: 260,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#D7E5F3',
     backgroundColor: '#F8FBFF',
-    paddingHorizontal: 18,
-    paddingTop: 24,
+    paddingHorizontal: 17,
+    paddingTop: 22,
     paddingBottom: 38,
     position: 'relative'
   },
   bodyInput: {
     width: '100%',
-    minHeight: 185,
-    fontSize: 17,
-    lineHeight: 28,
+    minHeight: 192,
+    fontSize: 16.5,
+    lineHeight: 27,
     padding: 0
   },
-  bodyInputRTL: {
-    paddingRight: 56,
-    paddingLeft: 0
-  },
-  bodyInputLTR: {
-    paddingLeft: 56,
-    paddingRight: 0
-  },
-  counter: {
-    position: 'absolute',
-    bottom: 12,
-    fontSize: 12.5,
-    fontWeight: '700'
-  },
+  bodyInputRTL: { paddingRight: 52, paddingLeft: 0 },
+  bodyInputLTR: { paddingLeft: 52, paddingRight: 0 },
+  counter: { position: 'absolute', bottom: 12, fontSize: 12.5, fontWeight: '700' },
   counterRTL: { left: 16 },
   counterLTR: { right: 16 },
+
   imagePreviewShell: {
     width: '100%',
     marginTop: 13,
@@ -890,10 +766,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative'
   },
-  imagePreview: {
-    width: '100%',
-    aspectRatio: 1.25
-  },
+  imagePreview: { width: '100%', aspectRatio: 1.25 },
   removeMedia: {
     position: 'absolute',
     top: 9,
@@ -924,67 +797,44 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFF5D8'
   },
-  pdfName: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: '700'
-  },
-  mediaBar: {
-    marginTop: 14,
-    gap: 11
-  },
+  pdfName: { flex: 1, fontSize: 13, fontWeight: '700' },
+  mediaBar: { marginTop: 14, gap: 11 },
   attachmentAction: {
     flex: 1,
-    minHeight: 66,
+    minHeight: 64,
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    paddingHorizontal: 10,
-    shadowColor: '#113E79',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 1
+    gap: 9,
+    paddingHorizontal: 10
   },
-  attachmentActionText: {
-    fontSize: 14.5,
-    fontWeight: '900'
-  },
+  attachmentActionText: { fontSize: 14, fontWeight: '900' },
 
   detailsToggle: {
-    minHeight: 90,
-    borderRadius: 25,
-    paddingHorizontal: 15,
+    minHeight: 88,
+    borderRadius: 24,
+    paddingHorizontal: 14,
     alignItems: 'center',
-    gap: 11,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.1,
-    shadowRadius: 17,
-    shadowOffset: { width: 0, height: 7 },
-    elevation: 4
+    gap: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(216,230,245,0.92)',
+    shadowColor: '#114F88',
+    shadowOpacity: 0.2,
+    shadowRadius: 13,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5
   },
   detailsIcon: {
-    width: 52,
-    height: 52,
+    width: 50,
+    height: 50,
     borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EAF3FF'
+    backgroundColor: '#E8F2FF'
   },
-  detailsCopy: {
-    flex: 1,
-    minWidth: 0
-  },
-  detailsTitle: {
-    fontSize: 16,
-    fontWeight: '900'
-  },
-  detailsSubtitle: {
-    marginTop: 4,
-    fontSize: 12.3,
-    fontWeight: '600'
-  },
+  detailsCopy: { flex: 1, minWidth: 0 },
+  detailsTitle: { fontSize: 16, fontWeight: '900' },
+  detailsSubtitle: { marginTop: 4, fontSize: 12.3, fontWeight: '600' },
   detailsBadge: {
     minWidth: 26,
     height: 26,
@@ -994,20 +844,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#D4AF37'
   },
-  detailsBadgeText: {
-    color: '#0B1833',
-    fontSize: 11.5,
-    fontWeight: '900'
-  },
+  detailsBadgeText: { color: '#0B1833', fontSize: 11.5, fontWeight: '900' },
   detailsCard: {
     borderRadius: 24,
     overflow: 'hidden',
     paddingHorizontal: 14,
-    shadowColor: '#123C72',
-    shadowOpacity: 0.07,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 2
+    borderWidth: 1,
+    borderColor: 'rgba(216,230,245,0.92)',
+    shadowColor: '#114F88',
+    shadowOpacity: 0.18,
+    shadowRadius: 13,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 4
   },
 
   section: {
@@ -1016,10 +864,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E6EDF5'
   },
-  sectionTitle: {
-    fontSize: 12.5,
-    fontWeight: '900'
-  },
+  sectionTitle: { fontSize: 12.5, fontWeight: '900' },
   selector: {
     minHeight: 50,
     borderRadius: 15,
@@ -1030,23 +875,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 9
   },
-  selectorText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '700'
-  },
-  options: {
-    borderWidth: 1,
-    borderColor: '#DEE8F3',
-    borderRadius: 15,
-    overflow: 'hidden'
-  },
-  option: {
-    minHeight: 46,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    gap: 9
-  },
+  selectorText: { flex: 1, fontSize: 14, fontWeight: '700' },
+  options: { borderWidth: 1, borderColor: '#DEE8F3', borderRadius: 15, overflow: 'hidden' },
+  option: { minHeight: 46, paddingHorizontal: 12, alignItems: 'center', gap: 9 },
   simpleInput: {
     minHeight: 50,
     borderWidth: 1,
@@ -1066,14 +897,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 12
   },
-  stageChipText: {
-    fontSize: 13,
-    fontWeight: '800'
-  },
-  levelWrap: {
-    flexWrap: 'wrap',
-    gap: 8
-  },
+  stageChipText: { fontSize: 13, fontWeight: '800' },
+  levelWrap: { flexWrap: 'wrap', gap: 8 },
   levelChip: {
     minHeight: 38,
     borderRadius: 999,
@@ -1082,10 +907,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  levelChipText: {
-    fontSize: 12.5,
-    fontWeight: '800'
-  },
+  levelChipText: { fontSize: 12.5, fontWeight: '800' },
 
   publishFooter: {
     paddingHorizontal: 16,
@@ -1104,21 +926,14 @@ const styles = StyleSheet.create({
     gap: 10
   },
   publishButtonEnabled: {
-    backgroundColor: '#123C72',
-    shadowColor: '#123C72',
-    shadowOpacity: 0.22,
-    shadowRadius: 11,
+    backgroundColor: '#17396A',
+    shadowColor: '#17396A',
+    shadowOpacity: 0.23,
+    shadowRadius: 10,
     shadowOffset: { width: 0, height: 5 },
-    elevation: 3
+    elevation: 4
   },
-  publishButtonDisabled: {
-    backgroundColor: '#DDE9F6'
-  },
-  publishButtonPressed: {
-    opacity: 0.88
-  },
-  publishButtonText: {
-    fontSize: 17,
-    fontWeight: '900'
-  }
+  publishButtonDisabled: { backgroundColor: '#DDE9F6' },
+  publishButtonPressed: { opacity: 0.88 },
+  publishButtonText: { fontSize: 17, fontWeight: '900' }
 });
