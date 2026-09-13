@@ -6,6 +6,9 @@ import { useTheme } from '../context/ThemeProvider';
 import type { Product } from '../repositories/productRepository';
 import { ui } from '../theme/ui';
 
+const STORE_GOLD = '#D4AF37';
+const STORE_NAVY = '#0B1833';
+
 export function ProductCard({ product, onPress }: { product: Product; onPress: () => void }) {
   const { colors } = useTheme();
   const cart = useCart();
@@ -26,7 +29,7 @@ export function ProductCard({ product, onPress }: { product: Product; onPress: (
     >
       <View style={[styles.imageWrap, { backgroundColor: colors.surface }]}>
         {image ? <Image source={{ uri: image }} style={styles.image} resizeMode="cover" /> : <Ionicons name="image-outline" size={29} color={colors.muted} />}
-        {!!product.badge && <Text style={[styles.badge, { backgroundColor: colors.primary, color: colors.onPrimary }]}>{product.badge.trim()}</Text>}
+        {!!product.badge && <Text style={[styles.badge, { backgroundColor: STORE_GOLD, color: STORE_NAVY }]}>{product.badge.trim()}</Text>}
       </View>
 
       <View style={styles.copy}>
@@ -37,9 +40,9 @@ export function ProductCard({ product, onPress }: { product: Product; onPress: (
             accessibilityRole="button"
             accessibilityLabel={`${language === 'ar' ? 'أضف إلى السلة' : 'Add to cart'}: ${product.name}`}
             onPress={(event) => { event.stopPropagation(); cart.add(product); }}
-            style={({ pressed }) => [styles.add, { backgroundColor: colors.primary }, pressed && styles.addPressed]}
+            style={({ pressed }) => [styles.add, pressed && styles.addPressed]}
           >
-            <Ionicons name="add" size={21} color={colors.onPrimary} />
+            <Ionicons name="add" size={21} color={STORE_NAVY} />
           </Pressable>
           <Text style={[styles.price, { color: colors.text }]}>{product.price.toLocaleString('fr-DZ')} {language === 'ar' ? 'دج' : 'DZD'}</Text>
         </View>
@@ -59,6 +62,6 @@ const styles = StyleSheet.create({
   meta: { fontSize: 11, fontWeight: '600' },
   bottomRow: { flexWrap: 'wrap', gap: 6, justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   price: { fontWeight: '900', fontSize: 13.5, flexShrink: 1 },
-  add: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
+  add: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: STORE_GOLD },
   addPressed: { opacity: 0.82, transform: [{ scale: 0.94 }] }
 });
