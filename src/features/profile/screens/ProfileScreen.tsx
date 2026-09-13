@@ -28,7 +28,7 @@ export function ProfileScreen({ navigation }: any) {
 
   const profile = profileResult?.data;
   const fullName = profile?.full_name?.trim?.() || session?.user.user_metadata?.full_name?.trim?.() || session?.user.email?.split('@')[0] || '';
-  const avatarUrl = profile?.avatar_url || session?.user.user_metadata?.avatar_url || null;
+  const avatarUrl = profile?.avatar_url || null;
   const subject = profile?.subject?.trim?.() || t('profile.teacherAccount');
   const initial = fullName ? fullName[0]?.toUpperCase() : 'أ';
   const appearance = preference === 'dark' ? t('profile.dark') : preference === 'light' ? t('profile.light') : t('profile.system');
@@ -42,8 +42,7 @@ export function ProfileScreen({ navigation }: any) {
   const chooseAppearance = () => Alert.alert(t('profile.appearance'), t('profile.appearanceText'), [
     { text: t('profile.system'), onPress: () => void setPreference('system') },
     { text: t('profile.light'), onPress: () => void setPreference('light') },
-    { text: t('profile.dark'), onPress: () => void setPreference('dark') },
-    { text: language === 'ar' ? 'إلغاء' : 'Cancel', style: 'cancel' }
+    { text: t('profile.dark'), onPress: () => void setPreference('dark') }
   ]);
 
   if (isGuest) {
