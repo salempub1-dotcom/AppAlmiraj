@@ -168,7 +168,8 @@ function CommunityFeedList({ navigation }: any) {
       >
         <View style={styles.composerGlowTop} />
         <View style={styles.composerGoldShape} />
-        <View style={[styles.composerMainRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+
+        <View style={[styles.composerTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
           <View style={styles.composerAvatarOuter}>
             <View style={styles.composerAvatarInner}>
               <Ionicons name="person" size={25} color="#0E2B58" />
@@ -176,35 +177,36 @@ function CommunityFeedList({ navigation }: any) {
             <View style={styles.onlineDot} />
           </View>
 
-          <View style={styles.composerCenter}>
-            <View style={styles.composerPromptBox}>
-              <Text numberOfLines={2} style={[styles.composerPrompt, { textAlign: align }]}>
-                {social.composerPrompt}
-              </Text>
-            </View>
+          <View style={styles.composerPromptBox}>
+            <Text numberOfLines={2} style={[styles.composerPrompt, { textAlign: align }]}>
+              {social.composerPrompt}
+            </Text>
+          </View>
 
-            <View style={[styles.quickKinds, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <View style={[styles.quickKind, styles.quickKindImage]}>
-                <Ionicons name="image-outline" size={18} color="#2564C8" />
-                <Text style={[styles.quickKindText, { color: '#2564C8' }]}>{language === 'ar' ? 'صورة' : 'Photo'}</Text>
-              </View>
-              <View style={[styles.quickKind, styles.quickKindQuestion]}>
-                <Ionicons name="help-circle-outline" size={18} color="#7447D4" />
-                <Text style={[styles.quickKindText, { color: '#7447D4' }]}>{language === 'ar' ? 'سؤال' : 'Question'}</Text>
-              </View>
-              <View style={[styles.quickKind, styles.quickKindFile]}>
-                <Ionicons name="document-text-outline" size={18} color="#966400" />
-                <Text style={[styles.quickKindText, { color: '#966400' }]}>{language === 'ar' ? 'ملف' : 'File'}</Text>
-              </View>
+          <View style={styles.publishButtonOuter}>
+            <View style={styles.publishButton}>
+              <Ionicons name="paper-plane" size={26} color="#FFFFFF" />
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.composerBottomRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+          <View style={[styles.quickKinds, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.quickKind, styles.quickKindImage]}>
+              <Ionicons name="image-outline" size={18} color="#2564C8" />
+              <Text style={[styles.quickKindText, { color: '#2564C8' }]}>{language === 'ar' ? 'صورة' : 'Photo'}</Text>
+            </View>
+            <View style={[styles.quickKind, styles.quickKindQuestion]}>
+              <Ionicons name="help-circle-outline" size={18} color="#7447D4" />
+              <Text style={[styles.quickKindText, { color: '#7447D4' }]}>{language === 'ar' ? 'سؤال' : 'Question'}</Text>
+            </View>
+            <View style={[styles.quickKind, styles.quickKindFile]}>
+              <Ionicons name="document-text-outline" size={18} color="#966400" />
+              <Text style={[styles.quickKindText, { color: '#966400' }]}>{language === 'ar' ? 'ملف' : 'File'}</Text>
             </View>
           </View>
 
-          <View style={styles.publishColumn}>
-            <View style={styles.publishButtonOuter}>
-              <View style={styles.publishButton}>
-                <Ionicons name={isRTL ? 'paper-plane' : 'paper-plane-outline'} size={26} color="#FFFFFF" />
-              </View>
-            </View>
+          <View style={styles.composerFooterMini}>
             <Text numberOfLines={2} style={[styles.composerFooterCopy, { textAlign: align }]}>{headerSideCopy.footer}</Text>
             <View style={styles.composerFooterAccent} />
           </View>
@@ -361,26 +363,26 @@ const styles = StyleSheet.create({
   spaceTitle: { color: '#FFFFFF', fontSize: 27, fontWeight: '900', letterSpacing: -0.35, maxWidth: '78%' },
   spaceSubtitle: { color: '#D6E0EC', fontSize: 12.5, fontWeight: '700', marginTop: 7, textAlign: 'center' },
   headerIcon: { width: 48, height: 48, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.09)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)' },
-  composerCard: { marginHorizontal: 13, marginTop: -31, borderWidth: 1.5, borderColor: '#E3BC4D', borderRadius: 28, minHeight: 168, paddingHorizontal: 14, paddingVertical: 15, backgroundColor: '#FFFDF7', overflow: 'hidden', shadowOpacity: 0.19, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 7 },
+  composerCard: { marginHorizontal: 13, marginTop: -31, borderWidth: 1.5, borderColor: '#E3BC4D', borderRadius: 28, minHeight: 184, paddingHorizontal: 14, paddingVertical: 15, backgroundColor: '#FFFDF7', overflow: 'hidden', shadowOpacity: 0.19, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 7, gap: 12 },
   composerGlowTop: { position: 'absolute', top: -38, left: 68, right: 28, height: 98, borderRadius: 50, backgroundColor: 'rgba(232,244,255,0.72)' },
   composerGoldShape: { position: 'absolute', width: 160, height: 82, borderRadius: 82, left: -58, bottom: -40, backgroundColor: 'rgba(244,205,91,0.22)', transform: [{ rotate: '12deg' }] },
-  composerMainRow: { flex: 1, alignItems: 'center', gap: 12 },
+  composerTopRow: { alignItems: 'center', gap: 10 },
   composerAvatarOuter: { width: 58, height: 58, borderRadius: 30, borderWidth: 2, borderColor: '#D8E8FB', backgroundColor: '#F7FBFF', alignItems: 'center', justifyContent: 'center' },
   composerAvatarInner: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#E8F1FD', alignItems: 'center', justifyContent: 'center' },
   onlineDot: { position: 'absolute', width: 15, height: 15, borderRadius: 8, backgroundColor: '#7ABD3A', borderWidth: 2, borderColor: '#FFFFFF', right: -1, bottom: 1 },
-  composerCenter: { flex: 1, minWidth: 0, gap: 10 },
-  composerPromptBox: { minHeight: 68, borderRadius: 23, paddingHorizontal: 16, paddingVertical: 13, justifyContent: 'center', backgroundColor: '#F4F8FD', borderWidth: 1, borderColor: '#E2EAF5', shadowColor: '#B4C8DD', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
+  composerPromptBox: { flex: 1, minHeight: 72, borderRadius: 23, paddingHorizontal: 16, paddingVertical: 13, justifyContent: 'center', backgroundColor: '#F4F8FD', borderWidth: 1, borderColor: '#E2EAF5', shadowColor: '#B4C8DD', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 1 },
   composerPrompt: { color: '#334C6D', fontSize: 15.5, lineHeight: 23, fontWeight: '800' },
-  quickKinds: { gap: 7, flexWrap: 'wrap' },
-  quickKind: { flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8, minHeight: 38 },
+  publishButtonOuter: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, borderColor: '#E7B837', padding: 4, backgroundColor: '#FFF7DE', alignItems: 'center', justifyContent: 'center' },
+  publishButton: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#17396A', alignItems: 'center', justifyContent: 'center', shadowColor: '#17396A', shadowOpacity: 0.24, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  composerBottomRow: { alignItems: 'center', gap: 10 },
+  quickKinds: { flex: 1, gap: 7, alignItems: 'center', justifyContent: 'center' },
+  quickKind: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 8, minHeight: 38, flex: 1 },
   quickKindImage: { backgroundColor: '#E8F2FF' },
   quickKindQuestion: { backgroundColor: '#F2ECFF' },
   quickKindFile: { backgroundColor: '#FFF4D9' },
-  quickKindText: { fontSize: 11.5, fontWeight: '900' },
-  publishColumn: { width: 74, alignItems: 'center', justifyContent: 'center', gap: 5 },
-  publishButtonOuter: { width: 66, height: 66, borderRadius: 33, borderWidth: 2, borderColor: '#E7B837', padding: 4, backgroundColor: '#FFF7DE', alignItems: 'center', justifyContent: 'center' },
-  publishButton: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#17396A', alignItems: 'center', justifyContent: 'center', shadowColor: '#17396A', shadowOpacity: 0.24, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
-  composerFooterCopy: { color: '#29405F', fontSize: 8.2, lineHeight: 11, fontWeight: '800', width: 72 },
+  quickKindText: { fontSize: 11, fontWeight: '900' },
+  composerFooterMini: { width: 78, alignItems: 'center', gap: 4 },
+  composerFooterCopy: { color: '#29405F', fontSize: 8.2, lineHeight: 11, fontWeight: '800', width: 76 },
   composerFooterAccent: { width: 34, height: 2, borderRadius: 99, backgroundColor: '#E2AA1E' },
   filtersWrap: { paddingTop: 13, paddingBottom: 9, backgroundColor: '#EAF4FF' },
   filtersContent: { paddingHorizontal: 13, gap: 9 },
