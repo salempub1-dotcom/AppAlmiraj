@@ -51,7 +51,6 @@ function CommunityFeedList({ navigation }: any) {
   const copy = getCommunityCopy(language);
   const social = getCommunitySocialCopy(language);
   const align = isRTL ? ('right' as const) : ('left' as const);
-  const row = isRTL ? ('row-reverse' as const) : ('row' as const);
   const [activeFilter, setActiveFilter] = useState<FeedFilter>('all');
 
   const feed = useCommunityFeed();
@@ -111,23 +110,30 @@ function CommunityFeedList({ navigation }: any) {
 
   const header = (
     <View style={styles.header}>
-      <View style={[styles.topBar, { backgroundColor: community.surface, borderBottomColor: community.divider }]}> 
-        <Pressable onPress={() => navigation.navigate('SavedCommunityPosts')} style={[styles.headerIcon, { backgroundColor: community.surfaceRaised }]}>
-          <Ionicons name="bookmark-outline" size={20} color={community.text} />
-        </Pressable>
+      <View style={styles.hero}>
+        <View style={styles.heroOrbA} />
+        <View style={styles.heroOrbB} />
+        <Ionicons name="book-outline" size={84} color="rgba(255,255,255,0.045)" style={styles.heroBook} />
+        <Ionicons name="school-outline" size={64} color="rgba(229,201,106,0.07)" style={styles.heroSchool} />
 
-        <View style={styles.brandLockup}>
-          <Text style={[styles.spaceTitle, { color: community.text }]}>{copy.feed.title}</Text>
-          <View style={styles.titleAccent} />
+        <View style={styles.topBar}>
+          <Pressable onPress={() => navigation.navigate('SavedCommunityPosts')} style={styles.headerIcon}>
+            <Ionicons name="bookmark-outline" size={19} color="#FFFFFF" />
+          </Pressable>
+
+          <View style={styles.brandLockup}>
+            <Text style={styles.spaceTitle}>{copy.feed.title}</Text>
+            <View style={styles.titleAccent} />
+          </View>
+
+          <Pressable onPress={openComposer} style={styles.headerIcon}>
+            <Ionicons name="add" size={22} color="#FFFFFF" />
+          </Pressable>
         </View>
 
-        <Pressable onPress={openComposer} style={[styles.headerIcon, { backgroundColor: community.surfaceRaised }]}>
-          <Ionicons name="add" size={23} color={community.text} />
-        </Pressable>
-      </View>
-
-      <View style={[styles.welcomeStrip, { backgroundColor: community.background }]}> 
-        <Text style={[styles.spaceSubtitle, { color: community.textMuted, textAlign: align }]}>{copy.feed.subtitle}</Text>
+        <View style={styles.welcomeStrip}>
+          <Text style={[styles.spaceSubtitle, { textAlign: align }]}>{copy.feed.subtitle}</Text>
+        </View>
       </View>
 
       <Pressable
@@ -137,33 +143,34 @@ function CommunityFeedList({ navigation }: any) {
           {
             backgroundColor: community.surface,
             borderColor: community.border,
-            opacity: pressed ? 0.88 : 1,
-            flexDirection: row
+            shadowColor: community.shadow,
+            opacity: pressed ? 0.9 : 1,
+            flexDirection: isRTL ? 'row-reverse' : 'row'
           }
         ]}
       >
-        <View style={styles.composerAvatarRing}>
+        <View style={[styles.composerAvatarRing, { borderColor: community.primary }]}> 
           <View style={[styles.composerAvatar, { backgroundColor: community.primarySoft }]}> 
-            <Ionicons name="person" size={18} color={community.primaryStrong} />
+            <Ionicons name="school" size={18} color={community.primaryStrong} />
           </View>
         </View>
         <View style={styles.composerTextWrap}>
           <Text numberOfLines={1} style={[styles.composerPrompt, { color: community.textSecondary, textAlign: align }]}>
             {social.composerPrompt}
           </Text>
-          <View style={[styles.quickKinds, { flexDirection: row }]}> 
-            <View style={[styles.quickKind, { backgroundColor: '#EEF4FF' }]}><Ionicons name="image-outline" size={13} color="#356FE5" /><Text style={styles.quickKindText}>صورة</Text></View>
-            <View style={[styles.quickKind, { backgroundColor: '#F4F0FF' }]}><Ionicons name="help-circle-outline" size={13} color="#7650C8" /><Text style={styles.quickKindText}>سؤال</Text></View>
-            <View style={[styles.quickKind, { backgroundColor: '#FFF6E5' }]}><Ionicons name="document-text-outline" size={13} color="#A86E00" /><Text style={styles.quickKindText}>ملف</Text></View>
+          <View style={[styles.quickKinds, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+            <View style={[styles.quickKind, { backgroundColor: community.isDark ? '#172A49' : '#EAF1FF' }]}><Ionicons name="image-outline" size={13} color={community.isDark ? '#9AC1FF' : '#245B9B'} /><Text style={[styles.quickKindText, { color: community.isDark ? '#B9D2FF' : '#365A87' }]}>صورة</Text></View>
+            <View style={[styles.quickKind, { backgroundColor: community.isDark ? '#2A2040' : '#F2EEFF' }]}><Ionicons name="help-circle-outline" size={13} color={community.isDark ? '#D5C7FF' : '#7650C8'} /><Text style={[styles.quickKindText, { color: community.isDark ? '#D5C7FF' : '#7650C8' }]}>سؤال</Text></View>
+            <View style={[styles.quickKind, { backgroundColor: community.isDark ? '#382B13' : '#FFF4D6' }]}><Ionicons name="document-text-outline" size={13} color={community.isDark ? '#FFD978' : '#986700'} /><Text style={[styles.quickKindText, { color: community.isDark ? '#FFD978' : '#986700' }]}>ملف</Text></View>
           </View>
         </View>
-        <View style={[styles.composeArrow, { backgroundColor: '#0B1833' }]}>
+        <View style={[styles.composeArrow, { backgroundColor: community.isDark ? '#203B66' : '#1E3A66' }]}>
           <Ionicons name={isRTL ? 'arrow-back' : 'arrow-forward'} size={16} color="#FFFFFF" />
         </View>
       </Pressable>
 
       <View style={styles.filtersWrap}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.filtersContent, { flexDirection: row }]}> 
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.filtersContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
           {FEED_FILTERS.map((filter) => {
             const active = filter === activeFilter;
             return (
@@ -175,8 +182,8 @@ function CommunityFeedList({ navigation }: any) {
                 style={({ pressed }) => [
                   styles.filterChip,
                   {
-                    backgroundColor: active ? '#0B1833' : community.surface,
-                    borderColor: active ? '#0B1833' : community.border,
+                    backgroundColor: active ? (community.isDark ? '#294979' : '#1E3A66') : community.surface,
+                    borderColor: active ? 'transparent' : community.border,
                     opacity: pressed ? 0.78 : 1
                   }
                 ]}
@@ -217,12 +224,12 @@ function CommunityFeedList({ navigation }: any) {
         ListHeaderComponent={header}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={feed.isRefetching && !feed.isFetchingNextPage} onRefresh={() => feed.refetch()} tintColor="#0B1833" />}
+        refreshControl={<RefreshControl refreshing={feed.isRefetching && !feed.isFetchingNextPage} onRefresh={() => feed.refetch()} tintColor={community.primary} />}
         onEndReachedThreshold={0.45}
         onEndReached={() => { if (feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage(); }}
         ListEmptyComponent={
           <View style={[styles.emptyCard, { backgroundColor: community.surface, borderColor: community.border }]}> 
-            <View style={[styles.stateIcon, { backgroundColor: '#FFF7E2' }]}><Ionicons name="chatbubbles-outline" size={28} color="#B98000" /></View>
+            <View style={[styles.stateIcon, { backgroundColor: community.primarySoft }]}><Ionicons name="chatbubbles-outline" size={28} color={community.primaryStrong} /></View>
             <Text style={[styles.stateTitle, { color: community.text, textAlign: 'center' }]}>{copy.feed.emptyTitle}</Text>
             <Text style={[styles.stateText, { color: community.textSecondary, textAlign: 'center' }]}>{copy.feed.emptyText}</Text>
             <Pressable onPress={openComposer} style={styles.emptyCta}><Ionicons name="add" size={18} color="#FFFFFF" /><Text style={styles.emptyCtaText}>{copy.feed.newPost}</Text></Pressable>
@@ -257,7 +264,7 @@ function CommunityFeedList({ navigation }: any) {
             />
           );
         }}
-        ListFooterComponent={feed.isFetchingNextPage ? <View style={styles.footerLoading}><ActivityIndicator color="#0B1833" /><Text style={{ color: community.textMuted, fontSize: 12 }}>{copy.feed.loadingMore}</Text></View> : <View style={{ height: 28 }} />}
+        ListFooterComponent={feed.isFetchingNextPage ? <View style={styles.footerLoading}><ActivityIndicator color={community.primary} /><Text style={{ color: community.textMuted, fontSize: 12 }}>{copy.feed.loadingMore}</Text></View> : <View style={{ height: 28 }} />}
       />
     </Screen>
   );
@@ -266,10 +273,10 @@ function CommunityFeedList({ navigation }: any) {
 function FeedSkeleton({ community }: { community: ReturnType<typeof getCommunityTheme> }) {
   return (
     <View style={{ flex: 1 }}>
-      <View style={[styles.skeletonTop, { backgroundColor: community.surface, borderBottomColor: community.divider }]}> 
-        <View style={[styles.skeletonIcon, { backgroundColor: community.surfaceRaised }]} />
-        <View style={[styles.skeletonTitle, { backgroundColor: community.surfaceRaised }]} />
-        <View style={[styles.skeletonIcon, { backgroundColor: community.surfaceRaised }]} />
+      <View style={styles.skeletonHero}>
+        <View style={styles.skeletonIconDark} />
+        <View style={styles.skeletonTitleDark} />
+        <View style={styles.skeletonIconDark} />
       </View>
       {[0, 1].map((item) => (
         <View key={item} style={[styles.skeletonPost, { backgroundColor: community.surface, borderColor: community.border }]}> 
@@ -288,39 +295,44 @@ const styles = StyleSheet.create({
   loadingPage: { flex: 1, padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listContent: { paddingBottom: 0 },
-  header: { width: '100%', paddingBottom: 3 },
-  topBar: { minHeight: 58, paddingHorizontal: 14, borderBottomWidth: StyleSheet.hairlineWidth, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' },
+  header: { width: '100%', paddingBottom: 4 },
+  hero: { minHeight: 126, backgroundColor: '#0B1833', overflow: 'hidden', paddingBottom: 10 },
+  heroOrbA: { position: 'absolute', width: 170, height: 170, borderRadius: 85, backgroundColor: 'rgba(30,58,102,0.52)', top: -95, left: -45 },
+  heroOrbB: { position: 'absolute', width: 190, height: 190, borderRadius: 95, backgroundColor: 'rgba(45,63,115,0.38)', right: -75, bottom: -115 },
+  heroBook: { position: 'absolute', left: 20, bottom: -20, transform: [{ rotate: '-7deg' }] },
+  heroSchool: { position: 'absolute', right: 28, bottom: -9 },
+  topBar: { minHeight: 64, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' },
   brandLockup: { alignItems: 'center', justifyContent: 'center', flex: 1 },
-  spaceTitle: { fontSize: 20, fontWeight: '900', letterSpacing: -0.4 },
-  titleAccent: { width: 28, height: 3, borderRadius: 99, backgroundColor: '#D4AF37', marginTop: 5 },
-  headerIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
-  welcomeStrip: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 2 },
-  spaceSubtitle: { fontSize: 11.5, fontWeight: '600' },
-  composerCard: { marginHorizontal: 12, marginTop: 10, borderWidth: 1, borderRadius: 20, minHeight: 82, paddingHorizontal: 12, paddingVertical: 11, alignItems: 'center', gap: 10 },
-  composerAvatarRing: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#D4AF37', alignItems: 'center', justifyContent: 'center' },
-  composerAvatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  spaceTitle: { color: '#FFFFFF', fontSize: 21, fontWeight: '900', letterSpacing: -0.35 },
+  titleAccent: { width: 34, height: 3, borderRadius: 99, backgroundColor: '#D4B24C', marginTop: 6 },
+  headerIcon: { width: 38, height: 38, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.10)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)' },
+  welcomeStrip: { paddingHorizontal: 18, paddingTop: 5, paddingBottom: 6 },
+  spaceSubtitle: { color: '#C7D3E2', fontSize: 11.5, fontWeight: '600' },
+  composerCard: { marginHorizontal: 12, marginTop: -15, borderWidth: 1, borderRadius: 21, minHeight: 84, paddingHorizontal: 12, paddingVertical: 11, alignItems: 'center', gap: 10, shadowOpacity: 0.07, shadowRadius: 12, shadowOffset: { width: 0, height: 5 }, elevation: 2 },
+  composerAvatarRing: { width: 46, height: 46, borderRadius: 23, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  composerAvatar: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   composerTextWrap: { flex: 1, minWidth: 0, gap: 8 },
-  composerPrompt: { fontSize: 13, fontWeight: '600' },
+  composerPrompt: { fontSize: 13, fontWeight: '700' },
   quickKinds: { gap: 6, flexWrap: 'wrap' },
-  quickKind: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 7, paddingVertical: 4 },
-  quickKindText: { color: '#5C6470', fontSize: 9.5, fontWeight: '800' },
-  composeArrow: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  filtersWrap: { paddingTop: 10, paddingBottom: 4 },
+  quickKind: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
+  quickKindText: { fontSize: 9.5, fontWeight: '800' },
+  composeArrow: { width: 35, height: 35, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  filtersWrap: { paddingTop: 11, paddingBottom: 5 },
   filtersContent: { paddingHorizontal: 12, gap: 7 },
-  filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 13, paddingVertical: 7, minHeight: 34, justifyContent: 'center' },
+  filterChip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, minHeight: 34, justifyContent: 'center' },
   filterText: { fontSize: 11, fontWeight: '800' },
   stateIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   stateTitle: { fontWeight: '900', fontSize: 18 },
   stateText: { lineHeight: 21, fontSize: 13 },
-  retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#0B1833' },
+  retryButton: { minHeight: 46, borderRadius: 14, paddingHorizontal: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#1E3A66' },
   retryText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
   emptyCard: { borderWidth: 1, borderRadius: 22, padding: 25, gap: 9, alignItems: 'center', margin: 16 },
-  emptyCta: { marginTop: 6, minHeight: 42, borderRadius: 13, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#0B1833' },
+  emptyCta: { marginTop: 6, minHeight: 42, borderRadius: 13, paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#1E3A66' },
   emptyCtaText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12.5 },
   footerLoading: { paddingVertical: 22, alignItems: 'center', gap: 6 },
-  skeletonTop: { height: 60, paddingHorizontal: 14, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  skeletonTitle: { width: 120, height: 20, borderRadius: 8 },
-  skeletonIcon: { width: 38, height: 38, borderRadius: 13 },
+  skeletonHero: { height: 126, paddingHorizontal: 14, backgroundColor: '#0B1833', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  skeletonTitleDark: { width: 120, height: 20, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.12)' },
+  skeletonIconDark: { width: 38, height: 38, borderRadius: 13, backgroundColor: 'rgba(255,255,255,0.10)' },
   skeletonPost: { marginHorizontal: 12, marginTop: 12, borderWidth: 1, borderRadius: 22, paddingTop: 13, paddingBottom: 15, gap: 11, overflow: 'hidden' },
   skeletonAuthor: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14 },
   skeletonAvatar: { width: 42, height: 42, borderRadius: 21 },
