@@ -125,7 +125,7 @@ export function CommunityPostCard({
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.border, shadowColor: community.shadow }]}> 
+    <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.border, shadowColor: community.isDark ? '#000000' : '#769AC7' }]}> 
       <View style={[styles.cardAccent, { backgroundColor: community.isDark ? '#294979' : '#DCE8F5' }]} />
 
       <View style={[styles.authorRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
@@ -277,15 +277,16 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 12,
     marginTop: 12,
+    marginBottom: 4,
     borderWidth: 1,
     borderRadius: 22,
     paddingTop: 12,
     paddingBottom: 10,
     overflow: 'hidden',
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 7
   },
   cardAccent: { position: 'absolute', top: 0, right: 22, width: 36, height: 3, borderBottomLeftRadius: 6, borderBottomRightRadius: 6 },
   authorRow: { minHeight: 48, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'space-between' },
