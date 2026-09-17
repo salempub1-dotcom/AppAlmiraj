@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../context/LanguageProvider';
 import { useTheme } from '../context/ThemeProvider';
@@ -33,14 +34,34 @@ export function BottomTabs() {
 
         return {
           headerShown: false,
-          tabBarActiveTintColor: dark ? '#E5C96A' : '#D4B24C',
-          tabBarInactiveTintColor: dark ? '#8190A8' : '#7A879A',
+          tabBarActiveTintColor: dark ? '#F1C95A' : '#D6A525',
+          tabBarInactiveTintColor: dark ? '#8190A8' : '#173D69',
           tabBarHideOnKeyboard: true,
-          tabBarLabelStyle: {
-            fontSize: 10.5,
-            fontWeight: '800',
-            marginTop: 2,
-            marginBottom: 1
+          tabBarLabel: ({ focused, color }) => {
+            const label =
+              route.name === 'Community'
+                ? getCommunityCopy(language).nav.feed
+                : route.name === 'Store'
+                  ? t('nav.store')
+                  : t('nav.profile');
+
+            return (
+              <View style={{ alignItems: 'center', justifyContent: 'center', gap: 5, minWidth: 74 }}>
+                <Text style={{ color, fontSize: 11, fontWeight: '800' }}>{label}</Text>
+                {focused && route.name === 'Community' ? (
+                  <View
+                    style={{
+                      width: 46,
+                      height: 4,
+                      borderRadius: 999,
+                      backgroundColor: dark ? '#F1C95A' : '#D6A525'
+                    }}
+                  />
+                ) : (
+                  <View style={{ width: 46, height: 4 }} />
+                )}
+              </View>
+            );
           },
           tabBarIcon: ({ color, focused }) => {
             const icon = icons[route.name as keyof typeof icons];
@@ -48,24 +69,27 @@ export function BottomTabs() {
               <Ionicons
                 name={focused ? icon.active : icon.inactive}
                 color={color}
-                size={focused ? 23 : 22}
+                size={focused ? 25 : 23}
               />
             );
           },
           tabBarStyle: hideForAuth
             ? { display: 'none' }
             : {
-                backgroundColor: dark ? '#0E1A2D' : '#FFFFFF',
-                borderTopColor: dark ? '#213149' : '#E7ECF2',
+                backgroundColor: dark ? 'rgba(14,26,45,0.98)' : 'rgba(255,255,255,0.98)',
+                borderTopColor: dark ? '#213149' : 'rgba(6,45,91,0.08)',
                 borderTopWidth: 1,
-                height: 61 + bottomInset,
-                paddingTop: 8,
+                borderTopLeftRadius: 28,
+                borderTopRightRadius: 28,
+                height: 70 + bottomInset,
+                paddingTop: 9,
                 paddingBottom: bottomInset,
-                elevation: 14,
-                shadowColor: '#0B1833',
-                shadowOpacity: dark ? 0.24 : 0.1,
-                shadowRadius: 18,
-                shadowOffset: { width: 0, height: -5 }
+                elevation: 20,
+                shadowColor: '#062D5B',
+                shadowOpacity: dark ? 0.24 : 0.13,
+                shadowRadius: 22,
+                shadowOffset: { width: 0, height: -7 },
+                overflow: 'visible'
               },
           tabBarItemStyle: {
             paddingTop: 0,
@@ -76,21 +100,9 @@ export function BottomTabs() {
         };
       }}
     >
-      <Tab.Screen
-        name="Community"
-        component={CommunityStackNavigator}
-        options={{ tabBarLabel: getCommunityCopy(language).nav.feed }}
-      />
-      <Tab.Screen
-        name="Store"
-        component={StoreStackNavigator}
-        options={{ tabBarLabel: t('nav.store') }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileStackNavigator}
-        options={{ tabBarLabel: t('nav.profile') }}
-      />
+      <Tab.Screen name="Community" component={CommunityStackNavigator} />
+      <Tab.Screen name="Store" component={StoreStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }
