@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View
 } from 'react-native';
 import { Screen } from '../../../components/Screen';
@@ -60,6 +61,8 @@ function CommunityFeedList({ navigation }: any) {
   const { language, isRTL } = useLanguage();
   const copy = getCommunityCopy(language);
   const social = getCommunitySocialCopy(language);
+  const { width } = useWindowDimensions();
+  const compact = width < 370;
   const [activeFilter, setActiveFilter] = useState<FeedFilter>('all');
 
   const feed = useCommunityFeed();
@@ -115,90 +118,126 @@ function CommunityFeedList({ navigation }: any) {
     ]);
   };
 
-  const openComposer = () => navigation.navigate('CreateCommunityPost');
+  const openComposer = (initialType?: CommunityPost['type']) =>
+    navigation.navigate('CreateCommunityPost', initialType ? { initialType } : undefined);
 
   const header = (
     <View style={styles.header}>
-      <View style={styles.hero}>
+      <View style={[styles.hero, compact && styles.heroCompact]}>
+        <View style={styles.heroDeepLayer} />
+        <View style={styles.heroRoyalLayer} />
         <View style={styles.heroOrbA} />
         <View style={styles.heroOrbB} />
+        <View style={styles.heroOrbC} />
         <View style={styles.heroGlow} />
-        <Ionicons name="book-outline" size={112} color="rgba(255,255,255,0.055)" style={styles.heroBook} />
+        <View style={styles.goldCurveA} />
+        <View style={styles.goldCurveB} />
+        <Ionicons name="book-outline" size={compact ? 118 : 142} color="rgba(255,255,255,0.075)" style={styles.heroBook} />
 
         <View style={styles.topBar}>
-          <Pressable onPress={openComposer} style={styles.headerIcon}>
-            <Ionicons name="add" size={28} color="#FFFFFF" />
-          </Pressable>
+          <View style={styles.sideHeroAction}>
+            <Pressable
+              onPress={() => openComposer()}
+              style={({ pressed }) => [styles.headerIcon, pressed && styles.pressedScale]}
+            >
+              <Ionicons name="add" size={compact ? 28 : 32} color="#FFFFFF" />
+            </Pressable>
+            <Text style={styles.sideHeroText}>{language === 'ar' ? 'مشاركة خبرة ..\nتصنع فرقًا' : 'Share experience\nmake a difference'}</Text>
+            <View style={styles.sideGoldLine} />
+          </View>
 
           <View style={styles.brandLockup}>
             <View style={[styles.titleRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-              <Ionicons name="school" size={30} color="#F0C343" />
-              <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.9} style={styles.spaceTitle}>
+              <Ionicons name="school" size={compact ? 30 : 36} color="#F1C95A" />
+              <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.86}
+                style={[styles.spaceTitle, compact && styles.spaceTitleCompact]}
+              >
                 {copy.feed.title}
               </Text>
             </View>
-            <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.9} style={styles.spaceSubtitle}>
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={0.84}
+              style={[styles.spaceSubtitle, compact && styles.spaceSubtitleCompact]}
+            >
               {copy.feed.subtitle}
             </Text>
           </View>
 
-          <Pressable onPress={() => navigation.navigate('SavedCommunityPosts')} style={styles.headerIcon}>
-            <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
-          </Pressable>
+          <View style={styles.sideHeroAction}>
+            <Pressable
+              onPress={() => navigation.navigate('SavedCommunityPosts')}
+              style={({ pressed }) => [styles.headerIcon, pressed && styles.pressedScale]}
+            >
+              <Ionicons name="bookmark-outline" size={compact ? 25 : 28} color="#FFFFFF" />
+            </Pressable>
+            <Text style={styles.sideHeroText}>{language === 'ar' ? 'معًا\nنصنع تعليمًا أفضل' : 'Together\nbetter education'}</Text>
+            <View style={styles.sideGoldLine} />
+          </View>
         </View>
       </View>
 
-      <View style={styles.composerShell}>
+      <View style={[styles.composerShell, compact && styles.composerShellCompact]}>
         <View pointerEvents="none" style={styles.composerHaloOuter} />
         <View pointerEvents="none" style={styles.composerHaloInner} />
-        <Pressable
-          onPress={openComposer}
-          style={({ pressed }) => [styles.composerCard, { opacity: pressed ? 0.95 : 1 }]}
-        >
-          <View style={styles.composerSoftBlue} />
-          <View style={styles.composerGoldShape} />
+        <View style={styles.composerCard}>
+          <View pointerEvents="none" style={styles.composerSoftBlue} />
+          <View pointerEvents="none" style={styles.composerGoldShape} />
+          <View pointerEvents="none" style={styles.composerGoldShapeTwo} />
+          <View pointerEvents="none" style={styles.sparkleOne} />
 
-          <View style={[styles.composerTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
-            <View style={styles.composerAvatarOuter}>
-              <View style={styles.composerAvatarInner}>
-                <Ionicons name="person" size={23} color="#0E2B58" />
+          <View style={[styles.composerTopRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
+            <View style={[styles.composerAvatarOuter, compact && styles.composerAvatarOuterCompact]}>
+              <View style={[styles.composerAvatarInner, compact && styles.composerAvatarInnerCompact]}>
+                <Ionicons name="person" size={compact ? 25 : 30} color="#062D5B" />
               </View>
-              <View style={styles.onlineDot} />
+              <View style={styles.statusDot} />
             </View>
 
-            <View style={styles.composerPromptBox}>
+            <Pressable
+              onPress={() => openComposer()}
+              style={({ pressed }) => [styles.composerPromptBox, pressed && styles.composerPressed]}
+            >
               <Text
-                numberOfLines={1}
+                numberOfLines={2}
                 adjustsFontSizeToFit
-                minimumFontScale={0.84}
-                style={styles.composerPrompt}
+                minimumFontScale={0.82}
+                style={[styles.composerPrompt, compact && styles.composerPromptCompact]}
               >
-                {language === 'ar' ? 'ماذا ستشارك مع زملائك اليوم' : social.composerPrompt}
+                {language === 'ar' ? 'ماذا تريد أن تشارك مع زملائك اليوم؟' : social.composerPrompt}
               </Text>
-            </View>
+            </Pressable>
 
-            <View style={styles.publishButtonOuter}>
-              <View style={styles.publishButton}>
-                <Ionicons name="paper-plane" size={24} color="#FFFFFF" />
-              </View>
+            <View style={[styles.publishButtonOuter, compact && styles.publishButtonOuterCompact]}>
+              <Pressable
+                onPress={() => openComposer()}
+                style={({ pressed }) => [styles.publishButton, compact && styles.publishButtonCompact, pressed && styles.pressedScale]}
+              >
+                <View style={styles.publishHighlight} />
+                <Ionicons name="paper-plane" size={compact ? 28 : 34} color="#FFFFFF" />
+              </Pressable>
             </View>
           </View>
 
           <View style={[styles.quickKinds, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}>
-            <View style={[styles.quickKind, styles.quickKindImage]}>
-              <Ionicons name="image-outline" size={18} color="#2564C8" />
-              <Text style={[styles.quickKindText, { color: '#2564C8' }]}>{language === 'ar' ? 'صورة' : 'Photo'}</Text>
-            </View>
-            <View style={[styles.quickKind, styles.quickKindQuestion]}>
-              <Ionicons name="help-circle-outline" size={18} color="#7447D4" />
-              <Text style={[styles.quickKindText, { color: '#7447D4' }]}>{language === 'ar' ? 'سؤال' : 'Question'}</Text>
-            </View>
-            <View style={[styles.quickKind, styles.quickKindFile]}>
-              <Ionicons name="document-text-outline" size={18} color="#966400" />
-              <Text style={[styles.quickKindText, { color: '#966400' }]}>{language === 'ar' ? 'ملف' : 'File'}</Text>
-            </View>
+            <Pressable onPress={() => openComposer()} style={({ pressed }) => [styles.quickKind, styles.quickKindImage, pressed && styles.quickPressed]}>
+              <Ionicons name="image-outline" size={compact ? 18 : 20} color="#176CDD" />
+              <Text style={[styles.quickKindText, { color: '#176CDD' }]}>{language === 'ar' ? 'صورة' : 'Photo'}</Text>
+            </Pressable>
+            <Pressable onPress={() => openComposer('question')} style={({ pressed }) => [styles.quickKind, styles.quickKindQuestion, pressed && styles.quickPressed]}>
+              <Ionicons name="help-circle-outline" size={compact ? 18 : 20} color="#7437E8" />
+              <Text style={[styles.quickKindText, { color: '#7437E8' }]}>{language === 'ar' ? 'سؤال' : 'Question'}</Text>
+            </Pressable>
+            <Pressable onPress={() => openComposer('resource')} style={({ pressed }) => [styles.quickKind, styles.quickKindFile, pressed && styles.quickPressed]}>
+              <Ionicons name="document-text-outline" size={compact ? 18 : 20} color="#9A6A00" />
+              <Text style={[styles.quickKindText, { color: '#9A6A00' }]}>{language === 'ar' ? 'ملف' : 'File'}</Text>
+            </Pressable>
           </View>
-        </Pressable>
+        </View>
       </View>
 
       <View style={styles.filtersWrap}>
@@ -220,14 +259,16 @@ function CommunityFeedList({ navigation }: any) {
                 style={({ pressed }) => [
                   styles.filterChip,
                   {
-                    backgroundColor: active ? '#17396A' : '#FFFFFF',
-                    borderColor: active ? '#17396A' : 'rgba(255,255,255,0.92)',
-                    opacity: pressed ? 0.82 : 1
+                    backgroundColor: active ? '#062D5B' : 'rgba(255,255,255,0.96)',
+                    borderColor: active ? '#062D5B' : '#E5EDF7',
+                    transform: [{ scale: pressed ? 0.96 : 1 }]
                   }
                 ]}
               >
-                <Ionicons name={FILTER_ICONS[filter]} size={17} color={active ? '#FFFFFF' : '#17396A'} />
-                <Text style={[styles.filterText, { color: active ? '#FFFFFF' : '#17396A' }]}>{social.filters[filter]}</Text>
+                <Ionicons name={FILTER_ICONS[filter]} size={compact ? 17 : 19} color={active ? '#FFFFFF' : '#173D69'} />
+                <Text style={[styles.filterText, compact && styles.filterTextCompact, { color: active ? '#FFFFFF' : '#173D69' }]}>
+                  {social.filters[filter]}
+                </Text>
               </Pressable>
             );
           })}
@@ -238,7 +279,7 @@ function CommunityFeedList({ navigation }: any) {
 
   if (feed.isLoading) {
     return (
-      <Screen style={{ ...styles.loadingPage, backgroundColor: '#2F96E5' }}>
+      <Screen style={{ ...styles.loadingPage, backgroundColor: '#F2F8FF' }}>
         <FeedSkeleton community={community} />
       </Screen>
     );
@@ -260,7 +301,7 @@ function CommunityFeedList({ navigation }: any) {
   }
 
   return (
-    <Screen style={{ ...styles.listPage, backgroundColor: community.isDark ? community.background : '#258EDC' }}>
+    <Screen style={{ ...styles.listPage, backgroundColor: community.isDark ? community.background : '#F2F8FF' }}>
       <FlatList
         data={visiblePosts}
         keyExtractor={(item) => item.id}
@@ -285,7 +326,7 @@ function CommunityFeedList({ navigation }: any) {
             </View>
             <Text style={[styles.stateTitle, { color: community.text, textAlign: 'center' }]}>{copy.feed.emptyTitle}</Text>
             <Text style={[styles.stateText, { color: community.textSecondary, textAlign: 'center' }]}>{copy.feed.emptyText}</Text>
-            <Pressable onPress={openComposer} style={styles.emptyCta}>
+            <Pressable onPress={() => openComposer()} style={styles.emptyCta}>
               <Ionicons name="add" size={18} color="#FFFFFF" />
               <Text style={styles.emptyCtaText}>{copy.feed.newPost}</Text>
             </Pressable>
@@ -329,7 +370,7 @@ function CommunityFeedList({ navigation }: any) {
           feed.isFetchingNextPage ? (
             <View style={styles.footerLoading}>
               <ActivityIndicator color={community.primary} />
-              <Text style={{ color: '#E9F5FF', fontSize: 12 }}>{copy.feed.loadingMore}</Text>
+              <Text style={{ color: '#526B89', fontSize: 12 }}>{copy.feed.loadingMore}</Text>
             </View>
           ) : (
             <View style={{ height: 28 }} />
@@ -370,228 +411,330 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, paddingHorizontal: 24 },
   loadingPage: { flex: 1, padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
   listPage: { padding: 0, paddingHorizontal: 0, paddingVertical: 0 },
-  listContent: { paddingBottom: 0 },
+  listContent: { paddingBottom: 0, backgroundColor: '#F2F8FF' },
+  pressedScale: { transform: [{ scale: 0.96 }], opacity: 0.9 },
 
-  header: { width: '100%', paddingBottom: 0, backgroundColor: '#56ACED' },
+  header: { width: '100%', paddingBottom: 0, backgroundColor: '#F2F8FF' },
   hero: {
-    minHeight: 154,
-    backgroundColor: '#0B1833',
+    minHeight: 178,
+    backgroundColor: '#031E42',
     overflow: 'hidden',
-    paddingTop: 10,
-    paddingBottom: 22
+    paddingTop: 8,
+    paddingBottom: 48
+  },
+  heroCompact: { minHeight: 166, paddingBottom: 44 },
+  heroDeepLayer: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#031E42'
+  },
+  heroRoyalLayer: {
+    position: 'absolute',
+    left: '34%',
+    right: -80,
+    top: -10,
+    bottom: -20,
+    backgroundColor: '#07569A',
+    opacity: 0.44,
+    borderTopLeftRadius: 180,
+    borderBottomLeftRadius: 180
   },
   heroOrbA: {
     position: 'absolute',
-    width: 228,
-    height: 228,
-    borderRadius: 114,
-    backgroundColor: 'rgba(26,104,212,0.58)',
-    top: -138,
-    right: -68
+    width: 255,
+    height: 255,
+    borderRadius: 128,
+    backgroundColor: 'rgba(14,92,167,0.55)',
+    top: -160,
+    right: -70
   },
   heroOrbB: {
     position: 'absolute',
-    width: 244,
-    height: 244,
-    borderRadius: 122,
-    backgroundColor: 'rgba(37,128,223,0.34)',
-    left: -106,
-    bottom: -184
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(10,81,153,0.42)',
+    left: -142,
+    bottom: -210
+  },
+  heroOrbC: {
+    position: 'absolute',
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    backgroundColor: 'rgba(52,132,211,0.16)',
+    left: '35%',
+    top: -72
   },
   heroGlow: {
     position: 'absolute',
-    width: 220,
-    height: 180,
-    borderRadius: 100,
-    backgroundColor: 'rgba(48,136,235,0.14)',
-    left: '29%',
-    top: -26
+    width: 270,
+    height: 160,
+    borderRadius: 135,
+    backgroundColor: 'rgba(70,157,238,0.10)',
+    left: '22%',
+    bottom: -34
   },
-  heroBook: { position: 'absolute', right: 78, bottom: -28, transform: [{ rotate: '-8deg' }] },
+  heroBook: { position: 'absolute', right: '22%', bottom: -34, transform: [{ rotate: '-8deg' }] },
+  goldCurveA: {
+    position: 'absolute',
+    width: 122,
+    height: 122,
+    borderRadius: 61,
+    borderWidth: 1.5,
+    borderColor: 'rgba(241,201,90,0.55)',
+    left: -72,
+    top: 4
+  },
+  goldCurveB: {
+    position: 'absolute',
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    borderWidth: 1,
+    borderColor: 'rgba(214,165,37,0.48)',
+    right: -54,
+    bottom: 4
+  },
   topBar: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     alignItems: 'flex-start',
     justifyContent: 'space-between',
     flexDirection: 'row',
-    gap: 10
+    gap: 8
   },
-  brandLockup: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 1, minWidth: 0 },
+  sideHeroAction: { width: 66, alignItems: 'center' },
+  brandLockup: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 3, minWidth: 0 },
   titleRow: { alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%' },
-  spaceTitle: { color: '#FFFFFF', fontSize: 28, fontWeight: '900', letterSpacing: -0.45, maxWidth: '83%' },
-  spaceSubtitle: { color: '#E4EDF7', fontSize: 12.2, fontWeight: '700', marginTop: 7, textAlign: 'center', width: '100%' },
+  spaceTitle: { color: '#FFFFFF', fontSize: 29, fontWeight: '900', letterSpacing: -0.45, maxWidth: '82%' },
+  spaceTitleCompact: { fontSize: 25 },
+  spaceSubtitle: { color: 'rgba(255,255,255,0.80)', fontSize: 13.2, fontWeight: '700', marginTop: 9, textAlign: 'center', width: '100%' },
+  spaceSubtitleCompact: { fontSize: 11.8, marginTop: 7 },
   headerIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 17,
+    width: 58,
+    height: 58,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.09)',
+    backgroundColor: 'rgba(255,255,255,0.11)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.22)'
+    borderColor: 'rgba(255,255,255,0.19)',
+    shadowColor: '#000000',
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3
   },
+  sideHeroText: {
+    color: '#F1C95A',
+    fontSize: 9.6,
+    lineHeight: 14,
+    textAlign: 'center',
+    fontWeight: '700',
+    marginTop: 6
+  },
+  sideGoldLine: { width: 28, height: 2.5, borderRadius: 2, backgroundColor: '#F1C95A', marginTop: 4 },
 
   composerShell: {
     position: 'relative',
-    marginHorizontal: 24,
-    marginTop: -34,
+    marginHorizontal: 16,
+    marginTop: -39,
     zIndex: 3
   },
+  composerShellCompact: { marginHorizontal: 12, marginTop: -36 },
   composerHaloOuter: {
     position: 'absolute',
     top: -8,
     bottom: -8,
     left: -8,
     right: -8,
-    borderRadius: 34,
-    backgroundColor: 'rgba(255,197,42,0.22)'
+    borderRadius: 40,
+    backgroundColor: 'rgba(241,201,90,0.13)'
   },
   composerHaloInner: {
     position: 'absolute',
-    top: -4,
-    bottom: -4,
-    left: -4,
-    right: -4,
-    borderRadius: 32,
-    backgroundColor: 'rgba(255,220,83,0.28)'
+    top: -3,
+    bottom: -3,
+    left: -3,
+    right: -3,
+    borderRadius: 37,
+    backgroundColor: 'rgba(255,255,255,0.52)'
   },
   composerCard: {
     borderWidth: 1.5,
-    borderColor: '#E8BE4C',
-    borderRadius: 28,
-    minHeight: 138,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    backgroundColor: '#FFFDF9',
+    borderColor: '#DDB33C',
+    borderRadius: 36,
+    minHeight: 178,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
-    gap: 9,
-    shadowColor: '#B68400',
-    shadowOpacity: 0.2,
-    shadowRadius: 11,
-    shadowOffset: { width: 0, height: 5 },
-    elevation: 7
+    gap: 12,
+    shadowColor: '#3576BA',
+    shadowOpacity: 0.17,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 8
   },
   composerSoftBlue: {
     position: 'absolute',
-    top: -52,
-    left: 42,
-    right: 22,
-    height: 92,
-    borderRadius: 52,
-    backgroundColor: 'rgba(224,240,255,0.72)'
+    top: -66,
+    left: 78,
+    right: 34,
+    height: 128,
+    borderRadius: 70,
+    backgroundColor: 'rgba(226,240,255,0.62)'
   },
   composerGoldShape: {
     position: 'absolute',
-    width: 146,
-    height: 72,
-    borderRadius: 74,
-    left: -48,
-    bottom: -40,
-    backgroundColor: 'rgba(244,205,91,0.16)',
-    transform: [{ rotate: '12deg' }]
+    width: 195,
+    height: 96,
+    borderRadius: 90,
+    left: -74,
+    bottom: -54,
+    backgroundColor: 'rgba(255,243,211,0.92)',
+    transform: [{ rotate: '10deg' }]
   },
-  composerTopRow: { alignItems: 'center', gap: 6 },
-  composerAvatarOuter: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    borderWidth: 2,
-    borderColor: '#D8E8FB',
-    backgroundColor: '#F7FBFF',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  composerAvatarInner: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#E8F1FD',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  onlineDot: {
+  composerGoldShapeTwo: {
     position: 'absolute',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#7ABD3A',
-    borderWidth: 2,
+    width: 115,
+    height: 65,
+    borderRadius: 55,
+    right: -34,
+    bottom: -30,
+    backgroundColor: 'rgba(241,201,90,0.12)',
+    transform: [{ rotate: '-12deg' }]
+  },
+  sparkleOne: {
+    position: 'absolute',
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: '#F1C95A',
+    right: 15,
+    top: 13,
+    opacity: 0.9,
+    transform: [{ rotate: '45deg' }]
+  },
+  composerTopRow: { alignItems: 'center', gap: 8 },
+  composerAvatarOuter: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2.5,
+    borderColor: '#D8E8FB',
+    backgroundColor: '#F8FBFF',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerAvatarOuterCompact: { width: 58, height: 58, borderRadius: 29 },
+  composerAvatarInner: {
+    width: 55,
+    height: 55,
+    borderRadius: 28,
+    backgroundColor: '#EAF4FF',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  composerAvatarInnerCompact: { width: 47, height: 47, borderRadius: 24 },
+  statusDot: {
+    position: 'absolute',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#D6A525',
+    borderWidth: 3,
     borderColor: '#FFFFFF',
-    right: -1,
-    bottom: 1
+    right: -2,
+    bottom: 3
   },
   composerPromptBox: {
     flex: 1,
-    minHeight: 54,
-    borderRadius: 19,
-    paddingHorizontal: 8,
-    paddingVertical: 7,
+    minHeight: 82,
+    borderRadius: 28,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     justifyContent: 'center',
-    backgroundColor: '#F3F7FC',
+    backgroundColor: '#F8FBFF',
     borderWidth: 1,
-    borderColor: '#DEE8F3'
+    borderColor: '#E4EBF4'
   },
+  composerPressed: { backgroundColor: '#F0F7FF' },
   composerPrompt: {
-    color: '#17396A',
-    fontSize: 14.4,
-    lineHeight: 19,
-    fontWeight: '900',
+    color: '#365779',
+    fontSize: 18.2,
+    lineHeight: 28,
+    fontWeight: '800',
     width: '100%',
     textAlign: 'center'
   },
+  composerPromptCompact: { fontSize: 15.2, lineHeight: 23 },
   publishButtonOuter: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     borderWidth: 2,
-    borderColor: '#E7B837',
+    borderColor: '#F1C95A',
     padding: 4,
-    backgroundColor: '#FFF7DE',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  publishButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#17396A',
+    backgroundColor: '#FFF8DE',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#17396A',
-    shadowOpacity: 0.23,
-    shadowRadius: 7,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    shadowColor: '#062D5B',
+    shadowOpacity: 0.22,
+    shadowRadius: 13,
+    shadowOffset: { width: 0, height: 7 },
+    elevation: 6
   },
-  quickKinds: { gap: 8, alignItems: 'center', justifyContent: 'center' },
+  publishButtonOuterCompact: { width: 62, height: 62, borderRadius: 31 },
+  publishButton: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#07569A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  publishButtonCompact: { width: 50, height: 50, borderRadius: 25 },
+  publishHighlight: {
+    position: 'absolute',
+    width: 64,
+    height: 30,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    top: -8,
+    right: -16,
+    transform: [{ rotate: '-18deg' }]
+  },
+  quickKinds: { gap: 9, alignItems: 'center', justifyContent: 'center' },
   quickKind: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 5,
+    gap: 6,
     borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 7,
-    minHeight: 34,
+    minHeight: 45,
     flex: 1
   },
-  quickKindImage: { backgroundColor: '#E8F2FF' },
-  quickKindQuestion: { backgroundColor: '#F2ECFF' },
-  quickKindFile: { backgroundColor: '#FFF4D9' },
-  quickKindText: { fontSize: 11, fontWeight: '900' },
+  quickKindImage: { backgroundColor: '#E2F0FF' },
+  quickKindQuestion: { backgroundColor: '#EFE6FF' },
+  quickKindFile: { backgroundColor: '#FFF3D3' },
+  quickKindText: { fontSize: 12.5, fontWeight: '900' },
+  quickPressed: { transform: [{ scale: 0.97 }], opacity: 0.84 },
 
   filtersWrap: {
     position: 'relative',
     overflow: 'hidden',
-    paddingTop: 18,
-    paddingBottom: 14,
-    backgroundColor: '#55ACEF'
+    paddingTop: 17,
+    paddingBottom: 15,
+    backgroundColor: '#F2F8FF'
   },
   filtersGlowA: {
     position: 'absolute',
     width: 250,
     height: 145,
     borderRadius: 120,
-    backgroundColor: 'rgba(207,235,255,0.48)',
+    backgroundColor: 'rgba(226,240,255,0.78)',
     left: -92,
     top: -46
   },
@@ -600,62 +743,63 @@ const styles = StyleSheet.create({
     width: 230,
     height: 150,
     borderRadius: 110,
-    backgroundColor: 'rgba(28,128,223,0.30)',
+    backgroundColor: 'rgba(190,222,250,0.45)',
     right: -78,
     bottom: -70
   },
-  filtersContent: { paddingHorizontal: 13, gap: 9 },
+  filtersContent: { paddingHorizontal: 14, gap: 10 },
   filterChip: {
     borderWidth: 1,
     borderRadius: 999,
-    paddingHorizontal: 13,
-    paddingVertical: 8,
-    minHeight: 39,
+    paddingHorizontal: 16,
+    minHeight: 48,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
-    gap: 6,
-    shadowColor: '#1B5D96',
-    shadowOpacity: 0.22,
+    gap: 7,
+    shadowColor: '#3576BA',
+    shadowOpacity: 0.12,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    elevation: 3
   },
-  filterText: { fontSize: 11.2, fontWeight: '900' },
+  filterText: { fontSize: 12.4, fontWeight: '900' },
+  filterTextCompact: { fontSize: 11.2 },
 
   postStage: {
     position: 'relative',
-    paddingVertical: 8,
-    overflow: 'hidden'
+    paddingVertical: 7,
+    overflow: 'hidden',
+    backgroundColor: '#F2F8FF'
   },
-  postStageA: { backgroundColor: '#3F9EE8' },
-  postStageB: { backgroundColor: '#2F91DF' },
+  postStageA: { backgroundColor: '#F2F8FF' },
+  postStageB: { backgroundColor: '#EEF7FF' },
   postGlowOne: {
     position: 'absolute',
     width: 360,
     height: 360,
     borderRadius: 180,
-    right: -170,
-    top: -136,
-    backgroundColor: 'rgba(11,94,185,0.30)'
+    right: -210,
+    top: -166,
+    backgroundColor: 'rgba(7,86,154,0.055)'
   },
   postGlowTwo: {
     position: 'absolute',
     width: 300,
     height: 300,
     borderRadius: 150,
-    left: -160,
-    bottom: -96,
-    backgroundColor: 'rgba(198,230,255,0.52)'
+    left: -180,
+    bottom: -116,
+    backgroundColor: 'rgba(126,190,245,0.10)'
   },
   postGlowThree: {
     position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    left: '24%',
-    top: 18,
-    backgroundColor: 'rgba(112,189,245,0.27)'
+    width: 210,
+    height: 210,
+    borderRadius: 105,
+    left: '26%',
+    top: 22,
+    backgroundColor: 'rgba(234,244,255,0.48)'
   },
 
   stateIcon: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
@@ -667,61 +811,61 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E3A66'
+    backgroundColor: '#062D5B'
   },
   retryText: { color: '#FFFFFF', fontWeight: '900', fontSize: 14 },
   emptyCard: {
     borderWidth: 1,
-    borderRadius: 22,
+    borderRadius: 28,
     padding: 25,
     gap: 9,
     alignItems: 'center',
-    margin: 16,
-    shadowColor: '#114F88',
-    shadowOpacity: 0.2,
-    shadowRadius: 13,
-    shadowOffset: { width: 0, height: 6 },
+    margin: 18,
+    shadowColor: '#3576BA',
+    shadowOpacity: 0.13,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 7 },
     elevation: 4
   },
   emptyCta: {
     marginTop: 6,
-    minHeight: 42,
-    borderRadius: 13,
-    paddingHorizontal: 16,
+    minHeight: 44,
+    borderRadius: 15,
+    paddingHorizontal: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    backgroundColor: '#1E3A66'
+    backgroundColor: '#062D5B'
   },
   emptyCtaText: { color: '#FFFFFF', fontWeight: '900', fontSize: 12.5 },
   footerLoading: { paddingVertical: 22, alignItems: 'center', gap: 6 },
 
   skeletonHero: {
-    height: 154,
+    height: 176,
     paddingHorizontal: 18,
-    backgroundColor: '#0B1833',
+    backgroundColor: '#031E42',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
   },
   skeletonTitleDark: { width: 145, height: 24, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.12)' },
-  skeletonIconDark: { width: 48, height: 48, borderRadius: 17, backgroundColor: 'rgba(255,255,255,0.10)' },
+  skeletonIconDark: { width: 58, height: 58, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.10)' },
   skeletonPost: {
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     marginTop: 12,
     borderWidth: 1,
-    borderRadius: 22,
-    paddingTop: 13,
-    paddingBottom: 15,
+    borderRadius: 28,
+    paddingTop: 14,
+    paddingBottom: 16,
     gap: 11,
     overflow: 'hidden'
   },
-  skeletonAuthor: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14 },
-  skeletonAvatar: { width: 42, height: 42, borderRadius: 21 },
-  skeletonLine: { height: 12, borderRadius: 6, marginHorizontal: 14 },
-  skeletonLineMedium: { width: '66%', height: 12, borderRadius: 6, marginHorizontal: 14 },
-  skeletonLineShort: { width: 118, height: 11, borderRadius: 6 },
-  skeletonLineTiny: { width: 82, height: 8, borderRadius: 5 },
-  skeletonMedia: { marginHorizontal: 10, borderRadius: 16, aspectRatio: 1.18, marginTop: 2 }
+  skeletonAuthor: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16 },
+  skeletonAvatar: { width: 50, height: 50, borderRadius: 25 },
+  skeletonLine: { height: 12, borderRadius: 6, marginHorizontal: 16 },
+  skeletonLineMedium: { width: '66%', height: 12, borderRadius: 6, marginHorizontal: 16 },
+  skeletonLineShort: { width: 132, height: 11, borderRadius: 6 },
+  skeletonLineTiny: { width: 88, height: 8, borderRadius: 5 },
+  skeletonMedia: { marginHorizontal: 12, borderRadius: 20, aspectRatio: 1.18, marginTop: 2 }
 });
