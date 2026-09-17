@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -33,16 +33,82 @@ import { getCommunitySocialCopy } from '../communitySocialCopy';
 
 type FeedFilter = 'all' | 'idea' | 'question' | 'test' | 'exam' | 'resource' | 'classroom_experience' | 'tip';
 
-const DISPLAY_FILTERS: FeedFilter[] = ['tip', 'classroom_experience', 'resource', 'test', 'exam'];
+type FilterVisual = {
+  background: string;
+  foreground: string;
+  active: string;
+  border: string;
+  shadow: string;
+};
+
+const DISPLAY_FILTERS: FeedFilter[] = ['all', 'tip', 'classroom_experience', 'resource', 'exam', 'test'];
 const FILTER_ICONS: Record<FeedFilter, keyof typeof Ionicons.glyphMap> = {
   all: 'apps-outline',
   idea: 'bulb-outline',
   question: 'help-circle-outline',
-  test: 'document-text-outline',
-  exam: 'school-outline',
+  test: 'school-outline',
+  exam: 'document-text-outline',
   resource: 'folder-outline',
   classroom_experience: 'people-outline',
   tip: 'bulb-outline'
+};
+const FILTER_VISUALS: Record<FeedFilter, FilterVisual> = {
+  all: {
+    background: '#E8F1FF',
+    foreground: '#174F91',
+    active: '#174F91',
+    border: '#D7E7FB',
+    shadow: '#174F91'
+  },
+  tip: {
+    background: '#FFF4CF',
+    foreground: '#B8860B',
+    active: '#D6A525',
+    border: '#F2E3AF',
+    shadow: '#D6A525'
+  },
+  classroom_experience: {
+    background: '#E8F7F1',
+    foreground: '#25846A',
+    active: '#2F987D',
+    border: '#D3EEE4',
+    shadow: '#2F987D'
+  },
+  resource: {
+    background: '#E9F2FF',
+    foreground: '#3974B8',
+    active: '#3974B8',
+    border: '#D8E7FA',
+    shadow: '#3974B8'
+  },
+  exam: {
+    background: '#F0E9FF',
+    foreground: '#7651B4',
+    active: '#7651B4',
+    border: '#E2D8F7',
+    shadow: '#7651B4'
+  },
+  test: {
+    background: '#FFECEF',
+    foreground: '#B75465',
+    active: '#B75465',
+    border: '#F6DCE1',
+    shadow: '#B75465'
+  },
+  idea: {
+    background: '#FFF4CF',
+    foreground: '#B8860B',
+    active: '#D6A525',
+    border: '#F2E3AF',
+    shadow: '#D6A525'
+  },
+  question: {
+    background: '#F0E9FF',
+    foreground: '#7651B4',
+    active: '#7651B4',
+    border: '#E2D8F7',
+    shadow: '#7651B4'
+  }
 };
 
 export function CommunityFeedScreen({ navigation }: any) {
@@ -63,6 +129,7 @@ function CommunityFeedList({ navigation }: any) {
   const social = getCommunitySocialCopy(language);
   const { width } = useWindowDimensions();
   const compact = width < 370;
+  const filtersRef = useRef<ScrollView>(null);
   const [activeFilter, setActiveFilter] = useState<FeedFilter>('all');
 
   const feed = useCommunityFeed();
@@ -244,29 +311,47 @@ function CommunityFeedList({ navigation }: any) {
         <View pointerEvents="none" style={styles.filtersGlowA} />
         <View pointerEvents="none" style={styles.filtersGlowB} />
         <ScrollView
+          ref={filtersRef}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={[styles.filtersContent, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}
+          onContentSizeChange={() => {
+            if (isRTL) filtersRef.current?.scrollToEnd({ animated: false });
+          }}
         >
           {DISPLAY_FILTERS.map((filter) => {
             const active = filter === activeFilter;
+            const visual = FILTER_VISUALS[filter];
             return (
               <Pressable
                 key={filter}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                onPress={() => setActiveFilter(active ? 'all' : filter)}
+                onPress={() => setActiveFilter(filter)}
                 style={({ pressed }) => [
                   styles.filterChip,
                   {
-                    backgroundColor: active ? '#062D5B' : 'rgba(255,255,255,0.96)',
-                    borderColor: active ? '#062D5B' : '#E5EDF7',
+                    backgroundColor: active ? visual.active : visual.background,
+                    borderColor: active ? visual.active : visual.border,
+                    shadowColor: visual.shadow,
+                    shadowOpacity: active ? 0.2 : 0.08,
+                    elevation: active ? 4 : 2,
                     transform: [{ scale: pressed ? 0.96 : 1 }]
                   }
                 ]}
               >
-                <Ionicons name={FILTER_ICONS[filter]} size={compact ? 17 : 19} color={active ? '#FFFFFF' : '#173D69'} />
-                <Text style={[styles.filterText, compact && styles.filterTextCompact, { color: active ? '#FFFFFF' : '#173D69' }]}>
+                <Ionicons
+                  name={FILTER_ICONS[filter]}
+                  size={compact ? 18 : 19}
+                  color={active ? '#FFFFFF' : visual.foreground}
+                />
+                <Text
+                  style={[
+                    styles.filterText,
+                    compact && styles.filterTextCompact,
+                    { color: active ? '#FFFFFF' : visual.foreground }
+                  ]}
+                >
                   {social.filters[filter]}
                 </Text>
               </Pressable>
@@ -747,24 +832,23 @@ const styles = StyleSheet.create({
     right: -78,
     bottom: -70
   },
-  filtersContent: { paddingHorizontal: 14, gap: 10 },
+  filtersContent: { paddingHorizontal: 14, gap: 9, alignItems: 'center' },
   filterChip: {
     borderWidth: 1,
-    borderRadius: 999,
+    borderRadius: 26,
     paddingHorizontal: 16,
-    minHeight: 48,
+    minHeight: 50,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     gap: 7,
-    shadowColor: '#3576BA',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3
+    shadowOpacity: 0.08,
+    shadowRadius: 9,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2
   },
-  filterText: { fontSize: 12.4, fontWeight: '900' },
-  filterTextCompact: { fontSize: 11.2 },
+  filterText: { fontSize: 12.8, fontWeight: '900' },
+  filterTextCompact: { fontSize: 11.6 },
 
   postStage: {
     position: 'relative',
