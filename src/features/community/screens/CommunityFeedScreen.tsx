@@ -209,8 +209,12 @@ function CommunityFeedList({ navigation }: any) {
             >
               <Ionicons name="add" size={compact ? 28 : 32} color="#FFFFFF" />
             </Pressable>
-            <Text style={styles.sideHeroText}>{language === 'ar' ? 'مشاركة خبرة ..\nتصنع فرقًا' : 'Share experience\nmake a difference'}</Text>
-            <View style={styles.sideGoldLine} />
+            <View style={[styles.sideTextGroup, styles.sideTextGroupLeft, compact && styles.sideTextGroupCompact]}>
+              <Text style={[styles.sideHeroText, compact && styles.sideHeroTextCompact]}>
+                {language === 'ar' ? 'مشاركة\nخبرة ..\nتصنع فرقًا' : 'Share\nexperience\nmake a difference'}
+              </Text>
+              <View style={[styles.sideGoldCurve, styles.sideGoldCurveLeft]} />
+            </View>
           </View>
 
           <View style={styles.brandLockup}>
@@ -242,8 +246,12 @@ function CommunityFeedList({ navigation }: any) {
             >
               <Ionicons name="bookmark-outline" size={compact ? 25 : 28} color="#FFFFFF" />
             </Pressable>
-            <Text style={styles.sideHeroText}>{language === 'ar' ? 'معًا\nنصنع تعليمًا أفضل' : 'Together\nbetter education'}</Text>
-            <View style={styles.sideGoldLine} />
+            <View style={[styles.sideTextGroup, styles.sideTextGroupRight, compact && styles.sideTextGroupCompact]}>
+              <Text style={[styles.sideHeroText, compact && styles.sideHeroTextCompact]}>
+                {language === 'ar' ? 'معًا\nنصنع تعليمًا\nأفضل' : 'Together\nwe build better\neducation'}
+              </Text>
+              <View style={[styles.sideGoldCurve, styles.sideGoldCurveRight]} />
+            </View>
           </View>
         </View>
       </View>
@@ -609,15 +617,50 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 6 },
     elevation: 3
   },
+  sideTextGroup: {
+    marginTop: 7,
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexShrink: 0
+  },
+  sideTextGroupLeft: {
+    width: 86,
+    transform: [{ rotate: '4deg' }]
+  },
+  sideTextGroupRight: {
+    width: 100,
+    transform: [{ rotate: '-4deg' }]
+  },
+  sideTextGroupCompact: {
+    width: 80
+  },
   sideHeroText: {
-    color: '#F1C95A',
-    fontSize: 9.6,
-    lineHeight: 14,
+    width: '100%',
+    color: '#E8C04B',
+    fontSize: 12.6,
+    lineHeight: 20,
     textAlign: 'center',
     fontWeight: '700',
-    marginTop: 6
+    writingDirection: 'rtl'
   },
-  sideGoldLine: { width: 28, height: 2.5, borderRadius: 2, backgroundColor: '#F1C95A', marginTop: 4 },
+  sideHeroTextCompact: {
+    fontSize: 11.2,
+    lineHeight: 17.5
+  },
+  sideGoldCurve: {
+    width: 54,
+    height: 13,
+    marginTop: -1,
+    borderBottomWidth: 2.5,
+    borderBottomColor: '#E8C04B',
+    borderRadius: 50
+  },
+  sideGoldCurveLeft: {
+    transform: [{ rotate: '-5deg' }]
+  },
+  sideGoldCurveRight: {
+    transform: [{ rotate: '5deg' }]
+  },
 
   composerShell: {
     position: 'relative',
