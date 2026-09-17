@@ -125,19 +125,44 @@ export function CommunityPostCard({
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: community.surface, borderColor: community.border, shadowColor: community.isDark ? '#000000' : '#769AC7' }]}> 
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: community.surface,
+          borderColor: community.isDark ? community.border : '#E7EFF8',
+          shadowColor: community.isDark ? '#000000' : '#3576BA'
+        }
+      ]}
+    >
+      {!community.isDark && (
+        <View pointerEvents="none" style={styles.decorations}>
+          <View style={styles.waveA} />
+          <View style={styles.waveB} />
+          <View style={styles.waveC} />
+          <View style={styles.waveLineA} />
+          <View style={styles.waveLineB} />
+        </View>
+      )}
       <View style={[styles.cardAccent, { backgroundColor: community.isDark ? '#294979' : '#DCE8F5' }]} />
 
       <View style={[styles.authorRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
-        <Pressable onPress={onPressAuthor} disabled={!onPressAuthor} style={[styles.authorLockup, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
-          <View style={[styles.avatarRing, { borderColor: community.primary }]}> 
+        <Pressable
+          onPress={onPressAuthor}
+          disabled={!onPressAuthor}
+          style={({ pressed }) => [
+            styles.authorLockup,
+            { flexDirection: isRTL ? 'row-reverse' : 'row', opacity: pressed ? 0.82 : 1 }
+          ]}
+        >
+          <View style={[styles.avatarRing, { borderColor: community.isDark ? community.primary : '#062D5B' }]}> 
             <View style={[styles.avatar, { backgroundColor: author?.avatar_url ? community.primarySoft : avatarColors.bg }]}> 
               {author?.avatar_url ? (
                 <Image source={{ uri: author.avatar_url }} style={styles.avatarImg} />
               ) : initials ? (
                 <Text style={[styles.avatarInitials, { color: avatarColors.fg }]}>{initials}</Text>
               ) : (
-                <Ionicons name="person" size={19} color={avatarColors.fg} />
+                <Ionicons name="person" size={22} color={avatarColors.fg} />
               )}
             </View>
           </View>
@@ -164,14 +189,14 @@ export function CommunityPostCard({
           hitSlop={12}
           style={({ pressed }) => [styles.moreButton, { backgroundColor: pressed ? community.surfaceRaised : 'transparent' }]}
         >
-          <Ionicons name="ellipsis-horizontal" size={21} color={community.textSecondary} />
+          <Ionicons name="ellipsis-horizontal" size={24} color={community.isDark ? community.textSecondary : '#526B89'} />
         </Pressable>
       </View>
 
       {(showHiddenBadge || post.type) && (
         <View style={[styles.badgesRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
           <View style={[styles.typeBadge, { backgroundColor: typeTone.background, flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
-            <Ionicons name={communityTypeIcons[post.type]} size={12} color={typeTone.foreground} />
+            <Ionicons name={communityTypeIcons[post.type]} size={14} color={typeTone.foreground} />
             <Text style={[styles.typeText, { color: typeTone.foreground }]}>{copy.types[post.type]}</Text>
           </View>
           {showHiddenBadge && (
@@ -183,14 +208,20 @@ export function CommunityPostCard({
         </View>
       )}
 
-      <Pressable onPress={onPress} style={styles.contentArea}>
+      <Pressable onPress={onPress} style={({ pressed }) => [styles.contentArea, { opacity: pressed ? 0.84 : 1 }]}>
         {!!post.title && (
-          <Text numberOfLines={3} style={[styles.title, { color: community.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}> 
+          <Text
+            numberOfLines={3}
+            style={[styles.title, { color: community.text, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}
+          >
             {post.title}
           </Text>
         )}
         {!!post.body && (
-          <Text numberOfLines={5} style={[styles.body, { color: community.textSecondary, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}> 
+          <Text
+            numberOfLines={5}
+            style={[styles.body, { color: community.textSecondary, textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}
+          >
             {post.body}
           </Text>
         )}
@@ -203,7 +234,17 @@ export function CommunityPostCard({
       )}
 
       {post.media?.type === 'pdf' && !!post.media.url && (
-        <Pressable onPress={onPress} style={[styles.pdfCard, { backgroundColor: community.surfaceRaised, borderColor: community.border, flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
+        <Pressable
+          onPress={onPress}
+          style={[
+            styles.pdfCard,
+            {
+              backgroundColor: community.surfaceRaised,
+              borderColor: community.border,
+              flexDirection: isRTL ? 'row-reverse' : 'row'
+            }
+          ]}
+        >
           <View style={[styles.pdfIcon, { backgroundColor: community.isDark ? '#382B13' : '#FFF4D6' }]}> 
             <Ionicons name="document-text-outline" size={21} color={community.isDark ? '#FFD978' : '#986700'} />
           </View>
@@ -227,23 +268,23 @@ export function CommunityPostCard({
         </View>
       )}
 
-      <View style={[styles.footerDivider, { backgroundColor: community.divider }]} />
+      <View style={[styles.footerDivider, { backgroundColor: community.isDark ? community.divider : '#E7EFF8' }]} />
 
       <View style={[styles.actionsRow, { flexDirection: isRTL ? 'row-reverse' : 'row' }]}> 
         <Pressable onPress={handleLike} disabled={!onToggleLike || likePending} hitSlop={10} style={styles.actionButton}>
-          <Animated.View style={{ transform: [{ scale: likeScale }] }}>
-            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={23} color={liked ? '#E85A68' : community.textSecondary} />
-          </Animated.View>
           <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.likes_count}</Text>
+          <Animated.View style={{ transform: [{ scale: likeScale }] }}>
+            <Ionicons name={liked ? 'heart' : 'heart-outline'} size={27} color={liked ? '#F12648' : '#526B89'} />
+          </Animated.View>
         </Pressable>
 
         <Pressable onPress={handleComment} hitSlop={10} style={styles.actionButton}>
-          <Ionicons name="chatbubble-outline" size={21} color={community.textSecondary} />
           <Text style={[styles.actionCount, { color: community.textSecondary }]}>{post.comments_count}</Text>
+          <Ionicons name="chatbubble-outline" size={24} color={community.isDark ? community.textSecondary : '#526B89'} />
         </Pressable>
 
         <Pressable onPress={handleShare} hitSlop={10} style={styles.iconOnlyButton}>
-          <Ionicons name="paper-plane-outline" size={21} color={community.textSecondary} />
+          <Ionicons name="paper-plane-outline" size={25} color={community.isDark ? community.textSecondary : '#173D69'} />
         </Pressable>
 
         <View style={styles.actionsSpacer} />
@@ -258,7 +299,11 @@ export function CommunityPostCard({
           hitSlop={10}
           style={styles.iconOnlyButton}
         >
-          <Ionicons name={saved ? 'bookmark' : 'bookmark-outline'} size={22} color={saved ? community.primary : community.textSecondary} />
+          <Ionicons
+            name={saved ? 'bookmark' : 'bookmark-outline'}
+            size={27}
+            color={saved ? '#D6A525' : community.isDark ? community.textSecondary : '#526B89'}
+          />
         </Pressable>
       </View>
 
@@ -275,57 +320,117 @@ export function CommunityPostCard({
 
 const styles = StyleSheet.create({
   card: {
-    marginHorizontal: 12,
+    marginHorizontal: 16,
     marginTop: 12,
-    marginBottom: 4,
+    marginBottom: 5,
     borderWidth: 1,
-    borderRadius: 22,
-    paddingTop: 12,
-    paddingBottom: 10,
+    borderRadius: 30,
+    paddingTop: 16,
+    paddingBottom: 12,
     overflow: 'hidden',
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 7 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 8 },
     elevation: 7
   },
-  cardAccent: { position: 'absolute', top: 0, right: 22, width: 36, height: 3, borderBottomLeftRadius: 6, borderBottomRightRadius: 6 },
-  authorRow: { minHeight: 48, paddingHorizontal: 14, alignItems: 'center', justifyContent: 'space-between' },
-  authorLockup: { flex: 1, minWidth: 0, alignItems: 'center', gap: 10 },
-  avatarRing: { width: 43, height: 43, borderRadius: 22, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
-  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  avatarImg: { width: 36, height: 36, borderRadius: 18 },
-  avatarInitials: { fontSize: 13, fontWeight: '900' },
+  decorations: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  waveA: {
+    position: 'absolute',
+    width: 340,
+    height: 210,
+    borderRadius: 170,
+    backgroundColor: 'rgba(226,240,255,0.42)',
+    right: -170,
+    top: -100,
+    transform: [{ rotate: '-12deg' }]
+  },
+  waveB: {
+    position: 'absolute',
+    width: 300,
+    height: 180,
+    borderRadius: 150,
+    backgroundColor: 'rgba(190,222,250,0.20)',
+    right: -120,
+    bottom: -110,
+    transform: [{ rotate: '12deg' }]
+  },
+  waveC: {
+    position: 'absolute',
+    width: 260,
+    height: 155,
+    borderRadius: 130,
+    backgroundColor: 'rgba(234,244,255,0.28)',
+    left: -170,
+    bottom: -95
+  },
+  waveLineA: {
+    position: 'absolute',
+    width: 230,
+    height: 86,
+    borderRadius: 120,
+    borderWidth: 1,
+    borderColor: 'rgba(7,86,154,0.06)',
+    right: -80,
+    bottom: 8,
+    transform: [{ rotate: '-9deg' }]
+  },
+  waveLineB: {
+    position: 'absolute',
+    width: 190,
+    height: 68,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(7,86,154,0.045)',
+    right: -52,
+    bottom: 22,
+    transform: [{ rotate: '-9deg' }]
+  },
+  cardAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 28,
+    width: 42,
+    height: 4,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8
+  },
+  authorRow: { minHeight: 58, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'space-between' },
+  authorLockup: { flex: 1, minWidth: 0, alignItems: 'center', gap: 12 },
+  avatarRing: { width: 58, height: 58, borderRadius: 29, borderWidth: 2, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F8FBFF' },
+  avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  avatarImg: { width: 48, height: 48, borderRadius: 24 },
+  avatarInitials: { fontSize: 16, fontWeight: '900' },
   authorText: { flex: 1, minWidth: 0 },
-  authorName: { fontWeight: '900', fontSize: 14.5 },
-  authorMetaRow: { marginTop: 2, alignItems: 'center', gap: 4 },
-  authorMeta: { fontSize: 11.5, fontWeight: '600', maxWidth: 155 },
+  authorName: { fontWeight: '900', fontSize: 17.5 },
+  authorMetaRow: { marginTop: 3, alignItems: 'center', gap: 4 },
+  authorMeta: { fontSize: 12.2, fontWeight: '600', maxWidth: 168 },
   dot: { fontSize: 11 },
-  time: { fontSize: 10.5, fontWeight: '600' },
-  moreButton: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  badgesRow: { paddingHorizontal: 14, paddingTop: 7, gap: 7, flexWrap: 'wrap' },
-  typeBadge: { alignItems: 'center', gap: 5, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
-  typeText: { fontWeight: '800', fontSize: 10.5 },
-  hiddenBadge: { alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
-  hiddenBadgeText: { fontWeight: '800', fontSize: 10 },
-  contentArea: { paddingHorizontal: 14, paddingTop: 10, paddingBottom: 11, gap: 5 },
-  title: { fontWeight: '900', fontSize: 16.5, lineHeight: 23 },
-  body: { fontSize: 14, lineHeight: 21, fontWeight: '400' },
-  imageShell: { marginHorizontal: 10, borderRadius: 17, overflow: 'hidden' },
+  time: { fontSize: 11.5, fontWeight: '700' },
+  moreButton: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  badgesRow: { paddingHorizontal: 18, paddingTop: 10, gap: 8, flexWrap: 'wrap' },
+  typeBadge: { alignItems: 'center', gap: 6, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 7 },
+  typeText: { fontWeight: '900', fontSize: 12 },
+  hiddenBadge: { alignItems: 'center', gap: 4, borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  hiddenBadgeText: { fontWeight: '800', fontSize: 10.5 },
+  contentArea: { paddingHorizontal: 18, paddingTop: 12, paddingBottom: 14, gap: 7 },
+  title: { fontWeight: '900', fontSize: 19, lineHeight: 28 },
+  body: { fontSize: 16, lineHeight: 26, fontWeight: '500' },
+  imageShell: { marginHorizontal: 14, borderRadius: 21, overflow: 'hidden' },
   imagePreview: { width: '100%', aspectRatio: 1.18 },
-  pdfCard: { marginHorizontal: 14, borderWidth: 1, borderRadius: 16, minHeight: 66, paddingHorizontal: 11, paddingVertical: 9, alignItems: 'center', gap: 10 },
-  pdfIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  pdfCard: { marginHorizontal: 18, borderWidth: 1, borderRadius: 18, minHeight: 70, paddingHorizontal: 12, paddingVertical: 10, alignItems: 'center', gap: 10 },
+  pdfIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   pdfTextWrap: { flex: 1, minWidth: 0 },
-  pdfName: { fontWeight: '800', fontSize: 13 },
+  pdfName: { fontWeight: '800', fontSize: 13.5 },
   pdfMeta: { marginTop: 2, fontSize: 10.5, fontWeight: '700' },
-  metaWrap: { paddingHorizontal: 14, paddingTop: 9, gap: 6, flexWrap: 'wrap' },
-  metaChip: { borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
-  metaText: { fontSize: 10.5, fontWeight: '700' },
-  footerDivider: { height: StyleSheet.hairlineWidth, marginTop: 11, marginHorizontal: 14 },
-  actionsRow: { paddingHorizontal: 10, paddingTop: 6, alignItems: 'center' },
-  actionButton: { minWidth: 50, height: 40, paddingHorizontal: 7, flexDirection: 'row', gap: 5, alignItems: 'center', justifyContent: 'center' },
-  iconOnlyButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  actionCount: { fontSize: 11.5, fontWeight: '700' },
+  metaWrap: { paddingHorizontal: 18, paddingTop: 10, gap: 6, flexWrap: 'wrap' },
+  metaChip: { borderRadius: 999, paddingHorizontal: 9, paddingVertical: 5 },
+  metaText: { fontSize: 11, fontWeight: '700' },
+  footerDivider: { height: StyleSheet.hairlineWidth, marginTop: 12, marginHorizontal: 18 },
+  actionsRow: { paddingHorizontal: 13, paddingTop: 8, alignItems: 'center', minHeight: 50 },
+  actionButton: { minWidth: 62, height: 44, paddingHorizontal: 8, flexDirection: 'row', gap: 6, alignItems: 'center', justifyContent: 'center' },
+  iconOnlyButton: { width: 46, height: 44, alignItems: 'center', justifyContent: 'center' },
+  actionCount: { fontSize: 13, fontWeight: '800' },
   actionsSpacer: { flex: 1 },
-  commentsLink: { paddingHorizontal: 14, paddingTop: 1, paddingBottom: 2 },
-  commentsText: { fontSize: 11.5, fontWeight: '600' }
+  commentsLink: { paddingHorizontal: 18, paddingTop: 2, paddingBottom: 3 },
+  commentsText: { fontSize: 11.8, fontWeight: '600' }
 });
