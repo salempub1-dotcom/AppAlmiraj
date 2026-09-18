@@ -38,8 +38,8 @@ export function SignInScreen({ navigation }: any) {
     if (googleLoading) return;
     setGoogleLoading(true);
     try {
-      await authRepository.signInWithGoogle();
-      goToTeacherSpace();
+      const signedIn = await authRepository.signInWithGoogle();
+      if (signedIn) goToTeacherSpace();
     } catch (error: any) {
       Alert.alert('تعذر تسجيل الدخول بحساب Google', error?.message ?? 'حاول مرة أخرى.');
     } finally {
