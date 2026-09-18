@@ -46,8 +46,8 @@ export function SignUpScreen({ navigation }: any) {
     if (googleLoading) return;
     setGoogleLoading(true);
     try {
-      await authRepository.signInWithGoogle();
-      goToTeacherSpace();
+      const signedIn = await authRepository.signInWithGoogle();
+      if (signedIn) goToTeacherSpace();
     } catch (error: any) {
       Alert.alert('تعذر إنشاء الحساب بحساب Google', error?.message ?? 'حاول مرة أخرى.');
     } finally {
