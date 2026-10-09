@@ -9,6 +9,13 @@ export function ToolsScreen({ navigation }: any) {
   const { t, isRTL } = useLanguage();
   const align = isRTL ? 'right' as const : 'left' as const;
   const row = isRTL ? 'row-reverse' as const : 'row' as const;
+  const openTool = (route: string) => {
+    // From the Tools tab, tool details are registered in the parent root stack.
+    // The existing root-level TeacherTools screen can still navigate directly.
+    const isTabScreen = navigation.getState?.()?.type === 'tab';
+    if (isTabScreen) navigation.getParent?.()?.navigate(route);
+    else navigation.navigate(route);
+  };
   const tools = [
     { route: 'ImagesToPdf', icon: 'documents-outline' as const, title: t('tools.imagesPdfTitle'), text: t('tools.imagesPdfText') },
     { route: 'ClassTimer', icon: 'timer-outline' as const, title: t('tools.timerTitle'), text: t('tools.timerText') },
@@ -32,7 +39,7 @@ export function ToolsScreen({ navigation }: any) {
 
       <View style={styles.list}>
         {tools.map((tool, index) => (
-          <Pressable key={tool.route} onPress={() => navigation.navigate(tool.route)} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}> 
+          <Pressable key={tool.route} onPress={() => openTool(tool.route)} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}> 
             <View style={[styles.numberBadge, { backgroundColor: `${colors.primary}14` }]}><Text style={[styles.number, { color: colors.primary }]}>{index + 1}</Text></View>
             <View style={styles.copy}>
               <View style={[styles.titleRow, { flexDirection: row }]}>
