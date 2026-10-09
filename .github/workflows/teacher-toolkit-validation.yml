@@ -49,6 +49,7 @@ jobs:
       - name: TypeScript
         run: npm run typecheck
       - name: Expo doctor
+        if: always()
         run: npx --yes expo-doctor
       - name: Ensure committed lockfile matches package.json
         if: always()
