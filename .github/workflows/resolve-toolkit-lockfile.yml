@@ -1,8 +1,5 @@
 name: Resolve toolkit lockfile
 on:
-  push:
-    branches:
-      - feat/teacher-tools-images-pdf-20261009
   workflow_dispatch:
 permissions:
   contents: write
