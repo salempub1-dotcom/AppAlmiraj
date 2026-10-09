@@ -36,7 +36,7 @@ function getAvatarColors(seed: string) {
     { bg: '#E0F2F1', fg: '#00796B' }
   ];
   const score = [...seed].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return palettes[score % palettes.length];
+  return palettes[score % palettes.length]!;
 }
 
 export function CommunityPostCard({
@@ -333,7 +333,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     elevation: 7
   },
-  decorations: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  decorations: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
   waveA: {
     position: 'absolute',
     width: 340,
