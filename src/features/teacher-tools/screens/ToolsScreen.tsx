@@ -17,6 +17,7 @@ export function ToolsScreen({ navigation }: any) {
     else navigation.navigate(route);
   };
   const tools = [
+    { route: 'AssessmentBuilder', icon: 'create-outline' as const, title: isRTL ? 'صانع الفروض والاختبارات' : 'Test & Exam Builder', text: isRTL ? 'حرّر أسئلتك وأنشئ موضوعًا وتصحيحًا منفصلين بصيغة PDF.' : 'Write questions and export an exam and separate answer key as PDFs.' },
     { route: 'ImagesToPdf', icon: 'documents-outline' as const, title: t('tools.imagesPdfTitle'), text: t('tools.imagesPdfText') },
     { route: 'ClassTimer', icon: 'timer-outline' as const, title: t('tools.timerTitle'), text: t('tools.timerText') },
     { route: 'RandomStudent', icon: 'shuffle-outline' as const, title: t('tools.randomTitle'), text: t('tools.randomText') },
