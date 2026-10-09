@@ -517,7 +517,7 @@ const styles = StyleSheet.create({
   },
   heroCompact: { minHeight: 166, paddingBottom: 44 },
   heroDeepLayer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: '#031E42'
   },
   heroRoyalLayer: {
