@@ -31,11 +31,11 @@ export async function exportImagesPdf(
   let bytesTotal = 0;
   for (const image of images) {
     // HEIC, HEIF and WebP must be converted before being embedded in print HTML.
-    const lower = image.uri.toLowerCase().split('?')[0];
+    const lower = image.uri.toLowerCase().split('?')[0] ?? '';
     const supported = lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png');
     let uri = image.uri;
     if (!supported) {
-      const context = ImageManipulator.manipulate(image.uri);
+      const context = ImageManipulator.ImageManipulator.manipulate(image.uri);
       const rendered = await context.renderAsync();
       const converted = await rendered.saveAsync({ format: ImageManipulator.SaveFormat.JPEG, compress: 0.92 });
       uri = converted.uri;
@@ -45,7 +45,7 @@ export async function exportImagesPdf(
     bytesTotal += file.size;
     // Inline image HTML can exhaust mobile WebView memory. Explicit conservative limit.
     if (bytesTotal > 24 * 1024 * 1024) throw new Error('IMAGES_TOO_LARGE');
-    const mime = uri.toLowerCase().split('?')[0].endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const mime = (uri.toLowerCase().split('?')[0] ?? '').endsWith('.png') ? 'image/png' : 'image/jpeg';
     const data = await file.base64();
     pages.push(`<section class="sheet"><img src="${escapeAttr(`data:${mime};base64,${data}`)}" /></section>`);
   }
