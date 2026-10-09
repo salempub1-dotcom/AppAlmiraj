@@ -1,5 +1,6 @@
 import * as Print from 'expo-print';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
+import * as ImageManipulator from 'expo-image-manipulator';
 
 export type PdfPaper = 'A4' | 'A3';
 export type PdfOrientation = 'portrait' | 'landscape';
@@ -29,12 +30,22 @@ export async function exportImagesPdf(
   // Work in sequence to avoid reading all source files concurrently.
   let bytesTotal = 0;
   for (const image of images) {
-    const file = new File(image.uri);
+    // HEIC, HEIF and WebP must be converted before being embedded in print HTML.
+    const lower = image.uri.toLowerCase().split('?')[0];
+    const supported = lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png');
+    let uri = image.uri;
+    if (!supported) {
+      const context = ImageManipulator.manipulate(image.uri);
+      const rendered = await context.renderAsync();
+      const converted = await rendered.saveAsync({ format: ImageManipulator.SaveFormat.JPEG, compress: 0.92 });
+      uri = converted.uri;
+    }
+    const file = new File(uri);
     if (!file.exists) throw new Error('IMAGE_UNAVAILABLE');
     bytesTotal += file.size;
     // Inline image HTML can exhaust mobile WebView memory. Explicit conservative limit.
     if (bytesTotal > 24 * 1024 * 1024) throw new Error('IMAGES_TOO_LARGE');
-    const mime = image.uri.toLowerCase().split('?')[0].endsWith('.png') ? 'image/png' : 'image/jpeg';
+    const mime = uri.toLowerCase().split('?')[0].endsWith('.png') ? 'image/png' : 'image/jpeg';
     const data = await file.base64();
     pages.push(`<section class="sheet"><img src="${escapeAttr(`data:${mime};base64,${data}`)}" /></section>`);
   }
@@ -46,5 +57,9 @@ export async function exportImagesPdf(
   img { display:block; max-width:100%; max-height:100%; object-fit:contain; }
   </style></head><body>${pages.join('')}</body></html>`;
   const result = await Print.printToFileAsync({ html, width: mmToPt(widthMm), height: mmToPt(heightMm) });
-  return result.uri;
+  // Keep the export in application documents, not the temporary print cache.
+  const source = new File(result.uri);
+  const destination = new File(Paths.document, `AlMiraj-${Date.now()}.pdf`);
+  source.copy(destination);
+  return destination.uri;
 }
