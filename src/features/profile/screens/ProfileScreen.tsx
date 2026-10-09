@@ -79,6 +79,7 @@ export function ProfileScreen({ navigation }: any) {
       ? t('profile.light')
       : t('profile.system');
 
+  const openTeacherTools = () => navigation.getParent?.()?.getParent?.()?.navigate?.('TeacherTools');
   const openTeacherSpace = () => navigation.getParent?.()?.navigate?.('Community');
   const openOrders = () => navigation.getParent?.()?.navigate?.('Store', { screen: 'MyOrders' });
 
@@ -89,6 +90,7 @@ export function ProfileScreen({ navigation }: any) {
           <View style={styles.guestIcon}><Ionicons name="school" size={34} color={palette.navy} /></View>
           <Text style={[styles.guestTitle, { color: colors.text }]}>{t('profile.welcome')}</Text>
           <Text style={[styles.guestText, { color: colors.muted }]}>{t('profile.guestText')}</Text>
+          <Pressable onPress={openTeacherTools} style={styles.primaryButton}><Text style={styles.primaryText}>{t('nav.tools')}</Text></Pressable>
           <Pressable onPress={() => navigation.navigate('SignIn')} style={styles.primaryButton}>
             <Text style={styles.primaryText}>{t('profile.signIn')}</Text>
           </Pressable>
@@ -162,6 +164,17 @@ export function ProfileScreen({ navigation }: any) {
         </View>
 
         <View style={[styles.menu, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <MenuItem
+            icon="construct-outline"
+            iconBg="#FFF5D9"
+            iconColor="#9A661E"
+            title={t('nav.tools')}
+            subtitle={t('tools.imagesPdfText')}
+            onPress={openTeacherTools}
+            colors={colors}
+            row={row}
+          />
+          <Divider color={colors.divider} />
           <MenuItem
             icon="bag-handle-outline"
             iconBg="#FFF3DC"

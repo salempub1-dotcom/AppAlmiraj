@@ -2,6 +2,8 @@ import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../context/ThemeProvider';
 import { ContentDetailScreen } from '../features/explore/screens/ContentDetailScreen';
+import { ImagesToPdfScreen } from '../features/teacher-tools/screens/ImagesToPdfScreen';
+import { ToolsScreen } from '../features/teacher-tools/screens/ToolsScreen';
 import { ClassTimerScreen } from '../features/teacher-tools/screens/ClassTimerScreen';
 import { GroupMakerScreen } from '../features/teacher-tools/screens/GroupMakerScreen';
 import { RandomStudentScreen } from '../features/teacher-tools/screens/RandomStudentScreen';
@@ -32,7 +34,6 @@ export function RootNavigator() {
           headerTintColor: colors.text,
           headerTitleAlign: 'center',
           headerShadowVisible: false,
-          headerBackTitleVisible: false,
           headerTitleStyle: { fontSize: 16, fontWeight: '800' },
           contentStyle: { backgroundColor: colors.background },
           animation: 'slide_from_right'
@@ -40,6 +41,8 @@ export function RootNavigator() {
       >
         <Stack.Screen name="Main" component={BottomTabs} options={{ headerShown: false }} />
         <Stack.Screen name="ContentDetail" component={ContentDetailScreen} options={{ title: 'التفاصيل' }} />
+        <Stack.Screen name="TeacherTools" component={ToolsScreen} options={{ title: 'حقيبة أدوات الأستاذ' }} />
+        <Stack.Screen name="ImagesToPdf" component={ImagesToPdfScreen} options={{ title: 'الصور إلى PDF' }} />
         <Stack.Screen name="ClassTimer" component={ClassTimerScreen} options={{ title: 'مؤقت القسم' }} />
         <Stack.Screen name="RandomStudent" component={RandomStudentScreen} options={{ title: 'اختيار تلميذ' }} />
         <Stack.Screen name="GroupMaker" component={GroupMakerScreen} options={{ title: 'تقسيم المجموعات' }} />

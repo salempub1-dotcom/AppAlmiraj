@@ -1,0 +1,56 @@
+name: Teacher Toolkit validation
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/**'
+      - '.github/workflows/teacher-toolkit-validation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    name: Main branch TypeScript baseline
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Baseline typecheck (capture existing failures)
+        run: |
+          npm run typecheck 2>&1 | tee baseline-typecheck.txt
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: main-typecheck-baseline
+          path: baseline-typecheck.txt
+  toolkit:
+    name: Toolkit dependencies and static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Resolve dependencies and regenerate lockfile (validation only)
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - uses: actions/upload-artifact@v4
+        with:
+          name: resolved-package-lock
+          path: package-lock.json
+      - name: Install from regenerated lock
+        run: npm ci --no-audit --no-fund
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Expo doctor
+        if: always()
+        run: npx --yes expo-doctor
+      - name: Ensure committed lockfile matches package.json
+        if: always()
+        run: git diff --exit-code -- package-lock.json
