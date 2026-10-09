@@ -1,10 +1,10 @@
 import { PropsWithChildren } from 'react';
-import { ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import { ScrollView, StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeProvider';
 import { ui } from '../theme/ui';
 
-type Props = PropsWithChildren<{ scroll?: boolean; style?: ViewStyle }>;
+type Props = PropsWithChildren<{ scroll?: boolean; style?: StyleProp<ViewStyle> }>;
 
 export function Screen({ children, scroll = false, style }: Props) {
   const { colors } = useTheme();
