@@ -9,12 +9,14 @@ import { getCommunityCopy } from '../i18n/communityCopy';
 import { CommunityStackNavigator } from './CommunityStackNavigator';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { StoreStackNavigator } from './StoreStackNavigator';
+import { ToolsScreen } from '../features/teacher-tools/screens/ToolsScreen';
 
 const Tab = createBottomTabNavigator();
 
 const icons = {
   Community: { active: 'school' as const, inactive: 'school-outline' as const },
   Store: { active: 'bag-handle' as const, inactive: 'bag-handle-outline' as const },
+  Tools: { active: 'construct' as const, inactive: 'construct-outline' as const },
   Profile: { active: 'person' as const, inactive: 'person-outline' as const }
 } as const;
 
@@ -43,7 +45,9 @@ export function BottomTabs() {
                 ? getCommunityCopy(language).nav.feed
                 : route.name === 'Store'
                   ? t('nav.store')
-                  : t('nav.profile');
+                  : route.name === 'Tools'
+                    ? (language === 'ar' ? 'الأدوات' : 'Tools')
+                    : t('nav.profile');
 
             return (
               <View style={{ alignItems: 'center', justifyContent: 'center', gap: 5, minWidth: 74 }}>
@@ -102,6 +106,7 @@ export function BottomTabs() {
     >
       <Tab.Screen name="Community" component={CommunityStackNavigator} />
       <Tab.Screen name="Store" component={StoreStackNavigator} />
+      <Tab.Screen name="Tools" component={ToolsScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
