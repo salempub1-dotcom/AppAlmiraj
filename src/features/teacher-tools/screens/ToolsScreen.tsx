@@ -10,6 +10,7 @@ export function ToolsScreen({ navigation }: any) {
   const align = isRTL ? 'right' as const : 'left' as const;
   const row = isRTL ? 'row-reverse' as const : 'row' as const;
   const tools = [
+    { route: 'ImagesToPdf', icon: 'documents-outline' as const, title: t('tools.imagesPdfTitle'), text: t('tools.imagesPdfText') },
     { route: 'ClassTimer', icon: 'timer-outline' as const, title: t('tools.timerTitle'), text: t('tools.timerText') },
     { route: 'RandomStudent', icon: 'shuffle-outline' as const, title: t('tools.randomTitle'), text: t('tools.randomText') },
     { route: 'GroupMaker', icon: 'people-outline' as const, title: t('tools.groupsTitle'), text: t('tools.groupsText') }
