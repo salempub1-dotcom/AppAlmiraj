@@ -552,7 +552,7 @@ function SimpleInput({
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: '#2F96E5' },
   keyboardView: { flex: 1 },
-  background: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  background: { ...StyleSheet.absoluteFill, overflow: 'hidden' },
 
   heroBase: {
     position: 'absolute',
