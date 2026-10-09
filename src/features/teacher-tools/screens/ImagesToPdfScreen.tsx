@@ -47,7 +47,7 @@ export function ImagesToPdfScreen() {
     const target = index + delta;
     if (target < 0 || target >= images.length) return;
     setImages(prev => {
-      const next = [...prev]; [next[index], next[target]] = [next[target], next[index]];
+      const next = [...prev]; const current = next[index]!; next[index] = next[target]!; next[target] = current;
       return next;
     });
     setOutput(null);
