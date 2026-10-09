@@ -29,7 +29,6 @@ export function ProfileStackNavigator() {
         headerTintColor: colors.text,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        headerBackTitleVisible: false,
         headerTitleStyle: { fontSize: 16, fontWeight: '800' },
         contentStyle: { backgroundColor: colors.background },
         animation: 'slide_from_right'
