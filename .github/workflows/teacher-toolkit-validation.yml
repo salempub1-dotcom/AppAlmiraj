@@ -50,3 +50,6 @@ jobs:
         run: npm run typecheck
       - name: Expo doctor
         run: npx --yes expo-doctor
+      - name: Ensure committed lockfile matches package.json
+        if: always()
+        run: git diff --exit-code -- package-lock.json
