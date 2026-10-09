@@ -20,6 +20,13 @@ export function ImagesToPdfScreen() {
   const [busy, setBusy] = useState(false);
   const [output, setOutput] = useState<string | null>(null);
   const row = isRTL ? 'row-reverse' as const : 'row' as const;
+  const paperWidth = paper === 'A4' ? 210 : 297;
+  const paperHeight = paper === 'A4' ? 297 : 420;
+  const widthMm = orientation === 'portrait' ? paperWidth : paperHeight;
+  const heightMm = orientation === 'portrait' ? paperHeight : paperWidth;
+  const previewWidth = Math.min(290, 280 * widthMm / heightMm);
+  const previewHeight = previewWidth * heightMm / widthMm;
+  const inset = previewWidth * marginMm / widthMm;
   const tr = (a: string, en: string) => ar ? a : en;
 
   async function pick(camera = false) {
@@ -58,7 +65,7 @@ export function ImagesToPdfScreen() {
     try {
       const uri = await exportImagesPdf(images, paper, orientation, marginMm);
       setOutput(uri);
-      Alert.alert(tr('تم إنشاء ملف PDF', 'PDF created'), tr('يمكنك مشاركته أو طباعته الآن.', 'You can now share or print it.'));
+      Alert.alert(tr('تم إنشاء ملف PDF', 'PDF created'), tr('حُفظ داخل ملفات التطبيق ويمكنك مشاركته أو طباعته.', 'Saved in app documents. You can also share or print it.'));
     } catch (error) {
       const code = error instanceof Error ? error.message : '';
       const message = code === 'IMAGES_TOO_LARGE' ? tr('الصور كبيرة جدًا. اختر عددًا أقل أو صورًا أصغر.', 'Images too large. Select fewer or smaller photos.')
@@ -110,10 +117,17 @@ export function ImagesToPdfScreen() {
     <View style={[styles.actions,{flexDirection:row}]}>
       {[0,5,10,15,20].map(value=><Pressable key={value} onPress={()=>{setMarginMm(value);setOutput(null);}} style={[styles.choice,{borderColor:marginMm===value?colors.primary:colors.border,backgroundColor:colors.card}]}><Text style={{color:colors.text}}>{value}</Text></Pressable>)}
     </View>
-    <Text style={{color:colors.muted}}>{tr('معاينة ترتيب الصفحات تظهر في الصور أعلاه. كل صورة في صفحة واحدة دون تشويه.', 'The image list previews page order. Each image is fitted to one page without distortion.')}</Text>
+    <Text style={{color:colors.text,fontWeight:'800'}}>{tr('معاينة الصفحة الأولى', 'First page preview')}</Text>
+    {images.length ? <View style={{alignItems:'center',paddingVertical:12,backgroundColor:colors.surface,borderRadius:16}}>
+      <View style={{width:previewWidth,height:previewHeight,backgroundColor:'#FFFFFF',padding:inset,elevation:3,shadowColor:'#000',shadowOpacity:0.15,shadowRadius:4}}>
+        <Image source={{uri:images[0]!.uri}} style={{width:'100%',height:'100%'}} resizeMode="contain" />
+      </View>
+      <Text style={{color:colors.muted,marginTop:8}}>{paper} · {orientation==='portrait'?tr('عمودي','Portrait'):tr('أفقي','Landscape')} · {marginMm}mm</Text>
+    </View> : null}
+    <Text style={{color:colors.muted}}>{tr('المعاينة تقريبية. افحص الملف النهائي قبل الطباعة.', 'Preview is approximate. Inspect the final PDF before printing.')}</Text>
     {busy ? <ActivityIndicator color={colors.primary}/> : null}
     {action(tr('إنشاء PDF','Create PDF'),()=>void generate(),!images.length||busy)}
-    {output ? <View style={[styles.actions,{flexDirection:row}]}>{action(tr('مشاركة / حفظ','Share / Save'),()=>void share())}{action(tr('طباعة','Print'),()=>void print())}</View> : null}
+    {output ? <View style={[styles.actions,{flexDirection:row}]}>{action(tr('مشاركة / تصدير','Share / Export'),()=>void share())}{action(tr('طباعة','Print'),()=>void print())}</View> : null}
   </ScrollView>;
 }
 const styles=StyleSheet.create({
