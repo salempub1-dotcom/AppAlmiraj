@@ -16,14 +16,14 @@ function makeHtml(opts: { school: string; level: string; subject: string; headin
   const total = questions.reduce((n, q) => n + numberOf(q.points), 0);
   const items = questions.map((q, i) => `<section class="question"><div class="qhead"><b>${i + 1}. ${escapeHtml(q.prompt).replace(/\n/g, '<br>')}</b><span>${numberOf(q.points)} ن</span></div>${correction ? `<p class="answer">${escapeHtml(q.answer || 'لم تُحدد إجابة نموذجية').replace(/\n/g, '<br>')}</p>` : '<div class="writing"></div>'}</section>`).join('');
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>
-  @page{size:A4;margin:15mm}html,body{font-family:Arial,sans-serif;color:#0B1833;direction:rtl}*{box-sizing:border-box}
-  .head{border-bottom:3px solid #D4AF37;padding-bottom:12px;margin-bottom:16px}.brand{font-size:13px;color:#6F5A1C;font-weight:700}
-  h1{text-align:center;font-size:22px;margin:18px 0}.meta{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+  @page{size:A4;margin:15mm}html,body{font-family:Arial,Tahoma,sans-serif;color:#0B1833;direction:rtl;unicode-bidi:plaintext}*{box-sizing:border-box} body{font-size:14px;line-height:1.8} 
+  .head{border-bottom:3px solid #D4AF37;padding-bottom:12px;margin-bottom:16px;break-inside:avoid}.brand{font-size:13px;color:#6F5A1C;font-weight:700;direction:ltr;text-align:center}
+  h1{text-align:center;font-size:22px;margin:18px 0;break-after:avoid}.meta{display:flex;justify-content:space-between;gap:12px;font-size:13px;direction:rtl;flex-wrap:wrap}
   .student{border:1px solid #9AA6B7;padding:10px;margin:18px 0;border-radius:7px;font-size:13px}
-  .question{break-inside:avoid;border-bottom:1px solid #E6EAF0;padding:10px 0 14px;min-height:95px}
-  .qhead{display:flex;justify-content:space-between;gap:12px;line-height:1.9;font-size:15px}.qhead span{white-space:nowrap;color:#7A611E}
-  .writing{min-height:70px}.answer{white-space:normal;line-height:1.9;color:#21445C}
-  footer{font-size:11px;text-align:center;margin-top:20px;color:#777}</style></head><body>
+  .question{break-inside:avoid;page-break-inside:avoid;border-bottom:1px solid #E6EAF0;padding:10px 0 14px;min-height:95px}
+  .qhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;line-height:1.9;font-size:15px;direction:rtl;unicode-bidi:plaintext}.qhead b{flex:1;white-space:normal;overflow-wrap:anywhere}.qhead span{white-space:nowrap;color:#7A611E;direction:rtl}
+  .writing{min-height:70px}.answer{white-space:normal;overflow-wrap:anywhere;line-height:1.9;color:#21445C;direction:rtl;text-align:right}
+  footer{font-size:11px;text-align:center;margin-top:20px;color:#777;break-inside:avoid}</style></head><body>
   <div class="head"><div class="brand">AL MIRAJ EDUCATION • المعراج للوسائل التعليمية</div><div class="meta"><span>${escapeHtml(school)}</span><span>${escapeHtml(level)} — ${escapeHtml(subject)}</span></div></div>
   <h1>${escapeHtml(heading)}${correction ? ' — التصحيح النموذجي' : ''}</h1>
   <div class="meta"><span>المدة: ${escapeHtml(duration)}</span><span>العلامة: ${total.toFixed(1).replace(/\.0$/, '')} / 20</span></div>
