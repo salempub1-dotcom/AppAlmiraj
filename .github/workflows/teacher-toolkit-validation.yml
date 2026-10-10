@@ -1,7 +1,7 @@
 name: Teacher Toolkit validation
 on:
   pull_request:
-    branches: [main]
+    branches: [main, feat/teacher-tools-images-pdf-20261009]
     paths:
       - 'package.json'
       - 'package-lock.json'
