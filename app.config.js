@@ -28,7 +28,13 @@ const config = {
     resizeMode: 'contain'
   },
 
-  plugins: ['expo-font'],
+  plugins: ['expo-font', 'expo-sharing', '@config-plugins/react-native-pdf',
+    ['expo-image-picker', {
+      photosPermission: 'Allow Al Miraj to select photos for documents and posts.',
+      cameraPermission: 'Allow Al Miraj to take photos for your PDF documents.',
+      microphonePermission: false
+    }]
+  ],
 
   ios: {
     supportsTablet: true,

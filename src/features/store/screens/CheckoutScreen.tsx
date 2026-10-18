@@ -115,7 +115,7 @@ export function CheckoutScreen({ navigation }: any) {
 
       <Section title="معلومات المستلم" icon="person-outline" colors={colors}>
         <Field label="الاسم الكامل" value={customer} onChangeText={setCustomer} placeholder="اسم المستلم" colors={colors} />
-        <Field label="رقم الهاتف" value={phone} onChangeText={(v) => setPhone(v.replace(/\D/g, '').slice(0, 10))} placeholder="05 / 06 / 07..." keyboardType="phone-pad" colors={colors} invalid={phone.length > 0 && !phoneIsValid} />
+        <Field label="رقم الهاتف" value={phone} onChangeText={(v: string) => setPhone(v.replace(/\D/g, '').slice(0, 10))} placeholder="05 / 06 / 07..." keyboardType="phone-pad" colors={colors} invalid={phone.length > 0 && !phoneIsValid} />
       </Section>
 
       <Section title="عنوان التوصيل" icon="location-outline" colors={colors}>
