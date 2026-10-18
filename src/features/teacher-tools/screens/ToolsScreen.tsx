@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { toolkitCopy } from '../toolkitCopy';
 import { Screen } from '../../../components/Screen';
 import { useLanguage } from '../../../context/LanguageProvider';
 import { useTheme } from '../../../context/ThemeProvider';
 
 export function ToolsScreen({ navigation }: any) {
   const { colors } = useTheme();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, language } = useLanguage();
+  const copy = toolkitCopy(language);
   const align = isRTL ? 'right' as const : 'left' as const;
   const row = isRTL ? 'row-reverse' as const : 'row' as const;
   const tools = [
@@ -19,13 +21,22 @@ export function ToolsScreen({ navigation }: any) {
     <Screen scroll style={styles.page}>
       <View style={styles.hero}>
         <View style={[styles.heroIcon, { alignSelf: isRTL ? 'flex-end' : 'flex-start' }]}><Ionicons name="construct" size={21} color="#0B1833" /></View>
-        <Text style={[styles.heroTitle, { textAlign: align }]}>{t('tools.heroTitle')}</Text>
-        <Text style={[styles.heroBody, { textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{t('tools.heroBody')}</Text>
+        <Text style={[styles.heroTitle, { textAlign: align }]}>{copy.title}</Text>
+        <Text style={[styles.heroBody, { textAlign: align, writingDirection: isRTL ? 'rtl' : 'ltr' }]}>{copy.local}</Text>
         <View style={[styles.comingBadge, { alignSelf: isRTL ? 'flex-end' : 'flex-start', flexDirection: row }]}><View style={styles.dot} /><Text style={styles.comingText}>{t('tools.ready')}</Text></View>
       </View>
 
+      <View style={styles.list}>
+        <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{copy.documents}</Text>
+        <Pressable accessibilityRole="button" onPress={() => navigation.navigate('ImagesToPdf')} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, flexDirection: row }]}>
+          <View style={[styles.icon, { backgroundColor: colors.primarySoft }]}><Ionicons name="document-text-outline" size={24} color={colors.primary} /></View>
+          <View style={styles.copy}><Text style={[styles.cardTitle, { color: colors.text, textAlign: align }]}>{copy.pdf}</Text>
+            <Text style={[styles.cardText, { color: colors.muted, textAlign: align }]}>{copy.description}</Text></View>
+          <Ionicons name={isRTL ? 'chevron-back' : 'chevron-forward'} size={20} color={colors.primary} />
+        </Pressable>
+      </View>
       <View>
-        <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{t('tools.sectionTitle')}</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text, textAlign: align }]}>{copy.classroom}</Text>
         <Text style={[styles.sectionCaption, { color: colors.muted, textAlign: align }]}>{t('tools.sectionCaption')}</Text>
       </View>
 

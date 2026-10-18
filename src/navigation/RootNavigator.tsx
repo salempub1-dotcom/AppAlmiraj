@@ -5,11 +5,14 @@ import { ContentDetailScreen } from '../features/explore/screens/ContentDetailSc
 import { ClassTimerScreen } from '../features/teacher-tools/screens/ClassTimerScreen';
 import { GroupMakerScreen } from '../features/teacher-tools/screens/GroupMakerScreen';
 import { RandomStudentScreen } from '../features/teacher-tools/screens/RandomStudentScreen';
+import { useLanguage } from '../context/LanguageProvider';
+import { toolkitCopy } from '../features/teacher-tools/toolkitCopy';
 import { BottomTabs } from './BottomTabs';
 
 const Stack = createNativeStackNavigator();
 
 export function RootNavigator() {
+  const { language, t } = useLanguage();
   const { mode, colors } = useTheme();
   const base = mode === 'dark' ? DarkTheme : DefaultTheme;
   const theme = {
@@ -32,7 +35,7 @@ export function RootNavigator() {
           headerTintColor: colors.text,
           headerTitleAlign: 'center',
           headerShadowVisible: false,
-          headerBackTitleVisible: false,
+          headerBackButtonDisplayMode: 'minimal',
           headerTitleStyle: { fontSize: 16, fontWeight: '800' },
           contentStyle: { backgroundColor: colors.background },
           animation: 'slide_from_right'
@@ -40,9 +43,10 @@ export function RootNavigator() {
       >
         <Stack.Screen name="Main" component={BottomTabs} options={{ headerShown: false }} />
         <Stack.Screen name="ContentDetail" component={ContentDetailScreen} options={{ title: 'التفاصيل' }} />
-        <Stack.Screen name="ClassTimer" component={ClassTimerScreen} options={{ title: 'مؤقت القسم' }} />
-        <Stack.Screen name="RandomStudent" component={RandomStudentScreen} options={{ title: 'اختيار تلميذ' }} />
-        <Stack.Screen name="GroupMaker" component={GroupMakerScreen} options={{ title: 'تقسيم المجموعات' }} />
+        <Stack.Screen name="ImagesToPdf" getComponent={() => require('../features/teacher-tools/screens/ImagesToPdfScreen').ImagesToPdfScreen} options={{ title: toolkitCopy(language).pdf }} />
+        <Stack.Screen name="ClassTimer" component={ClassTimerScreen} options={{ title: t('tools.timerTitle') }} />
+        <Stack.Screen name="RandomStudent" component={RandomStudentScreen} options={{ title: t('tools.randomTitle') }} />
+        <Stack.Screen name="GroupMaker" component={GroupMakerScreen} options={{ title: t('tools.groupsTitle') }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

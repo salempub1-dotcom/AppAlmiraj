@@ -25,7 +25,7 @@ export function CommunityStackNavigator() {
         headerTintColor: community.text,
         headerTitleAlign: 'center',
         headerShadowVisible: false,
-        headerBackTitleVisible: false,
+        headerBackButtonDisplayMode: 'minimal',
         headerTitleStyle: { fontSize: 16, fontWeight: '800' },
         contentStyle: { backgroundColor: community.background },
         animation: 'slide_from_right'
